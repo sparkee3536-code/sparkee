@@ -769,6 +769,7 @@ const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2(); let downAt =
 renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
 renderer.domElement.addEventListener('pointerup', e => {
   if (!downAt || Math.hypot(e.clientX-downAt[0], e.clientY-downAt[1]) > 6) return;
+  if (document.body.classList.contains('embed')) return;  // App 裡點寵物只轉角度、維持待著；摸摸改用下方按鈕（會自己回待著）
   const r = renderer.domElement.getBoundingClientRect();
   ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
   ray.setFromCamera(ndc, camera);
@@ -832,7 +833,7 @@ function loop(){
   controls.update(); renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
-window.__sparkee = {setMove, selectPet, camera, controls, get cfg(){ return cfg; }, setT(x){ t0 = performance.now()/1000 - x; }, freeze(x){ frozen = x; }};
+window.__sparkee = {setMove, selectPet, camera, controls, get move(){ return move; }, get cfg(){ return cfg; }, setT(x){ t0 = performance.now()/1000 - x; }, freeze(x){ frozen = x; }};
 selectPet(new URLSearchParams(location.search).get('pet') || 'bunny');
 
 // sound tags
