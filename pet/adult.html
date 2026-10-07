@@ -1,0 +1,1340 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>兔子成年動作試作</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+body.embed{margin:0;background:transparent;overflow:hidden}
+body.embed .wrap{padding:0;max-width:none;gap:0}
+body.embed .wrap>*:not(.stage){display:none!important}
+body.embed .stage{position:fixed;inset:0;aspect-ratio:auto;border-radius:0;border:0}
+body.embed .status{display:none}
+</style>
+<script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('embed-doc'),addEventListener('DOMContentLoaded',()=>document.body.classList.add('embed'));</script>
+<style>
+/* Layout: one column — the 3D stage, five motion buttons, short notes */
+:root{
+  --bg:#F4F6F1; --surface:#FFFFFF; --fg:#1B2A22; --muted:#55645B; --line:#DCE3DA;
+  --grass:#2B7A4B; --grass-ink:#FFFFFF; --spark:#F5A524; --spark-soft:#FFF1D6;
+  --sky-top:#DCEFE8; --sky-bot:#EEF5E6;
+  --f-display:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#5FBF86; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#5FBF86; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:24px 48px;display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--f-display);font-weight:400;font-size:28px;margin:0;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted)}
+.stage{position:relative;width:100%;aspect-ratio:4/3.6;border-radius:24px;overflow:hidden;background:linear-gradient(var(--sky-top),var(--sky-bot));border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.status{position:absolute;left:12px;top:12px;background:var(--surface);color:var(--fg);border-radius:99px;padding:4px 12px;font-size:13px;border:1px solid var(--line)}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;pointer-events:none}
+.moves{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.moves{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.moves button{min-height:56px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:15px;font-weight:700;cursor:pointer;padding:6px;line-height:1.25}
+.moves button small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.moves button[aria-pressed="true"]{background:var(--grass);color:var(--grass-ink);border-color:var(--grass)}
+.moves button[aria-pressed="true"] small{color:var(--grass-ink)}
+.moves button.sig{border-color:var(--spark)}
+.moves button:disabled{cursor:not-allowed;opacity:0.55}
+.moves button:focus-visible,.toggle input:focus-visible{outline:3px solid var(--spark);outline-offset:2px}
+.toggle{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--muted)}
+.toggle input{width:20px;height:20px;accent-color:var(--grass)}
+.notes{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.notes h2{font-family:var(--f-display);font-weight:400;font-size:19px;margin:0}
+.notes ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.tip{background:var(--spark-soft);border-radius:14px;padding:10px 14px;font-size:14px}
+</style>
+
+
+<div class="wrap">
+  <header>
+    <h1>兔子成年動作試作</h1>
+    <p class="sub">成年期：動作慢而穩、有才藝，也會守護公園。五個動作：待機、帽子魔術（招牌）、種花澆水、緊急救援（變身兔子超人）、睡覺。拖曳可以轉視角。</p>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="loading" id="loading">兔子成年載入中（約 6 MB）…</div>
+    <span class="status" id="status" hidden>待機</span>
+  </div>
+
+  <div class="moves" role="group" aria-label="動作">
+    <button data-move="idle" aria-pressed="true">待機<small>推推眼鏡</small></button>
+    <button data-move="magic" class="sig" aria-pressed="false">帽子魔術<small>兔子招牌</small></button>
+    <button data-move="garden" aria-pressed="false">種花澆水<small>公園守護者</small></button>
+    <button data-move="rescue" aria-pressed="false">緊急救援<small>變身超人</small></button>
+    <button data-move="sleep" aria-pressed="false">睡覺<small>躺草地床</small></button>
+  </div>
+  <label class="toggle"><input type="checkbox" id="ears" checked> 耳朵跟著動作晃動</label>
+
+  <section class="notes">
+    <h2>這一版有什麼</h2>
+    <ul>
+      <li><b>待機</b>：雙手自然微微張開（不貼大腿），重心在兩腳間慢慢換、轉頭看看公園，長耳朵偶爾抖一下；大約每 10 秒用手指推推眼鏡，鏡片閃一下，再對你笑成 ^^。</li>
+      <li><b>帽子魔術（兔子招牌）</b>：左手拿著黑色魔術禮帽，先把帽口轉向你給你看「裡面是空的」；右手用魔術棒在帽緣敲三下、揮一圈，「噗」一陣煙，一束彩色花束從帽子裡升起「鏘鏘！」。她拿起花束遞給你、舉高；接著一根胡蘿蔔從帽子裡彈出來，翻個跟斗落在她頭上「還有胡蘿蔔！」，帽子噴出彩帶；最後鞠躬「謝謝！」，胡蘿蔔掉回帽子、花束放回去，再一陣煙收工。</li>
+      <li><b>種花澆水（公園守護者）</b>：花圃裡五個小芽，她提著綠色澆水壺一格一格側步往前，壺嘴斜下澆出水滴，每澆一株花就從土裡長高、葉子張開、花瓣打開冒亮片；五朵都開後她走到中間，推推眼鏡、笑著說「開花囉！」，然後走回起點重新開始。</li>
+      <li><b>緊急救援（變身兔子超人）</b>：公園步道旁，一隻戴黑眼罩的搗蛋浣熊在「快樂公園」告示牌上噴漆亂畫。兔子發現「！」，推一下眼鏡、原地轉一圈，在光柱中變身成兔子超人——頭和成年兔子一樣大、身體整個放大一號，雙手握拳插腰（直接使用握拳插腰的超人 3D 模型）「兔子超人！」。蹲低蓄力、一個大跳躍（右拳朝天），以超級英雄式落地（單膝蹲低、拳頭點地）；起身、抬高膝蓋用力跺腳「咚！」，地面冒光圈和塵土，全身發光往前傾瞪著浣熊；浣熊嚇得跳起來「哇啊！」丟下噴漆逃跑，塗鴉消失。她張開雙手高舉成 V 字、抬頭歡呼「守護公園！」，再轉一圈變回戴眼鏡的兔子，推推眼鏡、揮手走回原位。（不打人，只用氣勢嚇跑壞人；超人的眼睛全程維持定稿原樣，不眨眼也不換表情）</li>
+      <li><b>睡覺（躺草地床）</b>：肚子朝天平躺在照身形塑形的草地床上，長耳朵軟軟垂在草上，眼鏡還戴著，閉眼、肚子隨呼吸起伏，頭上飄 Z。</li>
+    </ul>
+    <p class="tip">節奏、幅度、道具樣子都還能調，告訴我就好。</p>
+  </section>
+</div>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+// 3D動畫生成規範 2.1: rotations are written as quaternions (axis-angle products in X-Y-Z order, the same result as before)
+const __QX = new THREE.Vector3(1, 0, 0), __QY = new THREE.Vector3(0, 1, 0), __QZ = new THREE.Vector3(0, 0, 1), __qa = new THREE.Quaternion(), __qb = new THREE.Quaternion(), __qc = new THREE.Quaternion();
+function QR(o, x, y, z){ o.userData.__r = [x, y, z]; __qa.setFromAxisAngle(__QX, x); __qb.setFromAxisAngle(__QY, y); __qc.setFromAxisAngle(__QZ, z); o.quaternion.copy(__qa).multiply(__qb).multiply(__qc); return o; }
+function QRa(o){ return o.userData.__r || [o.rotation.x, o.rotation.y, o.rotation.z]; }   // the angles as last written (not re-derived)
+function QRc(o, ax, v){ const r = QRa(o); return QR(o, ax === 'x' ? v : r[0], ax === 'y' ? v : r[1], ax === 'z' ? v : r[2]); }
+
+import {makeParks} from './parkscenes.js';
+import {makeSfx} from './sparkee-sfx.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+// ---------- calibration of the two rabbit models (model space: feet at 0, height 1.7, facing +z, x = her left) ----------
+const CFGS = {
+  adult: {
+    name: 'adult', file: 'rabbitadult_model.json', scale: 1.0, headRe: /^Bone_01[6-8]$/,
+    eye: [0.083, 1.1], eyeR: [0.04, 0.036], eyeZ: 0.15, eyeY0: 1.0, frameZ: 0.213,
+    ear: {vertical: true, y0: 1.27, px: 0.11, py: 1.27, L: 0.4},
+    headR: 0.25, bodyR: 0.17, armDown: 0.36, hipY: 0.495, armRe: /^Bone_0(19|2[0-8])$/,
+    offs: {head: [0, 1.1, 0.0], mouth: [0, 1.0, 0.2], nose: [0, 1.05, 0.22], bridge: [0, 1.135, 0.27], top: [0, 1.285, 0.0], bodyLow: [0, 0.52, 0.0], bodyHigh: [0, 0.8, 0.0]},
+    bones: {
+      Root:'Bone_000', Hips:'Bone_001', Spine:'Bone_005', Spine1:'Bone_004', Chest:'Bone_003', Neck:'Bone_018', Head:'Bone_017', HeadTop:'Bone_016',
+      LeftShoulder:'Bone_023', LeftArm:'Bone_022', LeftForeArm:'Bone_021', LeftHand:'Bone_020', LeftHandEnd:'Bone_019',
+      RightShoulder:'Bone_028', RightArm:'Bone_027', RightForeArm:'Bone_026', RightHand:'Bone_025', RightHandEnd:'Bone_024',
+      LeftUpLeg:'Bone_015', LeftLeg:'Bone_014', LeftFoot:'Bone_013', LeftToe:'Bone_012', RightUpLeg:'Bone_010', RightLeg:'Bone_009', RightFoot:'Bone_008', RightToe:'Bone_007'
+    }
+  },
+  hero: {
+    name: 'hero', file: 'rabbithero_model.json', scale: 1.15, fist: {left: ['Bone_019','Bone_020','Bone_021','Bone_022','Bone_023'], right: ['Bone_027','Bone_028','Bone_029','Bone_030','Bone_031'], knuckleY: 0.5, thumbZ: 0.055, thumbTop: 0.6, ctr: [0.392, 0.475, 0.012], size: [0.034, 0.038, 0.062]}, headRe: /^Bone_01[6-8]$/,
+    eye: [0.08, 1.155], eyeR: [0.036, 0.036], eyeZ: 0.12, eyeY0: 1.05, frameZ: 0,
+    ear: {vertical: true, y0: 1.3, px: 0.1, py: 1.3, L: 0.4},
+    headR: 0.22, bodyR: 0.2, armDown: 0.3, hipY: 0.588, armRe: /^Bone_0(19|2[0-9]|3[0-4])$/,
+    offs: {head: [0, 1.14, -0.02], mouth: [0, 1.06, 0.17], nose: [0, 1.1, 0.18], bridge: [0, 1.16, 0.19], top: [0, 1.313, -0.02], bodyLow: [0, 0.62, 0.0], bodyHigh: [0, 0.88, 0.0]},
+    bones: {
+      Root:'Bone_000', Hips:'Bone_001', Spine:'Bone_005', Spine1:'Bone_004', Chest:'Bone_003', Neck:'Bone_018', Head:'Bone_017', HeadTop:'Bone_016',
+      LeftShoulder:'Bone_026', LeftArm:'Bone_025', LeftForeArm:'Bone_024', LeftHand:'Bone_023', LeftHandEnd:'Bone_019',
+      RightShoulder:'Bone_034', RightArm:'Bone_033', RightForeArm:'Bone_032', RightHand:'Bone_031', RightHandEnd:'Bone_027', LeftWrist:'Bone_022', RightWrist:'Bone_030', LeftFinger:'Bone_021', RightFinger:'Bone_029',
+      LeftUpLeg:'Bone_010', LeftLeg:'Bone_009', LeftFoot:'Bone_008', LeftToe:'Bone_007', RightUpLeg:'Bone_015', RightLeg:'Bone_014', RightFoot:'Bone_013', RightToe:'Bone_012'
+    }
+  }
+};
+CFGS.heroF = {
+  name: 'heroF', file: 'rabbitfist_model.json', scale: 1.17, headRe: /^Bone_03[2-4]$/,
+  eye: [0.08, 1.16], eyeR: [0.036, 0.036], eyeZ: 0.12, eyeY0: 1.05, frameZ: 0,
+  ear: {vertical: true, y0: 1.3, px: 0.1, py: 1.3, L: 0.4},
+  headR: 0.22, bodyR: 0.2, armDown: 0, hipY: 0.554, armRe: /^Bone_0(1[6-9]|2[0-9]|3[01])$/,
+  offs: {head: [0, 1.14, -0.02], mouth: [0, 1.06, 0.17], nose: [0, 1.1, 0.18], bridge: [0, 1.16, 0.19], top: [0, 1.3, -0.02], bodyLow: [0, 0.6, 0.0], bodyHigh: [0, 0.86, 0.0]},
+  bones: {
+    Root:'Bone_000', Hips:'Bone_001', Spine:'Bone_005', Spine1:'Bone_004', Chest:'Bone_003', Neck:'Bone_034', Head:'Bone_033', HeadTop:'Bone_032',
+    LeftShoulder:'Bone_023', LeftArm:'Bone_022', LeftForeArm:'Bone_021', LeftHand:'Bone_020', LeftHandEnd:'Bone_016',
+    RightShoulder:'Bone_031', RightArm:'Bone_030', RightForeArm:'Bone_029', RightHand:'Bone_028', RightHandEnd:'Bone_024',
+    LeftUpLeg:'Bone_010', LeftLeg:'Bone_009', LeftFoot:'Bone_008', LeftToe:'Bone_007', RightUpLeg:'Bone_015', RightLeg:'Bone_014', RightFoot:'Bone_013', RightToe:'Bone_012'
+  }
+};
+let CFG = CFGS.adult;
+const TAU = Math.PI * 2;
+
+const stage = document.getElementById('stage');
+const statusEl = document.getElementById('status');
+const loadingEl = document.getElementById('loading');
+const earsToggle = document.getElementById('ears');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb59a, 2.0));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3); scene.add(sun);
+const PARKS = makeParks(THREE, scene, 'adult-rabbit'); PARKS.show('idle');
+const SFX = makeSfx({page:'adult-rabbit', pet:'bunny', stage:'adult', autoLand:false, hasEvents:true, stageEl: document.getElementById('stage')});
+const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 50);
+camera.position.set(0.6, 1.4, 6.2);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.9, 0.2); controls.enablePan = false; controls.enableDamping = true;
+controls.minDistance = 2.6; controls.maxDistance = 9; controls.maxPolarAngle = Math.PI * 0.52;
+
+const ground = new THREE.Mesh(new THREE.CircleGeometry(3.6, 64), new THREE.MeshLambertMaterial({color:0xcfe5c4}));
+QRc(ground, 'x', -Math.PI/2); ground.material.depthWrite = false; ground.renderOrder = -2; scene.add(ground);
+const shCanvas = document.createElement('canvas'); shCanvas.width = shCanvas.height = 128;
+const sctx = shCanvas.getContext('2d'); const gr = sctx.createRadialGradient(64,64,4,64,64,62);
+gr.addColorStop(0,'rgba(30,50,35,0.45)'); gr.addColorStop(1,'rgba(30,50,35,0)'); sctx.fillStyle = gr; sctx.fillRect(0,0,128,128);
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.3,1.3), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shCanvas), transparent:true, depthWrite:false}));
+QRc(shadow, 'x', -Math.PI/2); shadow.position.y = 0.002; shadow.renderOrder = -1; scene.add(shadow);
+
+const rig = new THREE.Group(); scene.add(rig);
+const flatEU = {value:0}, lidU = {value:0}, happyU = {value:0}, earU = {value:0};
+
+// ---------- floating symbols ----------
+function makeTex(draw){ const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); draw(g); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx; }
+const zTex = makeTex(g => { g.font = '900 104px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.lineJoin = 'round'; g.strokeText('Z', 64, 68); g.fillStyle = '#5a6fa8'; g.fillText('Z', 64, 68); });
+const starTex = makeTex(g => { g.translate(64, 64); g.beginPath(); for (let i = 0; i < 10; i++){ const r = i % 2 ? 22 : 54, a = -Math.PI/2 + i*Math.PI/5; g.lineTo(Math.cos(a)*r, Math.sin(a)*r); } g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#f5c24a'; g.fill(); });
+const fx = [];
+function spawn(map, pos, vel, life, size, grow = 0){ SFX.fx(map); const sp = new THREE.Sprite(new THREE.SpriteMaterial({map, transparent:true, depthWrite:false})); sp.position.copy(pos); sp.renderOrder = 5; scene.add(sp); fx.push({sp, vel, life, size, grow, age:0}); }
+function updateFx(dt){
+  for (let i = fx.length - 1; i >= 0; i--){
+    const f = fx[i]; f.age += dt;
+    if (f.age > f.life){ scene.remove(f.sp); f.sp.material.dispose(); fx.splice(i, 1); continue; }
+    const u = f.age / f.life; if (f.gravity) f.vel.y += f.gravity * dt; f.sp.position.addScaledVector(f.vel, dt);
+    const s = f.size * (Math.min(1, f.age/0.2)*0.4 + 0.6) * (1 + f.grow*u); f.sp.scale.set(s, s, s);
+    f.sp.material.opacity = Math.min(1, f.age/0.15) * (u > 0.6 ? 1 - (u-0.6)/0.4 : 1);
+  }
+}
+
+function resize(){ const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage); resize();
+
+
+// ---------- face prep: when an expression is drawn, the painted eye disappears into clean skin ----------
+// eye distance, stretched a little toward the outer-upper corner so the eyelashes count as part of the eye
+function eyeR(x, y, F){ const s = x < 0 ? -1 : 1, dx = x - F.eye[0] * s, dy = y - F.eye[1];
+  const rx = (dx * s > 0 && dy > -0.02) ? F.eyeR[0] * 1.4 : F.eyeR[0], ry = dy > 0 ? F.eyeR[1] * 1.2 : F.eyeR[1];
+  return Math.hypot(dx / rx, dy / ry); }
+function prepFace(mesh, F){
+  const g = mesh.geometry, P = g.attributes.position, UV = g.attributes.uv, N = g.attributes.normal, n = P.count;
+  const img = mesh.material.map.image;
+  const W = img.width, H = img.height, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d', {willReadFrequently: true}); cx.drawImage(img, 0, 0); const px = cx.getImageData(0, 0, W, H).data;
+  const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const colOf = i => { const u = UV.getX(i), v = UV.getY(i);
+    const x = Math.min(W - 1, Math.max(0, Math.floor(((u % 1) + 1) % 1 * W))), y = Math.min(H - 1, Math.max(0, Math.floor(((v % 1) + 1) % 1 * H)));
+    const k = (y * W + x) * 4; return [lin(px[k]), lin(px[k + 1]), lin(px[k + 2])]; };
+  // ears: vertices weighted to the head, outside the skull sides (they flap in the vertex shader)
+  const SI = g.attributes.skinIndex, SW = g.attributes.skinWeight, headIds = new Set(mesh.skeleton.bones.map((b, k) => F.headRe.test(b.name) ? k : -1).filter(k => k >= 0));
+  const aEarM = new Float32Array(n);
+  for (let i = 0; i < n; i++){ let wh = 0; for (let k = 0; k < 4; k++) if (headIds.has(SI.getComponent(i, k))) wh += SW.getComponent(i, k);
+    const ax = Math.abs(P.getX(i)), y = P.getY(i);
+    if (F.ear.vertical){ if (wh > 0.5 && y > F.ear.y0 && ax > 0.025) aEarM[i] = Math.min(1, (y - F.ear.y0) / 0.04); }
+    else if (wh > 0.5 && ax > F.ear.x0 && y > F.ear.y0 && y < F.ear.y1 && ax < 0.5) aEarM[i] = Math.min(1, (ax - F.ear.x0) / (F.ear.x1 - F.ear.x0)); }
+  const re = new Float32Array(n), cols = new Array(n);
+  for (let i = 0; i < n; i++){
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+    re[i] = z > F.eyeZ && y > F.eyeY0 && aEarM[i] === 0 ? eyeR(x, y, F) : 99;
+    if (re[i] < 2) cols[i] = colOf(i);
+    if (re[i] < 2 && F.frameZ && z > F.frameZ){ const c0 = cols[i]; if (c0[0] + c0[1] + c0[2] < 0.15) re[i] = 99; }   // glasses frame stays as it is
+  }
+  const ringE = []; for (let i = 0; i < n; i++) if (re[i] > 1.2 && re[i] < 1.9) ringE.push(i);
+  const M = Array.from({length: 4}, () => [0, 0, 0, 0, 0]);
+  for (const i of ringE){ const x = P.getX(i), y = P.getY(i), z = P.getZ(i), r = [2*x, 2*y, 2*z, 1], b = x*x + y*y + z*z;
+    for (let a = 0; a < 4; a++){ for (let c = 0; c < 4; c++) M[a][c] += r[a] * r[c]; M[a][4] += r[a] * b; } }
+  for (let a = 0; a < 4; a++){ let p = a; for (let r = a + 1; r < 4; r++) if (Math.abs(M[r][a]) > Math.abs(M[p][a])) p = r; [M[a], M[p]] = [M[p], M[a]];
+    for (let r = 0; r < 4; r++){ if (r === a) continue; const f = M[r][a] / M[a][a]; for (let c = a; c < 5; c++) M[r][c] -= f * M[a][c]; } }
+  const C = [M[0][4] / M[0][0], M[1][4] / M[1][1], M[2][4] / M[2][2]];
+  // fill colour per eye: the dominant colour of the ring above it (white on her right, the black patch on her left)
+  const domE = [-1, 1].map(sd => { const lum = c => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    const sel = ringE.filter(j => (P.getX(j) < 0 ? -1 : 1) === sd && P.getY(j) > F.eye[1] - 0.02 && re[j] < 1.9 && lum(cols[j]) > 0.08);   // fur only: the lashes and the eye itself are left out
+    return [0, 1, 2].map(k => { const v = sel.map(j => cols[j][k]).sort((a, b) => a - b); return v.length ? v[v.length >> 1] : 0.8; }); });
+  const aSkin = new Float32Array(n * 4), aFlat = new Float32Array(n * 4), aFlatN = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++){
+    aFlatN[i*3] = N.getX(i); aFlatN[i*3+1] = N.getY(i); aFlatN[i*3+2] = N.getZ(i);
+    if (re[i] >= 1.35) continue;
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i), r = re[i];
+    const near = [];
+    for (const j of ringE){ const d = Math.hypot(P.getX(j) - x, P.getY(j) - y, P.getZ(j) - z); if (near.length < 12 || d < near[near.length - 1][0]){ near.push([d, j]); near.sort((a, b) => a[0] - b[0]); if (near.length > 12) near.pop(); } }
+    if (!near.length) continue;
+    let wsum = 0, rad = 0, nx = 0, ny = 0, nz = 0;
+    for (const [d, j] of near){ const w = 1 / (d + 0.01); wsum += w; rad += w * Math.hypot(P.getX(j) - C[0], P.getY(j) - C[1], P.getZ(j) - C[2]); nx += w * N.getX(j); ny += w * N.getY(j); nz += w * N.getZ(j); }
+    rad /= wsum; const nl = Math.hypot(nx, ny, nz) || 1;
+    const dx = x - C[0], dy = y - C[1], dz = z - C[2], dl = Math.hypot(dx, dy, dz) || 1, radIn = Math.min(rad, dl);
+    const med = domE[x < 0 ? 0 : 1], fade = 1 - Math.min(1, Math.max(0, (r - 1.05) / 0.3));
+    aSkin[i*4] = med[0]; aSkin[i*4+1] = med[1]; aSkin[i*4+2] = med[2]; aSkin[i*4+3] = fade;
+    aFlat[i*4] = C[0] + dx / dl * radIn - x; aFlat[i*4+1] = C[1] + dy / dl * radIn - y; aFlat[i*4+2] = C[2] + dz / dl * radIn - z; aFlat[i*4+3] = 1;
+    aFlatN[i*3] = nx / nl; aFlatN[i*3+1] = ny / nl; aFlatN[i*3+2] = nz / nl;
+  }
+  g.setAttribute('aSkin', new THREE.BufferAttribute(aSkin, 4));
+  g.setAttribute('aFlat', new THREE.BufferAttribute(aFlat, 4));
+  g.setAttribute('aFlatN', new THREE.BufferAttribute(aFlatN, 3));
+  g.setAttribute('aEarM', new THREE.BufferAttribute(aEarM, 1));
+}
+
+// ---------- shader: blink / closed eyes, happy eyes, ear flap ----------
+const f = x => Number(x).toFixed(4);
+const v2 = a => `vec2(${f(a[0])}, ${f(a[1])})`;
+function patch(m, c){
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, {uFlatE:flatEU, uLid:lidU, uHappy:happyU, uEar:earU});
+    sh.fragmentShader = 'uniform float uLid;\nuniform float uHappy;\nvarying vec3 vObj;\nvarying vec4 vSkin;\nvarying float vFlatW;\nvarying float vEye;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+      float coverM = 0.0;
+      float eyeK = max(uLid, uHappy);
+      if (eyeK > 0.01 && vEye > 0.01) {
+        float side = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 e = (vObj.xy - vec2(${f(c.eye[0])} * side, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        vec2 ea = e; if (ea.x * side > 0.0 && ea.y > -0.3) ea.x /= 1.4; if (ea.y > 0.0) ea.y /= 1.2;
+        float r = length(ea);
+        if (r < 1.25 && (uHappy > 0.5 || ea.y > 1.0 - 2.0 * uLid)) {
+          coverM = smoothstep(1.25, 1.0, r) * clamp(vEye * 1.25, 0.0, 1.0);
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, coverM);
+          // the line is dark on white fur and light on the black eye patch, so it always shows
+          vec3 ink = dot(vSkin.rgb, vec3(0.2126, 0.7152, 0.0722)) < 0.12 ? vec3(0.82, 0.8, 0.78) : vec3(0.09, 0.08, 0.08);
+          if (uHappy > 0.9) {
+            vec2 tip = vec2(0.0, 0.38), a1 = vec2(-0.5, -0.22), a2 = vec2(0.5, -0.22);
+            vec2 pa = e - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = e - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.12) diffuseColor.rgb = ink;
+          } else if (uLid > 0.9 && abs(e.x) < 0.7) {
+            float yc = -0.1 - 0.35 * (1.0 - (e.x * e.x) / 0.49);
+            if (abs(e.y - yc) < 0.11) diffuseColor.rgb = ink;
+          }
+        }
+      }`).replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+          roughnessFactor = mix(roughnessFactor, 0.85, max(coverM, vFlatW));`).replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+          metalnessFactor = mix(metalnessFactor, 0.0, max(coverM, vFlatW));`).replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+      normal = normalize(mix(normal, nonPerturbedNormal, max(coverM, vFlatW)));`);
+    sh.vertexShader = 'attribute vec4 aSkin;\nattribute vec4 aFlat;\nattribute vec3 aFlatN;\nattribute float aEarM;\nuniform float uFlatE;\nuniform float uEar;\nvarying vec4 vSkin;\nvarying float vFlatW;\nvarying float vEye;\nvarying vec3 vObj;\n' + sh.vertexShader.replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+      float flatW = (aFlat.w > 0.5 ? uFlatE : 0.0) * aSkin.a;
+      objectNormal = normalize(mix(objectNormal, aFlatN, flatW));
+      vSkin = aSkin; vFlatW = flatW; vEye = aFlat.w > 0.5 ? 1.0 : 0.0;`).replace('#include <begin_vertex>', `#include <begin_vertex>
+      transformed += aFlat.xyz * flatW;
+      vObj = position;
+      float side = position.x < 0.0 ? -1.0 : 1.0;
+      vec2 piv = vec2(${f(c.ear.px)} * side, ${f(c.ear.py)});
+      float k = ${c.ear.vertical ? `clamp((position.y - ${f(c.ear.py)}) / ${f(c.ear.L)}, 0.0, 1.0)` : `clamp((abs(position.x) - ${f(c.ear.x0)}) / ${f(c.ear.L)}, 0.0, 1.0)`};
+      float ang = uEar * side * aEarM * k;
+      vec2 d = transformed.xy - piv; float cs = cos(ang), sn = sin(ang);
+      transformed.xy = mix(transformed.xy, piv + vec2(cs*d.x - sn*d.y, sn*d.x + cs*d.y), aEarM);`);
+  };
+  m.customProgramCacheKey = () => 'rabbit-' + c.name;
+  m.needsUpdate = true;
+}
+
+async function fetchModel(file){
+  const res = await fetch(file); if (!res.ok) throw new Error('fetch ' + res.status);
+  const j = await res.json(); const raw = atob(j._bin); delete j._bin;
+  const bin = new Uint8Array(raw.length); for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
+  delete j.buffers[0].uri; j.buffers[0].byteLength = bin.length;
+  const jb = new TextEncoder().encode(JSON.stringify(j)); const jLen = Math.ceil(jb.length/4)*4, bLen = Math.ceil(bin.length/4)*4;
+  const buf = new ArrayBuffer(28 + jLen + bLen), dv = new DataView(buf), u8 = new Uint8Array(buf);
+  dv.setUint32(0, 0x46546C67, true); dv.setUint32(4, 2, true); dv.setUint32(8, buf.byteLength, true);
+  dv.setUint32(12, jLen, true); dv.setUint32(16, 0x4E4F534A, true); u8.fill(0x20, 20, 20 + jLen); u8.set(jb, 20);
+  const o = 20 + jLen; dv.setUint32(o, bLen, true); dv.setUint32(o + 4, 0x004E4942, true); u8.set(bin, o + 8);
+  return new Promise((ok, fail) => new GLTFLoader().parse(buf, './', ok, fail));
+}
+
+// ---------- skeleton helpers ----------
+let model = null, skinMesh = null, bones = {}, rest = {}, restP = {};
+const _pq = new THREE.Quaternion(), _rq = new THREE.Quaternion(), _w = new THREE.Quaternion(), _l = new THREE.Quaternion();
+const AX = {x:new THREE.Vector3(1,0,0), y:new THREE.Vector3(0,1,0), z:new THREE.Vector3(0,0,1)};
+function resetPose(){ for (const n in bones){ bones[n].quaternion.copy(rest[n]); bones[n].position.copy(restP[n]); bones[n].scale.set(1, 1, 1); } }
+// rotate a bone about an axis given in the character's own space (x = her left, y = up, z = forward)
+function rot(name, axis, ang){
+  const b = bones[name]; if (!b || !ang) return;
+  b.parent.updateWorldMatrix(true, false);
+  b.parent.getWorldQuaternion(_pq); rig.getWorldQuaternion(_rq);
+  _pq.premultiply(_rq.invert());
+  _w.setFromAxisAngle(AX[axis], ang);
+  _l.copy(_pq).invert().multiply(_w).multiply(_pq);
+  b.quaternion.premultiply(_l);
+}
+function rotWorld(b, axis, ang){
+  b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pq);
+  _w.setFromAxisAngle(axis, ang); _l.copy(_pq).invert().multiply(_w).multiply(_pq); b.quaternion.premultiply(_l);
+}
+// longer reach for props: stretch the upper arm along its length (the hoof keeps its size)
+function armLen(s){ for (const sd of ['Left', 'Right']){ bones[sd + 'Arm'].scale.set(1, s, 1); bones[sd + 'ForeArm'].scale.set(1, 1 / s, 1); } }
+const FEET = ['LeftFoot','RightFoot','LeftToe','RightToe'];
+const _v = new THREE.Vector3();
+function wpos(n, out = new THREE.Vector3()){ return bones[n].getWorldPosition(out); }
+function feetLow(){ let mn = Infinity; model.updateMatrixWorld(true); for (const n of FEET) mn = Math.min(mn, wpos(n, _v).y); return mn; }
+let restFeet = 0, headOff = null, mouthOff = null, noseOff = null, bridgeOff = null, topOff = null;
+
+// keep the hooves out of the big head and the round tummy
+const _a = new THREE.Vector3(), _c = new THREE.Vector3(), _n = new THREE.Vector3(), _ax = new THREE.Vector3();
+function closestOnSeg(p, a, b, out){ const ab = _c.subVectors(b, a); const t = Math.max(0, Math.min(1, _n.subVectors(p, a).dot(ab) / ab.lengthSq())); return out.copy(a).addScaledVector(ab, t); }
+let bodyLowOff = null, bodyHighOff = null;
+function avoid(){
+  model.updateMatrixWorld(true);
+  const headC = bones.Head.localToWorld(headOff.clone()), headR = CFG.headR * CFG.scale;
+  const lo = bones.Hips.localToWorld(bodyLowOff.clone()), hi = bones.Chest.localToWorld(bodyHighOff.clone()), bodyR = CFG.bodyR * CFG.scale;
+  for (const side of ['Left','Right']){
+    const arm = bones[side+'Arm'];
+    for (let it = 0; it < 6; it++){
+      model.updateMatrixWorld(true);
+      const sh = wpos(side+'Arm', new THREE.Vector3());
+      const pts = [wpos(side+'HandEnd', new THREE.Vector3()), wpos(side+'ForeArm', new THREE.Vector3())];
+      let worst = 0, P = null, push = null;
+      for (const q of pts){
+        const dh = q.distanceTo(headC); if (headR - dh > worst){ worst = headR - dh; P = q; push = q.clone().sub(headC).normalize(); }
+        const cb = closestOnSeg(q, lo, hi, new THREE.Vector3()); const db = q.distanceTo(cb);
+        if (bodyR - db > worst){ worst = bodyR - db; P = q; push = q.clone().sub(cb).normalize(); }
+      }
+      if (worst < 0.004) break;
+      const lever = P.clone().sub(sh); const L = lever.length();
+      _ax.crossVectors(lever, push); if (_ax.lengthSq() < 1e-8) break; _ax.normalize();
+      rotWorld(arm, _ax, Math.min(0.35, (worst + 0.01) / L));
+    }
+  }
+}
+// two-bone reach: bend shoulder + elbow so the hoof lands on a target
+const _e = new THREE.Vector3(), _j = new THREE.Vector3(), _q1 = new THREE.Vector3(), _q2 = new THREE.Vector3(), _qa = new THREE.Vector3();
+function reach(side, target, w, end = 'HandEnd'){
+  if (w <= 0) return;
+  const chain = [side + 'ForeArm', side + 'Arm'];
+  for (let it = 0; it < 10; it++){
+    for (const n of chain){
+      model.updateMatrixWorld(true);
+      wpos(n, _j); wpos(side + end, _e);
+      _q1.subVectors(_e, _j).normalize(); _q2.subVectors(target, _j).normalize();
+      const ang = Math.acos(Math.max(-1, Math.min(1, _q1.dot(_q2)))); if (ang < 1e-3) continue;
+      _qa.crossVectors(_q1, _q2).normalize(); rotWorld(bones[n], _qa, ang * w);
+    }
+  }
+}
+// clean two-bone IK for the props: clamps the target to what the arm can reach, bends the elbow toward a
+// natural pole (out, back and down), and only SWINGS each bone (no twisting), so the hoof and the
+// skin around the shoulder never wring or stretch
+const _S = new THREE.Vector3(), _E = new THREE.Vector3(), _H = new THREE.Vector3(), _sq = new THREE.Quaternion(), _pw = new THREE.Quaternion();
+function swingTo(b, from, to){
+  const v0 = from.clone().normalize(), v1 = to.clone().normalize(); if (v0.dot(v1) > 0.99999) return;
+  _sq.setFromUnitVectors(v0, v1); b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pw);
+  const l = _pw.clone().invert().multiply(_sq).multiply(_pw); b.quaternion.premultiply(l); b.updateMatrixWorld(true);
+}
+// her arm is really one long bone plus the hoof, so aim the whole arm at the target (swing only, hoof stays straight)
+function reach2(side, target, w = 1){
+  if (w <= 0) return;
+  for (let it = 0; it < 3; it++){
+    model.updateMatrixWorld(true);
+    wpos(side + 'Arm', _S); wpos(side + 'HandEnd', _H);
+    swingTo(bones[side + 'Arm'], _H.clone().sub(_S), _H.clone().lerp(target, w).sub(_S));
+  }
+}
+// point in the character's space (feet at 0, facing +z) -> world
+
+// point in the character's space (feet at 0, facing +z) -> world
+const charPt = (x, y, z) => rig.localToWorld(new THREE.Vector3(x * CFG.scale, y * CFG.scale, z * CFG.scale));
+const modelPt = (x, y, z) => model.localToWorld(new THREE.Vector3(x, y, z));
+
+// ---------- two characters: the adult rabbit (glasses) and Super Rabbit; one is active at a time ----------
+const chars = {};
+let charName = 'adult';
+function useChar(name){
+  const c = chars[name]; if (!c) return; charName = name; CFG = c.cfg;
+  model = c.model; skinMesh = c.skinMesh; bones = c.bones; rest = c.rest; restP = c.restP; restFeet = c.restFeet;
+  headOff = c.headOff; bridgeOff = c.bridgeOff; topOff = c.topOff; mouthOff = c.mouthOff; noseOff = c.noseOff; bodyLowOff = c.bodyLowOff; bodyHighOff = c.bodyHighOff;
+  for (const k in chars) chars[k].model.visible = k === name;
+}
+// the paws on this model are one solid piece skinned to the hand bone with long spread fingers, so a fist is built as:
+// a morph target that tucks the fingers away into the middle of the paw, plus a rounded fist shape fixed to the hand bone
+const fistMat = new THREE.MeshStandardMaterial({color: 0xe4e4e6, roughness: 0.75});
+function buildFist(c){
+  const g = c.skinMesh.geometry, P = g.attributes.position, SI = g.attributes.skinIndex, SW = g.attributes.skinWeight;
+  const bonesArr = c.skinMesh.skeleton.bones, morphs = []; c.fists = {};
+  c.model.updateMatrixWorld(true);
+  for (const [sx, sd] of [[1, 'Left'], [-1, 'Right']]){
+    const names = sx > 0 ? c.cfg.fist.left : c.cfg.fist.right;
+    const ids = new Set(bonesArr.map((b, k) => names.includes(b.name) ? k : -1).filter(k => k >= 0));
+    const sel = [], v = new THREE.Vector3();
+    for (let i = 0; i < P.count; i++){ let w = 0; for (let k = 0; k < 4; k++) if (ids.has(SI.getComponent(i, k))) w += SW.getComponent(i, k); if (w > 0.5 && P.getX(i) * sx > 0.2) sel.push(i); }
+    const fc = c.cfg.fist, F = new THREE.Vector3(sx * fc.ctr[0], fc.ctr[1], fc.ctr[2]);
+    const arr = new Float32Array(P.count * 3);
+    for (const i of sel){ v.fromBufferAttribute(P, i);
+      const kf = Math.min(1, Math.max(0, (fc.knuckleY - v.y) / 0.02));                                   // fingers
+      const kt = Math.min(1, Math.max(0, (v.z - fc.thumbZ) / 0.02)) * (v.y < fc.thumbTop ? 1 : 0);   // thumb
+      const k = Math.max(kf, kt); if (!k) continue;
+      const np = v.clone().lerp(F, 0.88 * k); arr[i * 3] = np.x - v.x; arr[i * 3 + 1] = np.y - v.y; arr[i * 3 + 2] = np.z - v.z; }
+    morphs.push(new THREE.Float32BufferAttribute(arr, 3));
+    // the fist: curled fingers as a rounded block, four knuckles along the bottom-front, thumb across the palm side
+    const fist = new THREE.Group(), sz = fc.size;
+    const body = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), fistMat); body.scale.set(sz[0], sz[1], sz[2]); fist.add(body);
+    for (let k = 0; k < 4; k++){ const kn = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), fistMat); kn.scale.set(sz[0] * 0.75, sz[1] * 0.45, sz[2] * 0.3);
+      kn.position.set(sx * sz[0] * 0.15, -sz[1] * 0.62, sz[2] * (-0.66 + k * 0.44)); fist.add(kn); }
+    const th = new THREE.Mesh(new THREE.CapsuleGeometry(sz[0] * 0.38, sz[2] * 0.75, 4, 10), fistMat); th.position.set(-sx * sz[0] * 0.78, -sz[1] * 0.1, sz[2] * 0.12); QRc(th, 'x', Math.PI / 2 - 0.3); fist.add(th);
+    const wpt = c.skinMesh.localToWorld(F.clone()); const hb = c.bones[sd + 'Hand']; hb.add(fist); fist.position.copy(hb.worldToLocal(wpt));
+    fist.quaternion.copy(hb.getWorldQuaternion(new THREE.Quaternion()).invert()); fist.scale.setScalar(1 / c.cfg.scale);
+    fist.visible = false; c.fists[sd] = fist;
+  }
+  g.morphAttributes.position = morphs; g.morphTargetsRelative = true; c.skinMesh.updateMorphTargets();
+  c.skinMesh.morphTargetInfluences[0] = c.skinMesh.morphTargetInfluences[1] = 0;
+}
+async function loadChar(name){
+  const cfg = CFGS[name], gltf = await fetchModel(cfg.file);
+  const c = {cfg, model: gltf.scene, bones: {}, rest: {}, restP: {}};
+  c.model.scale.setScalar(cfg.scale);
+  const rev = {}; for (const k in cfg.bones) rev[cfg.bones[k]] = k;
+  c.model.traverse(o => {
+    if (o.isBone && rev[o.name]){ const n = rev[o.name]; c.bones[n] = o; c.rest[n] = o.quaternion.clone(); c.restP[n] = o.position.clone(); }
+    if (o.isMesh){ c.skinMesh = o; o.frustumCulled = false; prepFace(o, cfg); (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => patch(m, cfg)); }
+  });
+  rig.add(c.model); rig.updateMatrixWorld(true);
+  if (cfg.fist) buildFist(c); rig.updateMatrixWorld(true); chars[name] = c;
+  useChar(name);
+  c.restFeet = feetLow();
+  // palm direction in each hand bone's own frame (at rest the palms face the body)
+  c.palm = {}; for (const [sd, sx] of [['Left', 1], ['Right', -1]]){ const q = c.bones[sd + 'Hand'].getWorldQuaternion(new THREE.Quaternion()).invert(); c.palm[sd] = new THREE.Vector3(-sx, 0, 0).applyQuaternion(q); }
+  const o = cfg.offs;
+  c.headOff = bones.Head.worldToLocal(modelPt(...o.head)); c.mouthOff = bones.Head.worldToLocal(modelPt(...o.mouth)); c.noseOff = bones.Head.worldToLocal(modelPt(...o.nose));
+  c.bridgeOff = bones.Head.worldToLocal(modelPt(...o.bridge)); c.topOff = bones.Head.worldToLocal(modelPt(...o.top));
+  c.bodyLowOff = bones.Hips.worldToLocal(modelPt(...o.bodyLow)); c.bodyHighOff = bones.Chest.worldToLocal(modelPt(...o.bodyHigh));
+  return c;
+}
+loadChar('heroF').then(() => loadChar('hero')).then(() => loadChar('adult')).then(() => {
+  useChar('adult');
+  loadingEl.hidden = true; statusEl.hidden = false;
+  setMove('idle'); requestAnimationFrame(loop);
+}).catch(e => { console.error(e); loadingEl.textContent = '模型載入失敗，請重新整理頁面。'; });
+
+// hay bed: a soft, slightly lumpy mattress of hay with a hay pillow
+const bed = new THREE.Group(); scene.add(bed); bed.visible = false;
+const pillow = new THREE.Mesh(); scene.add(pillow);
+const MOULD_W = 2.5, MOULD_D = 1.6, MOULD_NX = 70, MOULD_NZ = 44;
+const mould = new THREE.Mesh(); scene.add(mould); mould.visible = false;
+{
+  const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d');
+  g.fillStyle = '#e1bc56'; g.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 2600; i++){ const x = Math.random() * 512, y = Math.random() * 512, a = Math.random() * Math.PI, l = 14 + Math.random() * 34;
+    g.strokeStyle = ['#c9952f', '#f3d77e', '#b5862b', '#ecca66', '#d8a940'][i % 5]; g.lineWidth = 2 + Math.random() * 2.5; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + Math.cos(a + 0.4) * l * 0.5, y + Math.sin(a + 0.4) * l * 0.5, x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke(); }
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.wrapS = tx.wrapT = THREE.RepeatWrapping; tx.repeat.set(2, 1.2);
+  const mat = new THREE.MeshStandardMaterial({map: tx, roughness: 1});
+  // a round hay nest: a soft floor and a thick, tufty rim that hugs her body all the way round
+  const RX = 1.05, RZ = 0.72;                                   // inner radius of the rim (oval, along her body)
+  const prof = [[0, 0.07], [0.5, 0.075], [0.75, 0.12], [0.88, 0.26], [0.96, 0.4], [1.05, 0.47], [1.16, 0.48], [1.27, 0.41], [1.35, 0.25], [1.39, 0.06], [1.39, 0]].map(q => new THREE.Vector2(q[0], q[1]));
+  const geo = new THREE.LatheGeometry(prof, 72);
+  const pos = geo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++){ v.fromBufferAttribute(pos, i);
+    const a = Math.atan2(v.z, v.x), r = Math.hypot(v.x, v.z);
+    const tuft = 1 + (r > 0.85 ? 0.06 * Math.sin(a * 11) + 0.04 * Math.sin(a * 23 + 1) : 0);     // lumpy rim
+    pos.setXYZ(i, v.x * RX, v.y * tuft, v.z * RZ); }
+  geo.computeVertexNormals();
+  const nest = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({map: tx, roughness: 1, side: THREE.DoubleSide})); nest.scale.y = 0.82; bed.add(nest);
+  // loose straws sticking out of the rim
+  for (let i = 0; i < 70; i++){ const a = Math.random() * TAU, r = 1.0 + Math.random() * 0.3, h = 0.2 + Math.random() * 0.28;
+    const s2 = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.008, 0.008), new THREE.MeshStandardMaterial({color: [0xe9c561, 0xc9952f, 0xf3d77e][i % 3], roughness: 1}));
+    s2.position.set(Math.cos(a) * r * RX, h, Math.sin(a) * r * RZ); QR(s2, Math.random() - 0.5, -a + (Math.random() - 0.5), (Math.random() - 0.5) * 1.2); bed.add(s2); }
+  for (let i = 0; i < 20; i++){ const s2 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.007, 0.007), new THREE.MeshStandardMaterial({color: [0xe9c561, 0xc9952f][i % 2], roughness: 1}));
+    const a = Math.random() * TAU, r = 1.4 + Math.random() * 0.3; s2.position.set(Math.cos(a) * r * RX, 0.004, Math.sin(a) * r * RZ); QRc(s2, 'y', Math.random() * 3); bed.add(s2); }
+  // a hay mattress moulded to her back: a height-field grid that is re-shaped under her every frame
+  const mg = new THREE.PlaneGeometry(MOULD_W, MOULD_D, MOULD_NX, MOULD_NZ); mg.rotateX(-Math.PI / 2);
+  // soft meadow grass for the bed: layered blades in several greens
+  const gc = document.createElement('canvas'); gc.width = gc.height = 512; const gg = gc.getContext('2d');
+  gg.fillStyle = '#6fbf5a'; gg.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 5000; i++){ const x = Math.random() * 512, y = Math.random() * 512, a2 = -Math.PI / 2 + (Math.random() - 0.5) * 0.9, l = 10 + Math.random() * 22;
+    gg.strokeStyle = ['#4f9f45', '#7fcf63', '#5fb04f', '#93d873', '#3f8a3c'][i % 5]; gg.lineWidth = 1.5 + Math.random() * 1.5; gg.lineCap = 'round';
+    gg.beginPath(); gg.moveTo(x, y); gg.quadraticCurveTo(x + Math.cos(a2) * l * 0.4 + 3, y + Math.sin(a2) * l * 0.5, x + Math.cos(a2) * l, y + Math.sin(a2) * l); gg.stroke(); }
+  for (let i = 0; i < 40; i++){ const x = Math.random() * 512, y = Math.random() * 512; gg.fillStyle = i % 3 ? '#ffffff' : '#ffe45c'; for (let k = 0; k < 5; k++){ gg.beginPath(); gg.arc(x + Math.cos(k * 1.26) * 4, y + Math.sin(k * 1.26) * 4, 2.6, 0, TAU); gg.fill(); } gg.fillStyle = '#ffd24d'; gg.beginPath(); gg.arc(x, y, 2.2, 0, TAU); gg.fill(); }
+  const mtx = new THREE.CanvasTexture(gc); mtx.colorSpace = THREE.SRGBColorSpace; mtx.wrapS = mtx.wrapT = THREE.RepeatWrapping; mtx.repeat.set(3, 2);
+  const am = document.createElement('canvas'); am.width = am.height = 256; const ag = am.getContext('2d');   // oval outline
+  ag.fillStyle = '#000'; ag.fillRect(0, 0, 256, 256); ag.fillStyle = '#fff'; ag.beginPath(); ag.ellipse(128, 128, 124, 124, 0, 0, TAU); ag.fill();
+  const amT = new THREE.CanvasTexture(am);
+  mould.geometry = mg; mould.material = new THREE.MeshStandardMaterial({map: mtx, alphaMap: amT, alphaTest: 0.5, roughness: 1, side: THREE.DoubleSide});
+  const skirt = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.04, 1, 64, 1, true), new THREE.MeshStandardMaterial({map: mtx, roughness: 1, side: THREE.DoubleSide}));
+  mould.userData.skirt = skirt;
+  // tall grass blades and daisies scattered over the bed (they stand on its surface each frame)
+  const bladeG = new THREE.ConeGeometry(0.012, 0.11, 4); bladeG.translate(0, 0.055, 0);
+  const blades = new THREE.InstancedMesh(bladeG, new THREE.MeshStandardMaterial({color: 0x5fb04f, roughness: 0.9}), 260);
+  const daisy = new THREE.Group(); const petal = new THREE.MeshStandardMaterial({color: 0xffffff, roughness: 0.6}), heart = new THREE.MeshStandardMaterial({color: 0xffd24d, roughness: 0.6});
+  mould.userData.blades = blades; mould.userData.bladeUV = Array.from({length: 260}, () => [Math.random(), Math.random(), Math.random() * TAU, 0.6 + Math.random() * 0.8, (Math.random() - 0.5) * 0.5]);
+  mould.userData.daisies = Array.from({length: 14}, () => { const d = new THREE.Group(); for (let k = 0; k < 6; k++){ const pt = new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 6), petal); pt.scale.set(1.5, 0.4, 0.7); pt.position.set(Math.cos(k * 1.05) * 0.02, 0, Math.sin(k * 1.05) * 0.02); QRc(pt, 'y', -k * 1.05); d.add(pt); }
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.011, 8, 6), heart); c.scale.y = 0.6; d.add(c); d.userData.uv = [Math.random(), Math.random()]; scene.add(d); d.visible = false; return d; });
+  scene.add(blades); blades.visible = false;
+  const pg = new THREE.SphereGeometry(0.22, 24, 12); pg.scale(1.3, 0.45, 1.0);
+  pillow.geometry = pg; pillow.material = mat; pillow.visible = false;
+}
+// ---------- park scene for the ranger: a paved footpath through the lawn, trees, hedge, bench and a lamp ----------
+const BIN_POS = {x: -0.95, z: 0.98};
+const parkEnv = new THREE.Group(); scene.add(parkEnv); parkEnv.visible = false;
+const PATH_Z = 0.45;
+{
+  const rnd = (() => { let s = 11; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
+  // lawn: a soft mown-stripe meadow under everything
+  const lc = document.createElement('canvas'); lc.width = lc.height = 512; const lg = lc.getContext('2d');
+  for (let i = 0; i < 8; i++){ lg.fillStyle = i % 2 ? '#a9d68c' : '#b5dd97'; lg.fillRect(0, i * 64, 512, 64); }
+  for (let i = 0; i < 2600; i++){ const x = rnd() * 512, y = rnd() * 512; lg.strokeStyle = ['#94c878', '#c3e4a6', '#86bd6c'][i % 3]; lg.lineWidth = 1.5; lg.beginPath(); lg.moveTo(x, y); lg.lineTo(x + (rnd() - 0.5) * 4, y - 6 - rnd() * 6); lg.stroke(); }
+  const lt = new THREE.CanvasTexture(lc); lt.colorSpace = THREE.SRGBColorSpace; lt.wrapS = lt.wrapT = THREE.RepeatWrapping; lt.repeat.set(3, 3);
+  const lawn = new THREE.Mesh(new THREE.CircleGeometry(3.62, 64), new THREE.MeshLambertMaterial({map: lt})); QRc(lawn, 'x', -Math.PI / 2); lawn.position.y = 0.001; lawn.renderOrder = -2; lawn.material.depthWrite = false; parkEnv.add(lawn);
+  // footpath: warm paving stones with a darker kerb, gently curving across the lawn
+  const pc = document.createElement('canvas'); pc.width = 512; pc.height = 256; const pg = pc.getContext('2d');
+  pg.fillStyle = '#d9c7a6'; pg.fillRect(0, 0, 512, 256);
+  for (let r = 0; r < 4; r++) for (let c = 0; c < 9; c++){ const off = (r % 2) * 28, x = c * 56 - off, y = r * 64;
+    pg.fillStyle = ['#e6d6b8', '#dccaa8', '#e9dcc2', '#d3bf9b'][(r * 3 + c) % 4]; pg.beginPath(); pg.roundRect(x + 3, y + 3, 50, 58, 8); pg.fill(); }
+  const pt = new THREE.CanvasTexture(pc); pt.colorSpace = THREE.SRGBColorSpace; pt.wrapS = pt.wrapT = THREE.RepeatWrapping; pt.repeat.set(7, 1);
+  const curve = x => PATH_Z + 0.18 * Math.sin(x * 0.7 + 0.4) - 0.18 * Math.sin(0.4);
+  const mkStrip = (w, mat, y) => { const N = 80, pos = [], uv = [], idx = [];
+    for (let i = 0; i <= N; i++){ const x = -3.6 + 7.2 * i / N, z = curve(x); pos.push(x, y, z - w / 2, x, y, z + w / 2); uv.push(i / N, 0, i / N, 1); if (i < N){ const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+    const m = new THREE.Mesh(g, mat); m.renderOrder = -1; return m; };
+  parkEnv.add(mkStrip(1.0, new THREE.MeshLambertMaterial({color: 0x9a8a70, depthWrite: false}), 0.003));
+  parkEnv.add(mkStrip(0.9, new THREE.MeshLambertMaterial({map: pt, depthWrite: false}), 0.005));
+  parkEnv.userData.curve = curve;
+  // trees: rounded crowns of a few greens on brown trunks
+  const bark = new THREE.MeshStandardMaterial({color: 0x8a6243, roughness: 0.9});
+  const greens = [0x5fae5a, 0x78c06a, 0x4e9a52, 0x8ccf5c, 0x6bb85e].map(c => new THREE.MeshStandardMaterial({color: c, roughness: 0.85, flatShading: true}));
+  const tree = (x, z, s) => { const g = new THREE.Group(); g.position.set(x, 0, z); g.scale.setScalar(s);
+    const tg = new THREE.CylinderGeometry(0.08, 0.13, 1.2, 10); tg.translate(0, 0.6, 0); g.add(new THREE.Mesh(tg, bark));
+    for (const [rz, y, l] of [[0.8, 0.95, 0.4], [-0.7, 1.05, 0.35]]){ const bg = new THREE.CylinderGeometry(0.03, 0.05, l, 6); bg.translate(0, l / 2, 0); const br = new THREE.Mesh(bg, bark); br.position.y = y; QRc(br, 'z', rz); g.add(br); }
+    const n = 6 + Math.floor(rnd() * 3);
+    for (let i = 0; i < n; i++){ const a = rnd() * TAU, r = 0.2 + rnd() * 0.25, b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.3 + rnd() * 0.18, 1), greens[i % 5]);
+      b.position.set(Math.cos(a) * r, 1.45 + rnd() * 0.45, Math.sin(a) * r * 0.8); g.add(b); }
+    parkEnv.add(g); return g; };
+  tree(-2.2, -1.0, 1.25); tree(1.75, -1.25, 1.1); tree(-0.4, -2.2, 1.0); tree(2.9, 0.3, 0.9);
+  // a low clipped hedge with little flowers along the back edge of the path
+  const hedgeM = new THREE.MeshStandardMaterial({color: 0x4f9a4f, roughness: 0.9, flatShading: true});
+  for (let i = 0; i < 9; i++){ const x = -1.6 + i * 0.32; if (x > 0.55 && x < 1.2) continue; const h = new THREE.Mesh(new THREE.IcosahedronGeometry(0.2, 1), hedgeM); h.scale.set(1.2, 0.8, 0.9); h.position.set(x, 0.14, curve(x) - 0.78); parkEnv.add(h); }
+  const flowerCols = [0xff8fb1, 0xffd24d, 0xffffff, 0xb48ef0];
+  for (let i = 0; i < 26; i++){ const x = -3 + rnd() * 6, z = curve(x) + (rnd() < 0.5 ? -0.62 - rnd() * 0.3 : 0.62 + rnd() * 0.6); if (Math.hypot(x - BIN_POS.x, z - BIN_POS.z) < 0.35) continue;
+    const f = new THREE.Mesh(new THREE.SphereGeometry(0.028, 8, 6), new THREE.MeshStandardMaterial({color: flowerCols[i % 4], roughness: 0.6})); f.position.set(x, 0.05, z); parkEnv.add(f);
+    const st = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.05, 4), new THREE.MeshStandardMaterial({color: 0x4f9a4f})); st.position.set(x, 0.025, z); parkEnv.add(st); }
+  // park bench behind the path, slatted wood on dark green iron
+  const bench = new THREE.Group(); bench.position.set(0.9, 0, curve(0.9) - 0.95); QRc(bench, 'y', 0.05); parkEnv.add(bench);
+  const wood = new THREE.MeshStandardMaterial({color: 0xc98d55, roughness: 0.7}), iron = new THREE.MeshStandardMaterial({color: 0x2f5d45, roughness: 0.5, metalness: 0.3});
+  for (let i = 0; i < 3; i++){ const s = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.03, 0.09), wood); s.position.set(0, 0.42, -0.1 + i * 0.1); bench.add(s); }
+  for (let i = 0; i < 2; i++){ const s = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.08, 0.025), wood); s.position.set(0, 0.6 + i * 0.12, -0.17); QRc(s, 'x', -0.15); bench.add(s); }
+  for (const x of [-0.48, 0.48]){ const l = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.42, 0.3), iron); l.position.set(x, 0.21, 0); bench.add(l); const b2 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.36, 0.04), iron); b2.position.set(x, 0.62, -0.18); bench.add(b2); }
+  // a park lamp
+  const lamp = new THREE.Group(); lamp.position.set(-2.55, 0, curve(-2.55) - 0.75); parkEnv.add(lamp);
+  const lp = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.045, 1.9, 10), iron); lp.position.y = 0.95; lamp.add(lp);
+  const lh = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.13, 0.2, 8), iron); lh.position.y = 1.98; lamp.add(lh);
+  const lg2 = new THREE.Mesh(new THREE.SphereGeometry(0.09, 14, 10), new THREE.MeshStandardMaterial({color: 0xfff3c4, emissive: 0xfff0b0, emissiveIntensity: 0.4})); lg2.position.y = 1.86; lamp.add(lg2);
+}
+
+// ---------- props: magician's top hat, wand, bouquet, carrot ----------
+const M = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({color: c, roughness: 0.5}, o));
+const topHat = new THREE.Group(); scene.add(topHat); topHat.visible = false;
+{
+  // modelled upright (crown up, brim at y = 0); she holds it upside down so the opening faces up
+  const black = M(0x22232a, {roughness: 0.45}), red = M(0xd8344a, {roughness: 0.5}), inner = M(0x4a1f5c, {roughness: 0.8, side: THREE.BackSide});
+  const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.105, 0.19, 32, 1, true), new THREE.MeshStandardMaterial({color: 0x22232a, roughness: 0.45, side: THREE.DoubleSide})); crown.position.y = 0.095; topHat.add(crown);
+  const lid = new THREE.Mesh(new THREE.CircleGeometry(0.1, 32), black); QRc(lid, 'x', -Math.PI / 2); lid.position.y = 0.19; topHat.add(lid);
+  const lining = new THREE.Mesh(new THREE.CylinderGeometry(0.097, 0.102, 0.185, 32, 1, true), inner); lining.position.y = 0.095; topHat.add(lining);
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(0.107, 0.108, 0.035, 32, 1, true), red); band.position.y = 0.03; topHat.add(band);
+  const brim = new THREE.Mesh(new THREE.RingGeometry(0.1, 0.16, 40), new THREE.MeshStandardMaterial({color: 0x22232a, roughness: 0.45, side: THREE.DoubleSide})); QRc(brim, 'x', -Math.PI / 2); topHat.add(brim);
+  const star = new THREE.Mesh(new THREE.CircleGeometry(0.018, 5), M(0xffd24d)); star.position.set(0, 0.03, 0.109); topHat.add(star);
+}
+const wandM = new THREE.Group(); scene.add(wandM); wandM.visible = false;
+{
+  // held at the origin, pointing along +y
+  const st = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.26, 10), M(0x1d1d22)); st.position.y = 0.1; wandM.add(st);
+  for (const y of [-0.02, 0.215]){ const tip = new THREE.Mesh(new THREE.CylinderGeometry(0.0085, 0.0085, 0.04, 10), M(0xffffff)); tip.position.y = y; wandM.add(tip); }
+  wandM.userData.tip = new THREE.Vector3(0, 0.235, 0);
+}
+const bouquet = new THREE.Group(); scene.add(bouquet); bouquet.visible = false;
+{
+  // stems gathered at the origin (where the paw holds them), flowers fanning out above
+  const stemM = M(0x4f9a4f), wrap = M(0xfff2c8, {side: THREE.DoubleSide});
+  const cols = [0xff5f8f, 0xffd24d, 0xffffff, 0xb48ef0, 0xff8a5c, 0x6fc3ff, 0xff9fc4];
+  for (let i = 0; i < 7; i++){ const a = i / 7 * TAU, r = i ? 0.05 : 0, top = new THREE.Vector3(Math.cos(a) * r, 0.2 + (i ? 0 : 0.03), Math.sin(a) * r);
+    const sg = new THREE.CylinderGeometry(0.004, 0.004, top.length(), 6); sg.translate(0, top.length() / 2, 0);
+    const s2 = new THREE.Mesh(sg, stemM); s2.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), top.clone().normalize()); bouquet.add(s2);
+    const fl = new THREE.Group(); fl.position.copy(top); bouquet.add(fl);
+    for (let k = 0; k < 6; k++){ const pt = new THREE.Mesh(new THREE.SphereGeometry(0.018, 8, 6), M(cols[i])); pt.scale.set(1.3, 0.5, 0.8); pt.position.set(Math.cos(k * 1.05) * 0.022, 0, Math.sin(k * 1.05) * 0.022); QRc(pt, 'y', -k * 1.05); fl.add(pt); }
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.013, 8, 6), M(0xffc83d)); c.position.y = 0.006; fl.add(c); }
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.13, 16, 1, true), wrap); QRc(cone, 'x', Math.PI); cone.position.y = 0.06; bouquet.add(cone);
+  const bow = new THREE.Mesh(new THREE.TorusGeometry(0.02, 0.007, 6, 14), M(0xd8344a)); bow.position.set(0, 0.03, 0.04); bouquet.add(bow);
+}
+const carrot = new THREE.Group(); scene.add(carrot); carrot.visible = false;
+{
+  const body = new THREE.Mesh(new THREE.ConeGeometry(0.032, 0.16, 14), M(0xf08a24)); QRc(body, 'x', Math.PI); body.position.y = 0.08; carrot.add(body);
+  for (let i = 0; i < 3; i++){ const lf = new THREE.Mesh(new THREE.ConeGeometry(0.012, 0.08, 6), M(0x4fb04f)); lf.position.set((i - 1) * 0.012, 0.19, 0); QRc(lf, 'z', (i - 1) * 0.35); carrot.add(lf); }
+  for (let i = 0; i < 3; i++){ const r = new THREE.Mesh(new THREE.TorusGeometry(0.026 - i * 0.006, 0.002, 4, 16), M(0xc9681a)); QRc(r, 'x', Math.PI / 2); r.position.y = 0.12 - i * 0.03; carrot.add(r); }
+}
+// ---------- props: watering can and the flower bed ----------
+const can = new THREE.Group(); scene.add(can); can.visible = false;
+{
+  // the handle is at the origin (where the paw holds it); the body hangs below, the spout points to +z
+  const g = M(0x3fae7a, {roughness: 0.4, metalness: 0.2}), gD = M(0x2f8a5f, {roughness: 0.4, metalness: 0.2});
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 0.15, 24), g); body.position.set(0, -0.1, -0.02); can.add(body); can.scale.setScalar(1.25);
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.02, 24), gD); top.position.set(0, -0.015, -0.02); can.add(top);
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.012, 8, 24, Math.PI), gD); handle.position.set(0, -0.01, -0.02); QRc(handle, 'y', Math.PI / 2); can.add(handle);
+  const sp = new THREE.CatmullRomCurve3([new THREE.Vector3(0, -0.13, 0.06), new THREE.Vector3(0, -0.08, 0.16), new THREE.Vector3(0, 0.0, 0.25)]);
+  can.add(new THREE.Mesh(new THREE.TubeGeometry(sp, 16, 0.013, 8, false), gD));
+  const rose = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.016, 0.03, 16), M(0xffd24d)); rose.position.set(0, 0.008, 0.262); QRc(rose, 'x', 0.9); can.add(rose);
+  const deco = new THREE.Mesh(new THREE.CircleGeometry(0.03, 5), M(0xffd24d)); deco.position.set(0.091, -0.1, -0.02); QRc(deco, 'y', Math.PI / 2); can.add(deco);
+  can.userData.spout = new THREE.Vector3(0, 0.015, 0.275);
+}
+const SPOTS = [-0.84, -0.42, 0, 0.42, 0.84], BED_Z = 0.62;
+// a sprinkle of water drops falling from the rose of the can (placed on a parabola every frame)
+const waterDrops = Array.from({length: 18}, () => { const d = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 6), new THREE.MeshStandardMaterial({color: 0x8fd3ff, transparent: true, opacity: 0.85, roughness: 0.1})); d.scale.y = 1.6; scene.add(d); d.visible = false; return d; });
+const flowerBed = new THREE.Group(); scene.add(flowerBed); flowerBed.visible = false;
+const flowers = [];
+{
+  const soilC = document.createElement('canvas'); soilC.width = 256; soilC.height = 64; const sg = soilC.getContext('2d');
+  sg.fillStyle = '#8a5a3c'; sg.fillRect(0, 0, 256, 64); for (let i = 0; i < 500; i++){ sg.fillStyle = ['#7a4e33', '#9c6a48', '#6e452d'][i % 3]; sg.fillRect(Math.random() * 256, Math.random() * 64, 3, 2); }
+  const st = new THREE.CanvasTexture(soilC); st.colorSpace = THREE.SRGBColorSpace;
+  const soil = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.06, 0.34), new THREE.MeshStandardMaterial({map: st, roughness: 1})); soil.position.set(0, 0.03, BED_Z); flowerBed.add(soil);
+  // little wooden edging
+  const wood = M(0xc98d55, {roughness: 0.8});
+  for (const z of [BED_Z - 0.18, BED_Z + 0.18]){ const e = new THREE.Mesh(new THREE.BoxGeometry(2.24, 0.08, 0.025), wood); e.position.set(0, 0.04, z); flowerBed.add(e); }
+  for (const x of [-1.11, 1.11]){ const e = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.08, 0.38), wood); e.position.set(x, 0.04, BED_Z); flowerBed.add(e); }
+  const cols = [[0xff5f8f, 0xffc0d5], [0xffd24d, 0xfff0a8], [0xb48ef0, 0xe2d2ff], [0xff8a5c, 0xffd0b8], [0x6fc3ff, 0xd2eeff]];
+  SPOTS.forEach((x, i) => {
+    const f = new THREE.Group(); f.position.set(x, 0.06, BED_Z); flowerBed.add(f);
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.01, 0.3, 8), M(0x4f9a4f)); stem.geometry.translate(0, 0.15, 0); f.add(stem);
+    const leaves = [-1, 1].map(s => { const lf = new THREE.Mesh(new THREE.SphereGeometry(0.04, 10, 6), M(0x5fb04f)); lf.scale.set(1, 0.25, 0.45); lf.position.set(s * 0.04, 0.08, 0); QRc(lf, 'z', s * 0.5); f.add(lf); return lf; });
+    const head = new THREE.Group(); head.position.y = 0.3; f.add(head);
+    const petals = []; for (let k = 0; k < 8; k++){ const pt = new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 6), M(cols[i][0])); pt.scale.set(1.2, 0.35, 0.6); pt.position.set(Math.cos(k * TAU / 8) * 0.04, 0, Math.sin(k * TAU / 8) * 0.04); QRc(pt, 'y', -k * TAU / 8); head.add(pt); petals.push(pt); }
+    const ctr = new THREE.Mesh(new THREE.SphereGeometry(0.025, 12, 8), M(0xffc83d)); ctr.scale.y = 0.6; head.add(ctr);
+    QRc(head, 'x', 0.5);      // flower faces you
+    const sprout = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 6), M(0x5fb04f)); sprout.scale.y = 0.6; f.add(sprout);
+    flowers.push({f, stem, leaves, head, petals, sprout});
+  });
+}
+// ---------- props for the rescue: park sign, raccoon, spray can, soda can, light pillar, shock ring ----------
+const SIGN_POS = new THREE.Vector3(1.2, 0, -0.05);
+const sign = new THREE.Group(); scene.add(sign); sign.visible = false;
+const graffC = document.createElement('canvas'); graffC.width = 512; graffC.height = 256; const graffG = graffC.getContext('2d');
+const signTex = new THREE.CanvasTexture(graffC); signTex.colorSpace = THREE.SRGBColorSpace;
+let graffDrawn = -1;
+function drawSign(dirt){            // dirt 0..1: how much of the scribble is on the sign
+  const st = Math.round(dirt * 40); if (st === graffDrawn) return; graffDrawn = st;
+  const g = graffG; g.fillStyle = '#f6e7c8'; g.fillRect(0, 0, 512, 256);
+  g.fillStyle = '#c98d55'; for (let i = 0; i < 4; i++) g.fillRect(0, i * 64 + 60, 512, 4);
+  g.font = '900 92px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#2b7a4b'; g.fillText('快樂公園', 256, 100);
+  g.font = '700 40px "Noto Sans TC",sans-serif'; g.fillStyle = '#6b4a2e'; g.fillText('請愛護花草 · 垃圾不落地', 256, 190);
+  if (dirt > 0){ g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.globalAlpha = 0.9;
+    const strokes = [['#9b4dff', [[60, 60], [160, 200], [240, 50], [330, 210], [450, 70]]], ['#ff3b6b', [[90, 200], [200, 90], [300, 180], [420, 110]]], ['#3bb4ff', [[120, 130], [220, 140], [260, 70], [380, 160]]]];
+    let left = dirt * strokes.length;
+    for (const [c, pts] of strokes){ if (left <= 0) break; const k = Math.min(1, left); left -= 1; g.strokeStyle = c; g.lineWidth = 18; g.beginPath(); g.moveTo(...pts[0]);
+      const n = (pts.length - 1) * k; for (let i = 1; i <= Math.ceil(n); i++){ const a = pts[i - 1], b = pts[i], f2 = Math.min(1, n - (i - 1)); g.lineTo(a[0] + (b[0] - a[0]) * f2, a[1] + (b[1] - a[1]) * f2); } g.stroke(); }
+    g.restore(); }
+  signTex.needsUpdate = true;
+}
+{
+  const wood = M(0xa86f3e, {roughness: 0.8});
+  for (const x of [-0.42, 0.42]){ const p = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.0, 0.06), wood); p.position.set(x, 0.5, 0); sign.add(p); }
+  const board = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.5, 0.04), [wood, wood, wood, wood, new THREE.MeshStandardMaterial({map: signTex, roughness: 0.8}), wood]); board.position.set(0, 0.85, 0.02); sign.add(board);
+  sign.position.copy(SIGN_POS); QRc(sign, 'y', -0.45); drawSign(0);
+}
+// the troublemaker: a cartoon raccoon with a striped tail and a black mask
+const raccoon = new THREE.Group(); scene.add(raccoon); raccoon.visible = false;
+{
+  const grey = M(0x8d8f99, {roughness: 0.85}), light = M(0xe4e1da, {roughness: 0.85}), dark = M(0x2b2b33, {roughness: 0.7}), pinkN = M(0x3a2a2a);
+  const body = new THREE.Group(); raccoon.add(body); raccoon.userData.body = body;
+  const torso = new THREE.Mesh(new THREE.SphereGeometry(0.17, 20, 14), grey); torso.scale.set(1, 1.25, 0.9); torso.position.y = 0.36; body.add(torso);
+  const belly = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 12), light); belly.scale.set(1, 1.3, 0.6); belly.position.set(0, 0.33, 0.1); body.add(belly);
+  const head = new THREE.Group(); head.position.y = 0.66; body.add(head); raccoon.userData.head = head;
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(0.16, 20, 14), grey); skull.scale.set(1.1, 0.92, 0.95); head.add(skull);
+  const snout = new THREE.Mesh(new THREE.SphereGeometry(0.075, 14, 10), light); snout.scale.set(1, 0.75, 1.1); snout.position.set(0, -0.04, 0.13); head.add(snout);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.022, 10, 8), pinkN); nose.position.set(0, -0.025, 0.215); head.add(nose);
+  const mask = new THREE.Mesh(new THREE.SphereGeometry(0.162, 20, 10, Math.PI / 2 - 1.15, 2.3, 1.12, 0.52), dark);   // bandit mask across the front of the face only mask.scale.set(1.12, 0.94, 0.97); head.add(mask);
+  raccoon.userData.eyes = [-1, 1].map(s => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 10), M(0xffffff, {roughness: 0.3})); e.position.set(s * 0.065, 0.02, 0.135); head.add(e);
+    const pu = new THREE.Mesh(new THREE.SphereGeometry(0.016, 10, 8), M(0x111111, {roughness: 0.3})); pu.position.set(s * 0.068, 0.02, 0.163); head.add(pu); return e; });
+  for (const s of [-1, 1]){ const ear = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.09, 12), grey); ear.position.set(s * 0.1, 0.14, -0.01); QRc(ear, 'z', -s * 0.35); head.add(ear);
+    const inn = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.06, 10), dark); inn.position.set(s * 0.1, 0.135, 0.015); QRc(inn, 'z', -s * 0.35); head.add(inn); }
+  const brow = [-1, 1].map(s => { const b2 = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.012, 0.01), dark); b2.position.set(s * 0.065, 0.065, 0.15); QRc(b2, 'z', s * 0.35); head.add(b2); return b2; });   // sneaky slanted brows
+  raccoon.userData.brows = brow;
+  raccoon.userData.arms = [-1, 1].map(s => { const piv = new THREE.Group(); piv.position.set(s * 0.15, 0.48, 0.02); body.add(piv); const a = new THREE.Mesh(new THREE.CapsuleGeometry(0.035, 0.13, 4, 10), grey); a.position.y = -0.09; piv.add(a);
+    const paw = new THREE.Mesh(new THREE.SphereGeometry(0.04, 10, 8), dark); paw.position.y = -0.18; piv.add(paw); QRc(piv, 'z', s * 0.3); return piv; });
+  raccoon.userData.legs = [-1, 1].map(s => { const piv = new THREE.Group(); piv.position.set(s * 0.08, 0.2, 0); raccoon.add(piv); const l = new THREE.Mesh(new THREE.CapsuleGeometry(0.045, 0.1, 4, 10), grey); l.position.y = -0.09; piv.add(l);
+    const ft = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), dark); ft.scale.set(1, 0.6, 1.4); ft.position.set(0, -0.18, 0.03); piv.add(ft); return piv; });
+  // big ringed tail
+  const tail = new THREE.Group(); tail.position.set(0, 0.25, -0.13); body.add(tail); raccoon.userData.tail = tail;
+  for (let i = 0; i < 7; i++){ const seg = new THREE.Mesh(new THREE.SphereGeometry(0.075 - i * 0.004, 14, 10), i % 2 ? dark : grey); seg.position.set(0, 0.05 + i * 0.06, -0.08 - i * 0.03 + i * i * 0.006); tail.add(seg); }
+  // spray can in the right paw
+  const spray = new THREE.Group(); const cb = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.12, 14), M(0x9b4dff, {metalness: 0.3})); spray.add(cb);
+  const capS = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.022, 0.03, 12), M(0xdddddd)); capS.position.y = 0.075; spray.add(capS);
+  raccoon.userData.spray = spray; raccoon.userData.arms[0].add(spray); spray.position.set(0, -0.22, 0.03);
+}
+const droppedSpray = raccoon.userData.spray.clone(); scene.add(droppedSpray); droppedSpray.visible = false;
+const glowTex = makeTex(g => { const gr = g.createRadialGradient(64, 64, 2, 64, 64, 62); gr.addColorStop(0, 'rgba(255,255,240,1)'); gr.addColorStop(0.35, 'rgba(255,240,170,0.75)'); gr.addColorStop(1, 'rgba(255,220,120,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); });
+// transformation light: a soft pillar of light and a ring of stars, and the shock ring for the super stomp
+const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.6, 2.6, 32, 1, true), new THREE.MeshBasicMaterial({color: 0xfff1b0, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false}));
+pillar.position.y = 1.3; scene.add(pillar); pillar.visible = false; pillar.renderOrder = 7;
+const flashSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTex, transparent: true, depthWrite: false, depthTest: false, opacity: 0})); scene.add(flashSprite); flashSprite.renderOrder = 8; flashSprite.visible = false;
+const shock = new THREE.Mesh(new THREE.RingGeometry(0.85, 1.0, 48), new THREE.MeshBasicMaterial({color: 0xfff1b0, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false}));
+QRc(shock, 'x', -Math.PI / 2); shock.position.y = 0.01; scene.add(shock); shock.visible = false;
+const aura = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTex, transparent: true, depthWrite: false, opacity: 0, color: 0xfff3c0})); scene.add(aura); aura.visible = false; aura.renderOrder = -0.5;
+const milkTex = makeTex(g => { g.beginPath(); g.arc(64, 64, 40, 0, TAU); g.fillStyle = '#ffffff'; g.fill(); g.lineWidth = 8; g.strokeStyle = '#cfe6f7'; g.stroke(); g.beginPath(); g.arc(50, 50, 10, 0, TAU); g.fillStyle = '#e8f4ff'; g.fill(); });
+const heartTex = makeTex(g => { g.translate(64, 66); g.beginPath(); g.moveTo(0, 40); g.bezierCurveTo(-64, -4, -36, -56, 0, -24); g.bezierCurveTo(36, -56, 64, -4, 0, 40); g.closePath(); g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ff6f8e'; g.fill(); });
+const puffTex = makeTex(g => { const gr = g.createRadialGradient(64, 64, 6, 64, 64, 58); gr.addColorStop(0, 'rgba(255,255,255,0.95)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); });
+const dustTex = makeTex(g => { g.beginPath(); g.arc(64, 64, 50, 0, TAU); g.fillStyle = '#e6dcc8'; g.fill(); });
+const confTex = ['#ff7aa2', '#f5c24a', '#5fbf86', '#6fbfee'].map(c => makeTex(g => { g.fillStyle = c; g.translate(64, 64); g.rotate(0.5); g.fillRect(-34, -16, 68, 32); }));
+const wordTex = (txt, col) => SFX.tagWord(txt, wordTex0(txt, col)); const wordTex0 = (txt, col) => { const c = document.createElement('canvas'); const g0 = c.getContext('2d');
+  g0.font = '900 150px "Huninn","Noto Sans TC",sans-serif'; const w = Math.ceil(g0.measureText(txt).width + 70);
+  c.width = Math.max(256, w); c.height = 256; const g = c.getContext('2d');
+  g.font = '900 150px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  g.lineWidth = 26; g.strokeStyle = '#ffffff'; g.strokeText(txt, c.width / 2, 136); g.fillStyle = col; g.fillText(txt, c.width / 2, 136);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.userData = {aspect: c.width / c.height}; return tx; };
+const goalTex = wordTex('GOAL!', '#2b7a4b'), cheersTex = wordTex('乾杯！', '#f5a524');
+let wordSprite = null;
+function showWord(tex, pos){ SFX.word(tex);
+  if (wordSprite){ scene.remove(wordSprite); wordSprite.material.dispose(); }
+  wordSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: tex, transparent: true, depthWrite: false, depthTest: false}));
+  wordSprite.renderOrder = 9; wordSprite.position.copy(pos); wordSprite.userData.age = 0; scene.add(wordSprite);
+}
+function updateWord(dt){
+  if (!wordSprite) return;
+  const a = (wordSprite.userData.age += dt), pop = a < 0.18 ? 0.6 + 2.6 * a : 1.07 - 0.07 * Math.min(1, (a - 0.18) / 0.15);
+  const asp = (wordSprite.material.map.userData && wordSprite.material.map.userData.aspect) || 2; wordSprite.scale.set(0.4 * asp * pop, 0.4 * pop, 1); wordSprite.material.opacity = a > 1.2 ? Math.max(0, 1 - (a - 1.2) / 0.3) : 1;
+  if (a > 1.5){ scene.remove(wordSprite); wordSprite.material.dispose(); wordSprite = null; }
+}
+function confetti(x, y, z, n){ SFX.confetti(n);
+  for (let i = 0; i < n; i++){ const a = Math.random() * TAU, r = Math.random();
+    spawn(confTex[i % 4], new THREE.Vector3(x, y, z), new THREE.Vector3(Math.cos(a) * (0.3 + r * 0.6), 0.8 + Math.random() * 0.6, Math.sin(a) * 0.3), 1.2 + r * 0.4, 0.07);
+    fx[fx.length - 1].gravity = -1.6; }
+}
+
+const sparkTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -56); g.bezierCurveTo(6, -14, 14, -6, 56, 0); g.bezierCurveTo(14, 6, 6, 14, 0, 56); g.bezierCurveTo(-6, 14, -14, 6, -56, 0); g.bezierCurveTo(-14, -6, -6, -14, 0, -56); g.closePath(); g.lineWidth = 8; g.strokeStyle = '#fff'; g.stroke(); g.fillStyle = '#ffd24d'; g.fill(); });
+const dropTex = makeTex(g => { g.beginPath(); g.arc(64, 64, 34, 0, TAU); g.fillStyle = '#9fd8ff'; g.fill(); g.lineWidth = 8; g.strokeStyle = '#fff'; g.stroke(); });
+const ribbonTex = ['#ff5f8f', '#4fb7f0', '#ffd24d', '#8fcf78'].map(c => makeTex(g => { g.strokeStyle = c; g.lineWidth = 14; g.lineCap = 'round'; g.beginPath(); g.moveTo(14, 100); g.bezierCurveTo(40, 20, 80, 120, 114, 28); g.stroke(); }));
+const tadaTex = wordTex('鏘鏘！', '#e8553f'), carrotTex = wordTex('還有胡蘿蔔！', '#f08a24'), bloomTex = wordTex('開花囉！', '#e8553f'), heroTex = wordTex('兔子超人！', '#e8553f'),
+  safeTex = wordTex('守護公園！', '#2b7a4b'), spotTex = wordTex('！', '#f5a524'), scaredTex = wordTex('哇啊！', '#7a5a9a'), stompTex = wordTex('咚！', '#e8553f'), thanksTex = wordTex('謝謝！', '#2b7a4b');
+
+// ---------- motions ----------
+const names = {idle:'待機', magic:'帽子魔術', garden:'種花澆水', rescue:'緊急救援', sleep:'睡覺'};
+let move = 'idle', t0 = performance.now()/1000, frozen = null;
+const MAGIC_T = 12.0, GARDEN_T = 14.0, RESCUE_T = 13.6;
+const bell = x => Math.sin(Math.PI * Math.max(0, Math.min(1, x)));
+const ease = x => x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const span = (t, a, b) => clamp01((t - a) / (b - a));
+const lerp = (a, b, k) => a + (b - a) * k;
+const blinkAt = t => { const b = (t % 4.2) / 0.2; return b < 1 ? Math.sin(Math.PI*b) : 0; };
+let curT = 0, prevT = 0;
+function crossed(x, L){ if (curT <= prevT) return false; return Math.floor((curT - x) / L) > Math.floor((prevT - x) / L); }
+function walkLegs(ph, k){
+  if (!k) return 0; const s2 = Math.sin(ph);
+  rot('LeftUpLeg','x', 0.38 * s2 * k); rot('RightUpLeg','x', -0.38 * s2 * k);
+  rot('LeftLeg','x', 0.4 * Math.max(0, -s2) * k + 0.05 * k); rot('RightLeg','x', 0.4 * Math.max(0, s2) * k + 0.05 * k);
+  rot('Hips','z', 0.04 * s2 * k); rot('Spine','z', -0.03 * s2 * k);
+  return 0.025 * Math.abs(Math.cos(ph)) * k;
+}
+// a sideways step (for walking along the flower bed while still facing it)
+function sideStep(ph, k){
+  if (!k) return 0; const s2 = Math.sin(ph);
+  rot('LeftUpLeg','z', 0.18 * Math.max(0, s2) * k); rot('RightUpLeg','z', -0.18 * Math.max(0, -s2) * k);
+  rot('LeftLeg','x', 0.2 * Math.max(0, s2) * k); rot('RightLeg','x', 0.2 * Math.max(0, -s2) * k);
+  return 0.02 * Math.abs(s2) * k;
+}
+
+// rescue layout (world)
+const R_START = [-0.85, 0.42], R_LAND = [0.1, 0.4], RAC_STOP = [0.92, 0.62];
+
+function pose(name, t){
+  const p = {hop:0, x:0, z:0, ear:0, lid:0, happy:0, ry:0, spin:0, sy:1, events:[], char:'adult', ik:{}};
+  const T = name === 'magic' ? t % MAGIC_T : name === 'garden' ? t % GARDEN_T : name === 'rescue' ? t % RESCUE_T : t;
+  p.T = T;
+  if (name === 'rescue' && T >= 3.85 && T < 10.1) p.char = T < 8.85 ? 'heroF' : 'hero';   // heroF: the fists-on-hips model; hero: arms free for the victory pose
+  useChar(p.char); resetPose(); if (skinMesh.morphTargetInfluences) skinMesh.morphTargetInfluences.fill(0); for (const k in chars) if (chars[k].fists) for (const sd in chars[k].fists) chars[k].fists[sd].visible = false;
+  // the model was rigged in an A-pose: bring the arms down to her sides first
+  rot('LeftArm','z', -CFG.armDown); rot('RightArm','z', CFG.armDown); rot('LeftForeArm','x', -0.12); rot('RightForeArm','x', -0.12);
+  const f = (a, b) => ease(span(T, a, b));
+  const breathe = (k = 1) => { const br = Math.sin(TAU*t/3.8), sh = Math.sin(TAU*t/7);
+    rot('Hips','z', 0.03 * sh * k); rot('Spine','z', -0.04 * sh * k); rot('Spine','x', 0.012 * br);
+    rot('LeftUpLeg','z', -0.03 * sh * k); rot('RightUpLeg','z', -0.03 * sh * k);
+    rot('LeftLeg','x', 0.05 * Math.max(0, -sh) * k); rot('RightLeg','x', 0.05 * Math.max(0, sh) * k); return br; };
+  if (name === 'idle'){
+    // relaxed: weight drifts from foot to foot, looks around the park, ears twitch; every 10 s she pushes her glasses up and smiles
+    const br = breathe(), look = Math.sin(TAU*t/11);
+    rot('LeftArm','z', 0.05 + 0.03 * br); rot('RightArm','z', -0.05 - 0.03 * br);
+    rot('LeftArm','x', 0.05 * Math.sin(TAU*t/7 + 1)); rot('RightArm','x', -0.05 * Math.sin(TAU*t/7 + 1));
+    const W = t % 10, g = ease(span(W, 6.0, 6.4)) * (1 - ease(span(W, 7.0, 7.45)));
+    rot('Neck','y', 0.28 * Math.pow(look, 3) * (1 - g)); rot('Head','x', -0.03 * br - 0.06 * g); rot('Head','z', 0.03 * Math.sin(TAU*t/7));
+    if (g > 0){ p.ik.R = headPt(bridgeOff).add(charDir(-1, -0.4, 0.2).multiplyScalar(0.16)); p.ik.wR = g; }
+    p.happy = W > 7.0 && W < 8.4 ? 1 : 0; if (!p.happy) p.lid = blinkAt(t);
+    p.ear = 0.04 * Math.sin(TAU*t/3.1) + 0.22 * bell(span(t % 5, 3.0, 3.25)) - 0.12 * bell(span(t % 5, 3.25, 3.5));
+    p.ry = 0.05 * Math.sin(TAU*t/13);
+    if (crossed(6.3, 10)) p.events.push('glint');
+  } else if (name === 'magic'){
+    // show the empty hat, tap it three times, a bouquet rises out; a carrot pops out and lands on her head,
+    // ribbons burst from the hat, she bows and the carrot drops back into the hat, then everything goes back in
+    breathe(0.5);
+    p.show = f(0.6, 1.0) * (1 - f(1.4, 1.8));
+    p.taps = T > 2.0 && T < 3.4 ? Math.abs(Math.sin(Math.PI * (T - 2.0) / 0.45)) : 0;
+    p.flourish = bell(span(T, 3.3, 3.9));
+    p.rise = f(3.5, 4.2) * (1 - f(10.3, 10.8));
+    p.grab = f(4.0, 4.35) * (1 - f(10.1, 10.5));
+    p.present = f(4.4, 5.0) * (1 - f(5.9, 6.3)) + f(7.0, 7.4) * (1 - f(8.3, 8.7));
+    p.carry = T >= 6.0 && T < 9.75;
+    p.bow = f(8.7, 9.1) * (1 - f(9.9, 10.3));
+    p.wandOn = T < 4.05 || T > 11.0;
+    const lookUp = f(6.4, 6.75) * (1 - f(7.3, 7.6));
+    rot('Spine','x', 0.06 * p.taps + 0.34 * p.bow); rot('Spine1','x', 0.12 * p.bow);
+    rot('Head','x', 0.1 * p.show + 0.15 * (T > 2 && T < 3.5 ? 1 : 0) - 0.25 * lookUp + 0.2 * p.bow - 0.05 * p.present);
+    rot('Head','z', 0.1 * p.present);
+    p.happy = (T > 4.2 && T < 6.0) || (T > 6.85 && T < 10.2) ? 1 : 0; if (!p.happy) p.lid = blinkAt(t);
+    p.ear = 0.18 * bell(span(T, 6.75, 7.1)) - 0.1 * p.bow + 0.06 * Math.sin(TAU * t / 2.7);
+    for (const [x, e] of [[2.22, 'tap'], [2.67, 'tap'], [3.12, 'tap'], [3.55, 'poof'], [4.1, 'tada'], [4.15, 'wandAway'], [6.0, 'pop'], [6.8, 'boing'], [7.1, 'ribbon'], [7.55, 'ribbon'], [9.7, 'plop'], [9.15, 'bow'], [10.6, 'poof'], [11.0, 'wandBack']]) if (crossed(x, MAGIC_T)) p.events.push(e);
+  } else if (name === 'garden'){
+    // waters the flower bed spot by spot, stepping sideways; each flower shoots up and opens; then "flowers are out!"
+    breathe(0.3);
+    const tI = i => 0.6 + i * 2.2;
+    let x = SPOTS[0] + 0.3, stepK = 0, stepPh = 0;
+    for (let i = 1; i < 5; i++){ const u = span(T, tI(i) - 0.75, tI(i) - 0.05); x = lerp(x, SPOTS[i] + 0.3, ease(u)); if (u > 0 && u < 1){ stepK = bell(u); stepPh = u * TAU * 1.5; } }
+    const done = f(11.0, 11.9), back = f(12.8, 13.9);
+    x = lerp(x, 0.05, done); x = lerp(x, SPOTS[0] + 0.3, back);
+    p.x = x; p.z = lerp(0.2, 0.0, done) * (1 - back) + 0.2 * back;
+    if (stepK > 0) p.hop = sideStep(stepPh, stepK);
+    if (T > 11.0 && T < 11.9) p.hop = walkLegs((T - 11.0) / 0.3 * Math.PI, bell(span(T, 11.0, 11.9)));
+    if (T > 12.8) p.hop = walkLegs((T - 12.8) / 0.3 * Math.PI, bell(span(T, 12.8, 13.9)));
+    p.pour = 0; p.grow = [];
+    for (let i = 0; i < 5; i++){ const a = tI(i); p.pour = Math.max(p.pour, f(a, a + 0.3) * (1 - f(a + 1.3, a + 1.6))); p.grow.push(span(T, a + 0.3, a + 1.6) * (1 - f(13.1, 13.6))); }
+    p.canDown = done * (1 - back);
+    p.glasses = bell(span(T, 11.9, 12.6));
+    rot('Spine','x', 0.1 * p.pour); rot('Head','x', 0.28 * p.pour * (1 - done) - 0.05 * p.glasses);
+    p.happy = (T > 1.9 && T < 2.4) || (T > 11.9 && T < 12.9) ? 1 : 0; if (!p.happy) p.lid = blinkAt(t);
+    p.ear = 0.05 * Math.sin(TAU * t / 2.9) + 0.15 * p.glasses;
+    p.ry = 0.1 * done * (1 - back);
+    for (let i = 0; i < 5; i++) if (crossed(tI(i) + 1.55, GARDEN_T)) p.events.push('bloom' + i);
+    if (crossed(12.0, GARDEN_T)) p.events.push('allBloom');
+    if (crossed(13.15, GARDEN_T)) p.events.push('reset');
+  } else if (name === 'rescue'){
+    // a raccoon scribbles on the park sign; she spots it, spins and transforms into Super Rabbit (big, proud stance),
+    // leaps over with a fist in the air, lands in a superhero crouch, rises, lifts a knee high and stomps -- the raccoon
+    // drops its can and runs; a double-biceps "park is safe!", and she changes back
+    const hero = p.char === 'hero' || p.char === 'heroF', fistModel = p.char === 'heroF';
+    p.dirt = span(T, 1.6, 2.6) * (1 - f(8.9, 9.5));
+    let x = R_START[0], z = R_START[1];
+    const leap = span(T, 5.35, 6.15);
+    x = lerp(x, R_LAND[0], ease(leap)); z = lerp(z, R_LAND[1], ease(leap));
+    const home = f(11.4, 13.4); x = lerp(x, R_START[0], home); z = lerp(z, R_START[1], home);
+    p.x = x; p.z = z;
+    if (leap > 0 && leap < 1) p.hop = 0.85 * Math.sin(Math.PI * leap);
+    if (T > 11.4) p.hop = walkLegs((T - 11.4) / 0.3 * Math.PI, bell(span(T, 11.4, 13.4)));
+    // proud wide stance whenever the hero stands
+    const stance = hero ? f(4.2, 4.5) * (1 - f(4.95, 5.1)) + f(6.5, 6.8) * (1 - f(9.8, 10.05)) : 0;
+    rot('LeftUpLeg','z', 0.05 * stance); rot('RightUpLeg','z', -0.05 * stance);
+    // wind-up crouch before the leap
+    const wind = bell(span(T, 5.0, 5.4));
+    // superhero landing: deep crouch, right fist down by the ground, head lowered, then rising up
+    const land = T > 6.1 ? f(6.1, 6.2) * (1 - f(6.5, 6.85)) : 0;
+    const crouch = Math.max(wind, land);
+    if (crouch > 0){ rot('LeftUpLeg','x', -1.0 * crouch); rot('RightUpLeg','x', -0.55 * crouch); rot('LeftLeg','x', 1.5 * crouch); rot('RightLeg','x', 1.3 * crouch);
+      rot('LeftFoot','x', -0.5 * crouch); rot('RightFoot','x', -0.6 * crouch); rot('Spine','x', 0.15 * crouch); rot('Head','x', -0.2 * crouch * (land > 0 ? 0 : 1) + 0.15 * land); p.hop -= 0.22 * crouch; }
+    p.land = land;
+    // the leap: legs tucked, right fist punched up and forward, left arm swept back
+    p.fly = leap > 0 && leap < 1 ? bell(leap) : 0;
+    if (p.fly > 0){ const k = p.fly; rot('LeftUpLeg','x', -0.9 * k); rot('LeftLeg','x', 1.2 * k); rot('RightUpLeg','x', 0.35 * k); rot('RightLeg','x', 0.6 * k); rot('Spine','x', 0.1 * k); }   // fists stay on the hips through the leap
+    // knee up high, then STOMP
+    const knee = f(6.9, 7.25) * (1 - f(7.25, 7.38));
+    rot('RightUpLeg','x', -1.5 * knee); rot('RightLeg','x', 1.6 * knee); rot('Spine','x', -0.1 * knee); rot('LeftUpLeg','z', -0.05 * knee);
+    p.knee = knee;
+    if (T > 7.36 && T < 7.6) p.sy = 1 - 0.07 * bell(span(T, 7.36, 7.6));
+    // spin and glow for the transformation (and back)
+    p.spin = T > 3.2 && T < 4.2 ? TAU * ease(span(T, 3.2, 4.2)) : (T > 9.6 && T < 10.6 ? TAU * ease(span(T, 9.6, 10.6)) : 0);
+    if (T > 3.2 && T < 4.3) p.hop += 0.15 * bell(span(T, 3.2, 4.3));
+    if (T > 9.6 && T < 10.7) p.hop += 0.15 * bell(span(T, 9.6, 10.7));
+    const toRac = Math.atan2(RAC_STOP[0] + 0.1 - R_LAND[0], RAC_STOP[1] - R_LAND[1]);
+    p.ry = 0.3 * f(2.4, 2.7) * (1 - f(3.2, 3.3)) + 0.25 * f(4.2, 4.4) * (1 - f(4.95, 5.1)) + toRac * f(5.1, 5.4) * (1 - f(8.6, 8.9)) + 0.15 * f(8.6, 8.9) * (1 - f(11.2, 11.4)) - Math.PI / 2 * f(11.3, 11.6) * (1 - f(13.2, 13.5));
+    p.hips = p.char === 'hero' ? 1 - f(8.9, 9.3) : 0;   // the fists-on-hips model already stands like the design sheet; the arm model starts from the same pose
+    p.noAvoid = hero;   // hero poses touch the body on purpose (fists on hips, fist to the ground)
+    p.flex = hero ? f(8.9, 9.3) * (1 - f(9.75, 9.95)) : 0;      // double biceps
+    p.lean = hero ? f(7.5, 7.8) * (1 - f(8.6, 8.8)) : 0;       // leans in and glares
+    if (hero){ rot('Spine','x', -0.1 * stance + 0.18 * p.lean); rot('Chest','x', -0.08 * stance); rot('Head','x', -0.1 * stance + 0.05 * p.lean - 0.08 * p.flex); rot('Head','z', 0.1 * p.flex); }
+    p.glasses = !hero ? bell(span(T, 2.75, 3.15)) + bell(span(T, 10.6, 11.0)) : 0;
+    p.wave = !hero && T > 10.9 && T < 11.5 ? f(10.9, 11.05) * (1 - f(11.35, 11.5)) : 0;
+    rot('Neck','y', -0.5 * f(2.45, 2.6) * (1 - f(3.15, 3.3)));
+    p.happy = !hero && T > 10.8 && T < 11.6 ? 1 : 0;
+    if (!p.happy && !hero) p.lid = blinkAt(t);   // Super Rabbit keeps her eyes exactly as designed
+    p.ear = 0.25 * f(2.45, 2.6) * (1 - f(3.15, 3.3)) + (hero ? 0.1 : 0) * Math.sin(TAU * t / 1.7) - 0.3 * p.fly;
+    for (const [x2, e] of [[2.5, 'spot'], [3.85, 'flash'], [4.45, 'heroName'], [6.15, 'land'], [7.33, 'stomp'], [7.45, 'scared'], [8.85, 'sparkle'], [9.05, 'safe'], [10.1, 'flash']]) if (crossed(x2, RESCUE_T)) p.events.push(e);
+  } else if (name === 'sleep'){
+    const br = Math.sin(TAU*t/4.6);
+    p.lie = 1;
+    rot('LeftArm','z', 0.35 + 0.02*br); rot('RightArm','z', -0.35 - 0.02*br);
+    rot('LeftArm','x', 0.3); rot('RightArm','x', 0.3);
+    rot('LeftUpLeg','z', 0.08); rot('RightUpLeg','z', -0.08);
+    rot('LeftUpLeg','x', 0.15); rot('RightUpLeg','x', 0.15);
+    rot('LeftFoot','x', 0.5); rot('RightFoot','x', 0.5);
+    rot('Spine','x', -0.03*br); rot('Chest','x', -0.02*br);
+    rot('Neck','x', 0.12); rot('Neck','y', -0.3); rot('Head','y', -0.12);
+    p.ear = -0.05 + 0.02*br; p.lid = 1; p.x = 0.6; p.legFix = true;
+  }
+  return p;
+}
+
+// a point on the body (relative to the hips, turning with her)
+function bodyPt(x, y, z){
+  const hp = wpos('Hips'), xa = wpos('LeftUpLeg').sub(wpos('RightUpLeg')); xa.y = 0; xa.normalize();
+  const fw = new THREE.Vector3().crossVectors(xa, AX.y), S = CFG.scale;
+  return hp.addScaledVector(xa, x * S).add(new THREE.Vector3(0, (y - CFG.hipY) * S, 0)).addScaledVector(fw, z * S);
+}
+const _rqw = new THREE.Quaternion();
+function charDir(x, y, z){ rig.getWorldQuaternion(_rqw); return new THREE.Vector3(x, y, z).normalize().applyQuaternion(_rqw); }
+const headPt = off => bones.Head.localToWorld(off.clone());
+const UP = new THREE.Vector3(0, 1, 0), DOWN = new THREE.Vector3(0, -1, 0);
+
+// ---------- magic: where the hat, wand, bouquet and carrot are ----------
+function magicState(p){
+  const T = p.T, f = (a, b) => ease(span(T, a, b));
+  // left paw holds the upside-down hat under its crown
+  let L = bodyPt(0.3, 0.62, 0.16);
+  L.lerp(bodyPt(0.22, 0.7, 0.36), p.show);
+  if (T > 1.6) L.lerp(bodyPt(0.12, 0.68, 0.32), f(1.6, 2.0) * (1 - f(8.7, 9.1)));
+  if (T > 8.7) L.lerp(bodyPt(0.06, 0.66, 0.3), p.bow);
+  if (T > 10.0) L.lerp(bodyPt(0.12, 0.68, 0.32), f(10.0, 10.4));
+  if (T > 11.2) L.lerp(bodyPt(0.3, 0.62, 0.16), f(11.2, 11.9));
+  const hatTilt = 1.25 * p.show;
+  const opening = L.clone().add(new THREE.Vector3(0, 0.2, 0));             // centre of the hat's opening (brim), when upright-open
+  // right paw and wand tip, phase by phase (the paw always stays out at her right side or in front, never on her face)
+  const rest = bodyPt(-0.3, 0.66, 0.2);
+  let R = rest.clone(), tip = rest.clone().addScaledVector(charDir(-0.35, 0.75, 0.55), 0.235);
+  const rim = opening.clone().addScaledVector(charDir(-0.6, 0, 0.8), 0.11);      // front-right edge of the brim
+  const tapK = T > 1.9 && T < 3.45 ? f(1.9, 2.1) * (1 - f(3.3, 3.45)) : 0;
+  if (tapK > 0){ const tp = rim.clone().add(new THREE.Vector3(0, 0.015 + 0.07 * (1 - p.taps), 0)), rp = tp.clone().addScaledVector(charDir(-0.75, 0.3, 0.55), 0.2);   // paw out in front, well clear of her chest
+    R.lerp(rp, tapK); tip.lerp(tp, tapK); }
+  if (p.flourish > 0){ R.lerp(bodyPt(-0.34, 0.9, 0.24), p.flourish); tip.lerp(bodyPt(-0.42, 1.12, 0.34), p.flourish); }
+  // the bouquet: rises out of the hat, she takes it and holds it out to you, raises it high, then puts it back
+  const bqIn = opening.clone().add(new THREE.Vector3(0, -0.12 + 0.2 * p.rise, 0));
+  const bqHold = bodyPt(-0.3, 0.76, 0.4).lerp(bodyPt(-0.4, 1.02, 0.22), T > 6.5 ? f(7.0, 7.4) * (1 - f(8.3, 8.7)) : 0);
+  const bqPresent = T > 4.0 && T < 10.6 ? Math.max(p.present, T > 5.9 && T < 7.4 ? 1 : 0, T > 8.3 && T < 10.1 ? 1 - f(9.8, 10.1) : 0) : 0;
+  const bqHand = bqIn.clone().add(new THREE.Vector3(0, 0.02, 0)).lerp(bqHold, Math.min(1, bqPresent));
+  if (p.grab > 0) R.lerp(bqHand, p.grab);
+  let bouquetPos = p.grab > 0.5 ? bqHand.clone() : bqIn.clone();
+  // carrot: pops out of the hat, flies up and lands on her head; slides off into the hat during the bow
+  let carrotPos = null, carrotRot = 0;
+  const top = headPt(topOff).add(new THREE.Vector3(0, 0.0, 0));
+  if (T >= 6.0 && T < 6.8){ const u = span(T, 6.0, 6.8); carrotPos = opening.clone().lerp(top, u).add(new THREE.Vector3(0, 0.5 * Math.sin(Math.PI * u), 0)); carrotRot = u * TAU * 1.25; }
+  else if (T >= 6.8 && T < 9.2) carrotPos = top.clone();
+  else if (T >= 9.2 && T < 9.7){ const u = span(T, 9.2, 9.7); carrotPos = top.clone().lerp(opening.clone().add(new THREE.Vector3(0, -0.06, 0)), u * u).add(new THREE.Vector3(0, 0.1 * Math.sin(Math.PI * u), 0)); carrotRot = -u * 2; }
+  return {L, R, hatTilt, opening, tip, bouquetPos, carrotPos, carrotRot, carrotOnHead: T >= 6.8 && T < 9.2};
+}
+
+// ---------- rescue: the raccoon ----------
+function raccoonState(T){
+  const s = {x: 2.6, z: 0.35, ry: -Math.PI / 2, bob: 0, spray: 0, scared: 0, run: 0, visible: true, sprayOn: true, legPh: 0};
+  const sneak = ease(span(T, 0.0, 1.6));
+  s.x = lerp(2.6, RAC_STOP[0], sneak); s.z = lerp(0.35, RAC_STOP[1], sneak);
+  if (T < 1.6){ s.legPh = T / 0.22 * Math.PI; s.bob = 0.03 * Math.abs(Math.sin(s.legPh)); }
+  const faceSign = Math.atan2(SIGN_POS.x - RAC_STOP[0], SIGN_POS.z - RAC_STOP[1]);
+  s.ry = lerp(-Math.PI / 2, faceSign, ease(span(T, 1.2, 1.6)));
+  s.spray = T > 1.6 && T < 2.65 ? 1 : ease(span(T, 1.45, 1.6)) * (T < 1.6 ? 1 : 0);
+  // turns round when the hero lands, jumps with fright, drops the can and runs off to the right
+  const turn = ease(span(T, 6.15, 6.35));
+  s.ry = lerp(s.ry, Math.atan2(R_LAND[0] - RAC_STOP[0], R_LAND[1] - RAC_STOP[1]) + 0.7, turn);   // turns to face the hero, a little toward you
+  s.scared = bell(span(T, 7.4, 7.9)); const peek = T > 6.35 && T < 7.4 ? 0.5 : 0;
+  s.bob += 0.28 * s.scared;
+  s.sprayOn = T < 7.55; s.peek = peek;
+  const run = span(T, 7.9, 9.2);
+  if (run > 0){ s.ry = Math.PI / 2; s.x = lerp(RAC_STOP[0], 3.2, run * run); s.z = lerp(RAC_STOP[1], 0.5, run); s.legPh = (T - 7.9) / 0.1 * Math.PI; s.bob = 0.04 * Math.abs(Math.sin(s.legPh)); s.run = 1; }
+  s.visible = T < 9.2;
+  return s;
+}
+
+// fists on the waist like the design sheet: upper arm out to the side, elbow pointing out and a little back,
+// forearm angled down and in, fists resting on the narrow waist
+function handsOnHips(sd, sx, w){
+  // on this model nearly the whole paw is skinned to the Hand bone (the wrist); the forearm is short
+  model.updateMatrixWorld(true);
+  const S = wpos(sd + 'Arm'), E0 = wpos(sd + 'ForeArm'), W0 = wpos(sd + 'Hand');
+  const L1 = S.distanceTo(E0), L2 = E0.distanceTo(W0);
+  const T = bodyPt(sx * HIP_X, HIP_Y, 0.03);
+  const v = T.clone().sub(S); let d = v.length(); d = Math.min(d, (L1 + L2) * 0.98); const u = v.normalize();
+  const a = (L1 * L1 - L2 * L2 + d * d) / (2 * d), h = Math.sqrt(Math.max(0, L1 * L1 - a * a));
+  const pole = charDir(sx, -0.45, -0.2); pole.addScaledVector(u, -pole.dot(u)).normalize();
+  const E = S.clone().addScaledVector(u, a).addScaledVector(pole, h), Tc = S.clone().addScaledVector(u, d);
+  swingTo(bones[sd + 'Arm'], E0.clone().sub(S), E0.clone().sub(S).lerp(E.clone().sub(S), w)); model.updateMatrixWorld(true);
+  const E1 = wpos(sd + 'ForeArm'), W1 = wpos(sd + 'Hand');
+  swingTo(bones[sd + 'ForeArm'], W1.clone().sub(E1), W1.clone().sub(E1).lerp(Tc.clone().sub(E1), w)); model.updateMatrixWorld(true);
+  // the paw bends down and in against the waist and closes into a round fist
+  const W2 = wpos(sd + 'Hand'), F = wpos(sd + 'HandEnd'), want = charDir(-sx * HAND_IN, -1, HAND_FW).normalize().multiplyScalar(F.distanceTo(W2));
+  swingTo(bones[sd + 'Hand'], F.clone().sub(W2), F.clone().sub(W2).lerp(want, w));
+  makeFist(sd, w);
+}
+// squash the long paw into a round fist: shorter along its length, a bit thicker, fingers curled in
+// twist the forearm and hand about their own length so the palm faces a direction (half in the forearm, half at the wrist: no candy-wrap)
+const _tq = new THREE.Quaternion();
+function palmTo(sd, want, w){
+  const c = chars[charName]; if (!c.palm || w <= 0) return;
+  for (const [bn, share] of [[sd + 'ForeArm', 0.5], [sd + 'Hand', 1]]){
+    model.updateMatrixWorld(true);
+    const h = bones[sd + 'Hand'], axis = wpos(sd + 'HandEnd').sub(wpos(sd + 'Hand')).normalize();
+    const palm = c.palm[sd].clone().applyQuaternion(h.getWorldQuaternion(_tq));
+    const a = palm.addScaledVector(axis, -palm.dot(axis)).normalize(), b2 = want.clone().addScaledVector(axis, -want.dot(axis)).normalize();
+    let ang = Math.acos(Math.max(-1, Math.min(1, a.dot(b2)))); if (new THREE.Vector3().crossVectors(a, b2).dot(axis) < 0) ang = -ang;
+    rotWorld(bones[bn], axis, ang * share * w);
+  }
+}
+function makeFist(sd, w){ return;   // open hands on the arm model (user request): no generated fist
+ const mi = skinMesh.morphTargetInfluences, c = chars[charName]; if (!mi || mi.length < 2 || !c.fists) return; const j = sd === 'Left' ? 0 : 1; mi[j] = Math.max(mi[j], w);
+  const f = c.fists[sd]; f.visible = mi[j] > 0.02; f.scale.setScalar((0.3 + 0.7 * mi[j]) / c.cfg.scale); }
+let HIP_X = 0.24, HIP_Y = 0.7, HAND_IN = 0.9, HAND_FW = 0.2, FIST = 0.62;
+function applyIK(p){
+  model.updateMatrixWorld(true);
+  if (move === 'magic'){
+    const st = magicState(p); p._m = st;
+    reach('Left', st.L, 1); reach('Right', st.R, 1);
+    return;
+  }
+  if (move === 'garden'){
+    // right paw carries the can just in front of her, spout over the bed; left paw relaxed (pushes the glasses at the end)
+    const R = bodyPt(-0.3, 0.74, 0.26).lerp(bodyPt(-0.3, 0.62, 0.14), p.canDown);
+    reach('Right', R, 1);
+    if (p.glasses > 0) reach('Left', wpos('LeftHandEnd').lerp(headPt(bridgeOff).add(charDir(1, -0.4, 0.2).multiplyScalar(0.16)), p.glasses), 1);   // left paw: left side of the frame
+    return;
+  }
+  if (move === 'rescue'){
+    const sw = CFG.scale;
+    if (p.hips > 0) for (const [sd, sx] of [['Left', 1], ['Right', -1]]) handsOnHips(sd, sx, p.hips);
+    if (p.land > 0 && p.char !== 'heroF'){ const fist = bodyPt(-0.22, 0.0, 0.42); fist.y = 0.06; reach('Right', wpos('RightHandEnd').lerp(fist, p.land), 1);
+      reach('Left', wpos('LeftHandEnd').lerp(bodyPt(0.42, CFG.hipY + 0.05, -0.15), p.land), 1); }
+    if (p.flex > 0) for (const [sd, sx] of [['Left', 1], ['Right', -1]]){
+      // victory: both arms thrown up in a wide V, elbows a touch bent, fists clenched
+      model.updateMatrixWorld(true);
+      const S = wpos(sd + 'Arm'), E = wpos(sd + 'ForeArm'); swingTo(bones[sd + 'Arm'], E.clone().sub(S), E.clone().sub(S).lerp(charDir(sx * 0.62, 1, 0.12).multiplyScalar(E.distanceTo(S)), p.flex));
+      model.updateMatrixWorld(true);
+      const E1 = wpos(sd + 'ForeArm'), W1 = wpos(sd + 'Hand'); swingTo(bones[sd + 'ForeArm'], W1.clone().sub(E1), W1.clone().sub(E1).lerp(charDir(sx * 0.3, 1, 0.22).multiplyScalar(W1.distanceTo(E1)), p.flex));
+      model.updateMatrixWorld(true);
+      const W2 = wpos(sd + 'Hand'), F = wpos(sd + 'HandEnd'); swingTo(bones[sd + 'Hand'], F.clone().sub(W2), F.clone().sub(W2).lerp(charDir(sx * 0.1, 1, 0.3).multiplyScalar(F.distanceTo(W2)), p.flex));
+      palmTo(sd, charDir(0, 0.1, 1), p.flex); }
+    if (p.lean > 0){ /* fists stay on the hips while she leans in */ }
+    if (p.glasses > 0) reach('Right', wpos('RightHandEnd').lerp(headPt(bridgeOff).add(charDir(-1, -0.4, 0.2).multiplyScalar(0.16)), p.glasses), 1);
+    if (p.wave > 0){ const w = bodyPt(-0.36, 1.12, 0.2).addScaledVector(charDir(1, 0, 0), 0.06 * Math.sin(TAU * p.T / 0.5)); reach('Right', wpos('RightHandEnd').lerp(w, p.wave), 1); }
+    return;
+  }
+  if (p.ik.R && p.ik.wR > 0) reach('Right', wpos('RightHandEnd').lerp(p.ik.R, p.ik.wR), 1);
+  if (p.ik.L && p.ik.wL > 0) reach('Left', wpos('LeftHandEnd').lerp(p.ik.L, p.ik.wL), 1);
+}
+
+// ---------- prop placement ----------
+const _q = new THREE.Quaternion();
+function placeMagic(p){
+  const on = move === 'magic'; topHat.visible = wandM.visible = bouquet.visible = carrot.visible = on;
+  if (!on) return;
+  const st = p._m || magicState(p), T = p.T;
+  const L = wpos('LeftHandEnd'), R = wpos('RightHandEnd');
+  // hat upside down above the left paw; tipped toward you while showing it's empty
+  rig.getWorldQuaternion(_q);
+  topHat.quaternion.copy(_q).multiply(new THREE.Quaternion().setFromAxisAngle(AX.x, Math.PI - st.hatTilt));
+  topHat.position.copy(L).add(new THREE.Vector3(0, 0.205, 0)).addScaledVector(charDir(0, 0, 1), 0.1 * Math.sin(st.hatTilt));
+  topHat.updateMatrixWorld(true);
+  const open = topHat.localToWorld(new THREE.Vector3(0, 0, 0));
+  wandM.visible = p.wandOn;
+  if (wandM.visible){ const dir = st.tip.clone().sub(R).normalize(); wandM.position.copy(R); wandM.quaternion.setFromUnitVectors(UP, dir);  wandM.scale.setScalar(T > 11.0 && T < 11.3 ? span(T, 11.0, 11.3) : 1); }
+  // bouquet
+  bouquet.visible = p.rise > 0.01;
+  if (bouquet.visible){ const pos = p.grab > 0.5 ? R.clone().add(new THREE.Vector3(0, -0.02, 0)) : open.clone().add(new THREE.Vector3(0, -0.12 + 0.17 * p.rise, 0));
+    bouquet.position.copy(pos); bouquet.quaternion.copy(_q); bouquet.rotateX(-0.25 * (p.grab > 0.5 ? 1 : 0)); bouquet.scale.setScalar(Math.max(0.01, Math.min(1, p.rise * 1.3))); }
+  carrot.visible = !!st.carrotPos;
+  if (carrot.visible){ carrot.position.copy(st.carrotPos); if (st.carrotOnHead){ bones.Head.getWorldQuaternion(carrot.quaternion); } else { carrot.quaternion.copy(_q); carrot.rotateX(st.carrotRot); } carrot.scale.setScalar(1.2); }
+  p._open = open;
+}
+function placeGarden(p){
+  const on = move === 'garden'; can.visible = flowerBed.visible = on;
+  if (!on){ waterDrops.forEach(d => d.visible = false); return; }
+  const R = wpos('RightHandEnd');
+  rig.getWorldQuaternion(_q); can.quaternion.copy(_q).multiply(new THREE.Quaternion().setFromAxisAngle(AX.x, 0.85 * p.pour));
+  can.position.copy(R).add(new THREE.Vector3(0, -0.01, 0)); can.updateMatrixWorld(true);
+  p._spout = can.localToWorld(can.userData.spout.clone());
+  // falling water: drops slide down a short parabola from the spout to the soil
+  const fw = charDir(0, 0, 1), on2 = p.pour > 0.6;
+  waterDrops.forEach((d, i) => { d.visible = on2; if (!on2) return;
+    const u = ((p.T * 2.2 + i / waterDrops.length) % 1), sp = p._spout, h = sp.y - 0.07;
+    d.position.copy(sp).addScaledVector(fw, 0.12 * u).add(new THREE.Vector3(Math.sin(i * 2.3) * 0.025 * u, -h * u * u, Math.cos(i * 1.7) * 0.02 * u)); });
+  flowers.forEach((fl, i) => { const g = p.grow[i];
+    const st = ease(clamp01(g / 0.6)), bl = ease(clamp01((g - 0.55) / 0.45));
+    fl.sprout.visible = g < 0.05; fl.stem.scale.set(1, Math.max(0.01, st), 1); fl.stem.visible = g > 0.02;
+    fl.leaves.forEach(l => { l.visible = g > 0.15; l.scale.set(1 * st, 0.25 * st, 0.45 * st); });
+    fl.head.position.y = 0.3 * st; fl.head.visible = g > 0.4; fl.head.scale.setScalar(Math.max(0.01, 0.3 + 0.7 * bl));
+    fl.petals.forEach((pt, k) => { QRc(pt, 'z', (1 - bl) * 1.2); });
+    QRc(fl.f, 'z', 0.05 * Math.sin(TAU * p.T / 2 + i)); });
+}
+function placeRescue(p){
+  const on = move === 'rescue'; sign.visible = raccoon.visible = on; parkEnv.visible = on; ground.visible = !on;
+  if (!on){ droppedSpray.visible = false; pillar.visible = flashSprite.visible = shock.visible = aura.visible = false; return; }
+  const T = p.T; drawSign(p.dirt);
+  const s = raccoonState(T); raccoon.visible = s.visible;
+  raccoon.position.set(s.x, s.bob, s.z); QR(raccoon, 0, s.ry, 0);
+  const u = raccoon.userData;
+  u.legs.forEach((l, i) => QRc(l, 'x', (s.legPh ? 0.6 * Math.sin(s.legPh + i * Math.PI) : 0) * (s.run ? 1.4 : 0.6)));
+  QR(u.arms[0], -1.9 * s.spray - 2.6 * s.scared, 0, -0.3 + 0.08 * Math.sin(TAU * T * 4) * s.spray);
+  QR(u.arms[1], -2.6 * s.scared + (s.run ? 0.5 * Math.sin(s.legPh) : 0), 0, 0.3 + 0.6 * s.scared);
+  u.spray.visible = s.sprayOn;
+  QR(u.tail, 0.25 * Math.sin(TAU * T * 1.5) + 0.8 * s.scared, 0, 0);
+  u.eyes.forEach(e => e.scale.setScalar(1 + 0.6 * s.scared));
+  u.brows.forEach((b2, i) => QRc(b2, 'z', (i ? 1 : -1) * (0.35 - 0.8 * s.scared)));
+  QRc(u.body, 'x', s.run ? -0.25 : 0.06 * Math.sin(TAU * T * 0.8) - 0.15 * (s.peek || 0));
+  // the dropped spray can
+  droppedSpray.visible = T >= 7.55 && T < 11.0;
+  if (droppedSpray.visible){ const u2 = span(T, 7.55, 7.85), from = new THREE.Vector3(RAC_STOP[0] + 0.1, 0.75, RAC_STOP[1] + 0.05), to = new THREE.Vector3(RAC_STOP[0] - 0.1, 0.03, RAC_STOP[1] + 0.25);
+    droppedSpray.position.copy(from.lerp(to, u2 * u2)); QR(droppedSpray, 0, 0, u2 * Math.PI / 2); droppedSpray.scale.setScalar(T > 10.7 ? 1 - span(T, 10.7, 11.0) : 1); }
+  // transformation light
+  const tr = bell(span(T, 3.2, 4.5)) + bell(span(T, 9.5, 10.7)), fl = bell(span(T, 3.62, 4.1)) + bell(span(T, 9.85, 10.35));
+  pillar.visible = tr > 0.01; pillar.material.opacity = 0.32 * tr; pillar.scale.set(0.8, 1, 0.8); pillar.position.set(rig.position.x, 1.3, rig.position.z); QRc(pillar, 'y', T * 3);
+  flashSprite.visible = fl > 0.01; flashSprite.material.opacity = Math.min(1, fl * 1.2); const hp = wpos('Spine'); flashSprite.position.set(hp.x, 0.95, hp.z + 0.3); flashSprite.scale.setScalar(0.6 + 2.4 * fl);
+  const sk = T < 7.0 ? span(T, 6.15, 6.75) : span(T, 7.33, 8.0); shock.visible = sk > 0 && sk < 1; shock.material.opacity = 0.8 * (1 - sk); shock.scale.setScalar(0.2 + 1.6 * sk); shock.position.set(rig.position.x, 0.012, rig.position.z);
+  aura.visible = p.char === 'hero' && T > 7.33 && T < 9.9; aura.material.opacity = 0.35 + 0.15 * Math.sin(TAU * T * 2); aura.position.set(hp.x, 0.95, hp.z - 0.15); aura.scale.set(1.5, 2.2, 1);
+}
+const mouldIdxM = new Map(); const _mv = new THREE.Vector3();
+function placeBed(p){
+  bed.visible = false; pillow.visible = false;
+  mould.visible = move === 'sleep';
+  if (!mould.visible){ mould.userData.blades.visible = false; mould.userData.daisies.forEach(d => d.visible = false); return; }
+  const mesh = skinMesh;
+  if (!mouldIdxM.has(mesh)){ const P = mesh.geometry.attributes.position, a = []; for (let i = 0; i < P.count; i += 2) a.push(i); mouldIdxM.set(mesh, a); }
+  const mouldIdx = mouldIdxM.get(mesh);
+  model.updateMatrixWorld(true);
+  // centre the mattress on her
+  let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; const pts = [];
+  for (const i of mouldIdx){ mesh.getVertexPosition(i, _mv); mesh.localToWorld(_mv); pts.push(_mv.x, _mv.y, _mv.z);
+    x0 = Math.min(x0, _mv.x); x1 = Math.max(x1, _mv.x); z0 = Math.min(z0, _mv.z); z1 = Math.max(z1, _mv.z); }
+  const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+  mould.position.set(cx, 0, cz); QRc(mould, 'y', 0);
+  const NX = MOULD_NX + 1, NZ = MOULD_NZ + 1, dx = MOULD_W / MOULD_NX, dz = MOULD_D / MOULD_NZ;
+  const low = new Float32Array(NX * NZ).fill(Infinity);
+  // lowest point of her body above each grid cell (splatted a little so thin parts still leave a print)
+  for (let k = 0; k < pts.length; k += 3){
+    const gx = (pts[k] - cx + MOULD_W / 2) / dx, gz = (pts[k + 2] - cz + MOULD_D / 2) / dz, y = pts[k + 1];
+    const ix = Math.round(gx), iz = Math.round(gz);
+    for (let ox = -1; ox <= 1; ox++) for (let oz = -1; oz <= 1; oz++){ const a = ix + ox, b = iz + oz; if (a < 0 || b < 0 || a >= NX || b >= NZ) continue;
+      const j = b * NX + a; if (y < low[j]) low[j] = y; }
+  }
+  let base = Infinity; for (const v of low) if (v < base) base = v;
+  const H = new Float32Array(NX * NZ);
+  const rimTop = Math.max(base, 0.12) + 0.11;                 // the grass hugs her sides up to here
+  for (let j = 0; j < H.length; j++) H[j] = low[j] < Infinity ? Math.min(low[j] - 0.004, rimTop) : NaN;
+  // outside her outline: hay at the hug height, sloping down to a rounded edge
+  for (let it = 0; it < 6; it++){
+    for (let b = 0; b < NZ; b++) for (let a = 0; a < NX; a++){ const j = b * NX + a; if (!isNaN(H[j]) && low[j] < Infinity) continue;
+      let s = 0, n = 0; for (const [oa, ob] of [[1,0],[-1,0],[0,1],[0,-1]]){ const aa = a + oa, bb = b + ob; if (aa < 0 || bb < 0 || aa >= NX || bb >= NZ) continue; const q = H[bb * NX + aa]; if (!isNaN(q)){ s += q; n++; } }
+      if (n) H[j] = Math.max(isNaN(H[j]) ? -1 : H[j], s / n); }
+  }
+  const pos = mould.geometry.attributes.position;
+  for (let b = 0; b < NZ; b++) for (let a = 0; a < NX; a++){
+    const j = b * NX + a, u = (a / MOULD_NX) * 2 - 1, w = (b / MOULD_NZ) * 2 - 1, r = Math.hypot(u, w * 1.0);
+    let h = isNaN(H[j]) ? rimTop : H[j];
+    if (low[j] === Infinity) h = Math.min(h, rimTop);
+    const edge = Math.max(0, Math.min(1, (1.0 - r) / 0.28));                 // rounded edge falling to the grass
+    const fluff = 0.012 * Math.sin(a * 1.7) * Math.sin(b * 2.3) * (low[j] === Infinity ? 1 : 0);
+    pos.setY(j, Math.max(0.002, h * Math.sqrt(edge) + fluff * edge));
+  }
+  pos.needsUpdate = true; mould.geometry.computeVertexNormals();
+  const B = mould.userData.blades, dm = new THREE.Object3D(); B.visible = true;
+  const hAt = (u, w) => { const a = Math.round(u * MOULD_NX), b = Math.round(w * MOULD_NZ); return {y: pos.getY(b * NX + a), body: low[b * NX + a] < Infinity}; };
+  mould.userData.bladeUV.forEach((q, i) => { const r = Math.hypot(q[0] * 2 - 1, q[1] * 2 - 1); const h = hAt(q[0], q[1]);
+    if (h.body || r > 0.95){ dm.scale.setScalar(0.0001); } else { dm.position.set(cx + (q[0] - 0.5) * MOULD_W, h.y - 0.01, cz + (q[1] - 0.5) * MOULD_D); QR(dm, q[4] * 0.6, q[2], q[4]); dm.scale.set(1, q[3], 1); }
+    dm.updateMatrix(); B.setMatrixAt(i, dm.matrix); });
+  B.instanceMatrix.needsUpdate = true;
+  mould.userData.daisies.forEach(d => { const [u, w] = d.userData.uv, r = Math.hypot(u * 2 - 1, w * 2 - 1), h = hAt(u, w);
+    d.visible = !h.body && r < 0.9; d.position.set(cx + (u - 0.5) * MOULD_W, h.y + 0.012, cz + (w - 0.5) * MOULD_D); });
+}
+function events(p){ SFX.events(p.events);
+  if (reduceMotion) return;
+  for (const e of p.events){
+    const head = () => wpos('Head', new THREE.Vector3());
+    const above = (v, dy = 0.8) => new THREE.Vector3(v.x, Math.min(v.y + dy, 2.05), v.z);
+    if (e === 'glint'){ const b = headPt(bridgeOff); for (let i = 0; i < 4; i++) spawn(sparkTex, b.clone().add(new THREE.Vector3(0.1, 0.03, 0.05)), new THREE.Vector3(Math.cos(i * 1.57) * 0.2, 0.15 + Math.sin(i * 1.57) * 0.1, 0.1), 0.5, 0.05); }
+    if (e === 'tap' && p._m){ const t2 = p._m.tip; for (let i = 0; i < 4; i++) spawn(sparkTex, t2.clone(), new THREE.Vector3(Math.cos(i * 1.57) * 0.3, 0.25, Math.sin(i * 1.57) * 0.2), 0.5, 0.05); }
+    if (e === 'poof' && p._open){ for (let i = 0; i < 8; i++) spawn(puffTex, p._open.clone().add(new THREE.Vector3(0, 0.08, 0)), new THREE.Vector3(Math.cos(i * 0.785) * 0.35, 0.3 + Math.sin(i * 0.785) * 0.1, Math.sin(i * 0.785) * 0.2), 0.7, 0.12);
+      for (let i = 0; i < 6; i++) spawn(sparkTex, p._open.clone().add(new THREE.Vector3(0, 0.1, 0)), new THREE.Vector3(Math.cos(i * 1.05) * 0.5, 0.45, Math.sin(i * 1.05) * 0.3), 0.8, 0.08); }
+    if (e === 'tada'){ const b = bouquet.position.clone(); showWord(tadaTex, above(b, 0.7)); confetti(b.x, b.y + 0.2, b.z, 12); }
+    if (e === 'wandAway' || e === 'wandBack'){ const r = wpos('RightHandEnd'); for (let i = 0; i < 5; i++) spawn(starTex, r.clone(), new THREE.Vector3(Math.cos(i * 1.26) * 0.3, 0.3, Math.sin(i * 1.26) * 0.2), 0.6, 0.05); }
+    if (e === 'pop' && p._open){ for (let i = 0; i < 5; i++) spawn(sparkTex, p._open.clone(), new THREE.Vector3(Math.cos(i * 1.26) * 0.3, 0.4, 0.1), 0.6, 0.06); }
+    if (e === 'boing'){ const h = headPt(topOff); showWord(carrotTex, above(h, 0.55)); for (let i = 0; i < 3; i++) spawn(heartTex, h.clone(), new THREE.Vector3((i - 1) * 0.2, 0.4, 0.1), 1.0, 0.1); }
+    if (e === 'ribbon' && p._open){ for (let i = 0; i < 10; i++){ const a = i / 10 * TAU; spawn(ribbonTex[i % 4], p._open.clone().add(new THREE.Vector3(0, 0.05, 0)), new THREE.Vector3(Math.cos(a) * 0.45, 1.0 + 0.3 * Math.sin(a * 2), Math.sin(a) * 0.3), 1.3, 0.12); fx[fx.length - 1].gravity = -1.4; } }
+    if (e === 'plop' && p._open){ for (let i = 0; i < 4; i++) spawn(starTex, p._open.clone(), new THREE.Vector3(Math.cos(i * 1.57) * 0.3, 0.3, 0.1), 0.6, 0.05); }
+    if (e === 'bow'){ const h = head(); showWord(thanksTex, above(h)); confetti(h.x, h.y + 0.3, h.z, 14); }
+    if (e.startsWith('bloom')){ const i = +e.slice(5), fl = flowers[i].head.getWorldPosition(new THREE.Vector3()); for (let k = 0; k < 6; k++) spawn(sparkTex, fl.clone(), new THREE.Vector3(Math.cos(k * 1.05) * 0.35, 0.3 + Math.sin(k * 1.05) * 0.2, 0.15), 0.7, 0.06); }
+    if (e === 'allBloom'){ const h = head(); showWord(bloomTex, above(h)); flowers.forEach(fl => { const q = fl.head.getWorldPosition(new THREE.Vector3()); for (let k = 0; k < 3; k++) spawn(starTex, q.clone(), new THREE.Vector3((k - 1) * 0.2, 0.45, 0.1), 0.9, 0.06); }); }
+    if (e === 'reset'){ flowers.forEach(fl => { const q = fl.f.getWorldPosition(new THREE.Vector3()); spawn(puffTex, q.clone().add(new THREE.Vector3(0, 0.1, 0)), new THREE.Vector3(0, 0.2, 0), 0.6, 0.12); }); }
+    if (e === 'spot'){ const h = head(); showWord(spotTex, above(h, 0.7)); }
+    if (e === 'flash'){ const h = wpos('Spine'); for (let i = 0; i < 12; i++){ const a = i / 12 * TAU; spawn(starTex, new THREE.Vector3(h.x, 0.9, h.z + 0.2), new THREE.Vector3(Math.cos(a) * 1.1, Math.sin(a) * 0.9 + 0.2, 0.2), 0.8, 0.09); } }
+    if (e === 'heroName'){ const h = head(); showWord(heroTex, above(h, 0.75)); }
+    if (e === 'sparkle'){ const h = wpos('Spine'); for (let i = 0; i < 10; i++){ const a = i / 10 * TAU; spawn(sparkTex, new THREE.Vector3(h.x + Math.cos(a) * 0.35, 0.75 + Math.sin(a) * 0.35, h.z + 0.25), new THREE.Vector3(Math.cos(a) * 0.6, Math.sin(a) * 0.5 + 0.3, 0.2), 0.7, 0.12); } }
+    if (e === 'land'){ const x = rig.position.x, z = rig.position.z; for (let i = 0; i < 10; i++){ const a = i / 10 * TAU; spawn(dustTex, new THREE.Vector3(x + Math.cos(a) * 0.3, 0.05, z + Math.sin(a) * 0.3), new THREE.Vector3(Math.cos(a) * 0.7, 0.2, Math.sin(a) * 0.5), 0.6, 0.08); } }
+    if (e === 'stomp'){ const x = rig.position.x, z = rig.position.z; showWord(stompTex, new THREE.Vector3(x, 1.95, z));
+      for (let i = 0; i < 12; i++){ const a = i / 12 * TAU; spawn(dustTex, new THREE.Vector3(x + Math.cos(a) * 0.25, 0.05, z + Math.sin(a) * 0.25), new THREE.Vector3(Math.cos(a) * 0.9, 0.25, Math.sin(a) * 0.6), 0.7, 0.09); } }
+    if (e === 'scared'){ const r = raccoon.position.clone(); showWord(scaredTex, new THREE.Vector3(r.x, 1.6, r.z)); for (let i = 0; i < 3; i++) spawn(dropTex, r.clone().add(new THREE.Vector3(0.15, 0.85, 0.1)), new THREE.Vector3(0.2 + i * 0.1, 0.3, 0.1), 0.6, 0.04); }
+    if (e === 'safe'){ const h = head(); showWord(safeTex, above(h, 0.75)); const sp = SIGN_POS.clone().add(new THREE.Vector3(0, 0.85, 0.1)); for (let i = 0; i < 8; i++) spawn(sparkTex, sp.clone(), new THREE.Vector3(Math.cos(i * 0.785) * 0.5, 0.3 + Math.sin(i * 0.785) * 0.25, 0.2), 0.8, 0.08); confetti(h.x, h.y + 0.3, h.z, 12); }
+  }
+  // running dust behind the raccoon and water from the can are continuous effects
+  if (move === 'rescue' && p.T > 1.6 && p.T < 2.6 && crossed(1.6, 0.08)){ const sp = raccoon.userData.spray.getWorldPosition(new THREE.Vector3()); const to = SIGN_POS.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.6, 0.85 + (Math.random() - 0.5) * 0.3, 0.05)); spawn(dropTex, sp.clone().add(new THREE.Vector3(0, 0.1, 0)), to.sub(sp).multiplyScalar(2.2), 0.4, 0.03); fx[fx.length - 1].sp.material.color.setHex([0x9b4dff, 0xff3b6b, 0x3bb4ff][Math.floor(Math.random() * 3)]); }
+  if (move === 'rescue' && p.T > 7.9 && p.T < 9.1 && crossed(7.9, 0.12)) spawn(dustTex, raccoon.position.clone().add(new THREE.Vector3(-0.15, 0.05, 0)), new THREE.Vector3(-0.3, 0.15, 0), 0.5, 0.08);
+  if (move === 'garden' && p.pour > 0.6 && p._spout && crossed(0, 0.06)){ for (let i = 0; i < 2; i++){ spawn(dropTex, p._spout.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.04, 0, (Math.random() - 0.5) * 0.04)), charDir(0, -0.3, 1).multiplyScalar(0.25 + Math.random() * 0.1).add(new THREE.Vector3((Math.random() - 0.5) * 0.15, 0, 0)), 0.45, 0.026); fx[fx.length - 1].gravity = -3.5; } }
+}
+
+// smooth hand-over between moves: blend from the last shown pose for 0.35 s
+const snap = {}; let blendStart = -10, snapChar = null;
+function setMove(name){
+  PARKS.show(name); SFX.move(name, PARKS.key);
+  if (model){ for (const n in bones){ snap[n] = [bones[n].quaternion.clone(), bones[n].position.clone(), bones[n].scale.clone()]; } snap.rigY = rig.position.y; snap.rigQ = rig.quaternion.clone(); snapChar = charName; blendStart = performance.now()/1000; }
+  move = name; t0 = performance.now()/1000; prevT = -0.001; curT = 0;
+  document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
+  statusEl.textContent = names[name];
+}
+document.querySelectorAll('.moves button').forEach(b => b.addEventListener('click', () => { if (!b.disabled) setMove(b.dataset.move); }));
+
+let earAng = 0, earVel = 0, lastY = 0, vyLast = 0, last = performance.now()/1000, zTimer = 0, ry = 0;
+function lieQuat(){
+  const yaw = new THREE.Quaternion().setFromAxisAngle(AX.y, Math.PI / 2 + ry);
+  const tilt = new THREE.Quaternion().setFromAxisAngle(AX.x, -Math.PI / 2);
+  return yaw.multiply(tilt);
+}
+// lowest point of her back (arms, ears and head left out: they may sink into the grass)
+const lieIdxM = new Map();
+function lieLow(){
+  const mesh = skinMesh;
+  if (!lieIdxM.has(mesh)){ const g = mesh.geometry, P = g.attributes.position, SI = g.attributes.skinIndex, SW = g.attributes.skinWeight, a = [];
+    const armIds = new Set(mesh.skeleton.bones.map((b, k) => CFG.armRe.test(b.name) ? k : -1).filter(k => k >= 0));
+    for (let i = 0; i < P.count; i += 3){ const y = P.getY(i), ax = Math.abs(P.getX(i)); let wt = 0; for (let k = 0; k < 4; k++) if (armIds.has(SI.getComponent(i, k))) wt += SW.getComponent(i, k);
+      if (wt > 0.2 || ax > 0.22 || y < CFG.hipY - 0.05 || y > 0.95) continue; a.push(i); }
+    lieIdxM.set(mesh, a); }
+  model.updateMatrixWorld(true); let mn = Infinity; const v = new THREE.Vector3();
+  for (const i of lieIdxM.get(mesh)){ mesh.getVertexPosition(i, v); mesh.localToWorld(v); if (v.y < mn) mn = v.y; }
+  return mn;
+}
+function standY(p){
+  rig.position.y = 0; rig.updateMatrixWorld(true);
+  if (p.lie) return 0.12 - lieLow();
+  return (restFeet - feetLow()) + p.hop;
+}
+function loop(){
+  const now = performance.now()/1000, dt = Math.min(now - last, 0.05); last = now;
+  const t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  rig.position.set(0, 0, 0); QR(rig, 0, ry, 0); rig.scale.set(1, 1, 1);
+  curT = t; if (frozen !== null) prevT = t;
+  const p = pose(move, t);
+  let dr = p.ry - ry; while (dr > Math.PI) dr -= TAU; while (dr < -Math.PI) dr += TAU;
+  ry += dr * (1 - Math.pow(0.002, dt)); if (frozen !== null) ry = p.ry; QRc(rig, 'y', ry + p.spin);
+  const canBlend = snapChar === charName;
+  const bwq = frozen !== null || !canBlend ? 1 : Math.min(1, (now - blendStart) / 0.5);
+  if (p.lie) rig.quaternion.copy(lieQuat());
+  if (bwq < 1 && snap.rigQ) rig.quaternion.slerpQuaternions(snap.rigQ, rig.quaternion.clone(), ease(bwq));
+  rig.updateMatrixWorld(true);
+  rig.position.y = standY(p); rig.position.x = p.x; rig.position.z = p.z;
+  if (p.legFix){ rig.updateMatrixWorld(true);
+    for (const sd of ['Left', 'Right']) for (let it = 0; it < 12; it++){
+      model.updateMatrixWorld(true);
+      const lo = Math.min(wpos(sd + 'Toe').y, wpos(sd + 'Foot').y) - 0.05;
+      if (lo >= 0.06) break;
+      rot(sd + 'UpLeg', 'x', -0.08);
+    } }
+  rig.updateMatrixWorld(true);
+  applyIK(p);
+  if (!p.noAvoid) avoid();
+  const bw = frozen !== null || !canBlend ? 1 : Math.min(1, (now - blendStart) / 0.35);
+  if (bw < 1){ const e = ease(bw); for (const n in bones){ if (!snap[n]) continue; bones[n].quaternion.slerpQuaternions(snap[n][0], bones[n].quaternion.clone(), e); bones[n].position.lerpVectors(snap[n][1], bones[n].position.clone(), e); bones[n].scale.lerpVectors(snap[n][2], bones[n].scale.clone(), e); } }
+  let y = standY(p);
+  if (bw < 1) y = snap.rigY + (y - snap.rigY) * ease(bw);
+  rig.position.set(p.x, y, p.z); rig.scale.set(1/Math.sqrt(p.sy), p.sy, 1/Math.sqrt(p.sy));
+  rig.updateMatrixWorld(true); model.updateMatrixWorld(true);
+  placeMagic(p); placeGarden(p); placeRescue(p); placeBed(p);
+  lidU.value = move === 'sleep' ? lidU.value + (1 - lidU.value) * (1 - Math.pow(0.02, dt)) : p.lid;
+  happyU.value = p.happy;
+  flatEU.value = Math.max(lidU.value, p.happy);
+  if (move === 'sleep' && !reduceMotion){ zTimer -= dt; if (zTimer <= 0){ zTimer = 1.2; const h = wpos('Head'); spawn(zTex, h.clone().add(new THREE.Vector3(0.1, 0.45, 0.25)), new THREE.Vector3(0.14, 0.24, 0), 2.6, 0.16, 1.3); } }
+  if (frozen === null) events(p);
+  prevT = t;
+  updateFx(dt); updateWord(dt);
+  // long ears: springy, lift when she drops, flop when she rises
+  const vy = vyLast;
+  const target = earsToggle.checked ? p.ear - Math.max(-3, Math.min(3, vy)) * 0.12 : 0;
+  if (frozen !== null){ earAng = target; earVel = 0; }
+  else { earVel += (target - earAng) * 110 * dt; earVel *= Math.pow(0.03, dt); earAng += earVel * dt; }
+  earU.value = Math.max(-0.4, Math.min(0.4, earAng));
+  vyLast = (rig.position.y - lastY) / Math.max(dt, 1e-3); lastY = rig.position.y;
+  const s = 1.1 - Math.min(Math.max(rig.position.y, 0), 0.5); shadow.scale.set(s, s, s); shadow.position.set(rig.position.x, 0.002, rig.position.z);
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+window.__cow = {tune(o){ ({HIP_X = HIP_X, HIP_Y = HIP_Y, HAND_IN = HAND_IN, HAND_FW = HAND_FW, FIST = FIST} = o); },setMove, camera, controls, freeze(x){ frozen = x; }, setT(x){ frozen = null; t0 = performance.now()/1000 - x; prevT = x; }};
+
+// sound tags
+for (const [n, g] of [['heart', () => heartTex], ['star', () => starTex], ['z', () => zTex], ['tear', () => tearTex], ['dust', () => dustTex], ['note', () => noteTexes], ['num', () => numTex], ['conf', () => confTex]]) { try { SFX.tag(g(), n); } catch (e) {} }
+SFX.track(rig);
+
+// 3D動畫生成規範 safety layer (meshysafe.js), one per character model
+const __sh = setInterval(() => { if (chars.adult && chars.hero && chars.heroF){ clearInterval(__sh); import('./meshysafe.js').then(m => { window.__SAFE = Object.fromEntries(Object.entries(chars).map(([k, c]) => [k, m.installSafety(THREE, () => c.model, c.bones, rig, scene, Object.assign({ clock: () => (frozen !== null ? frozen : performance.now() / 1000 - t0) }, k === 'heroF' ? { armClear: 0 } : {}))])); }); } }, 300);
+</script>

@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>寶寶動作試作</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+body.embed{margin:0;background:transparent;overflow:hidden}
+body.embed .wrap{padding:0;max-width:none;gap:0}
+body.embed .wrap>*:not(.stage){display:none!important}
+body.embed .stage{position:fixed;inset:0;aspect-ratio:auto;border-radius:0;border:0}
+body.embed .status{display:none}
+</style>
+<script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('embed-doc'),addEventListener('DOMContentLoaded',()=>document.body.classList.add('embed'));</script>
+<style>
+/* Layout: one column — pet tabs, the 3D stage, motion buttons under it, short notes below */
+:root{
+  --bg:#F4F6F1; --surface:#FFFFFF; --fg:#1B2A22; --muted:#55645B; --line:#DCE3DA;
+  --grass:#2B7A4B; --grass-ink:#FFFFFF; --spark:#F5A524; --spark-soft:#FFF1D6;
+  --sky-top:#DCEFE8; --sky-bot:#EEF5E6;
+  --f-display:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#5FBF86; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#5FBF86; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:24px 48px;display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--f-display);font-weight:400;font-size:28px;margin:0;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted)}
+.pets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pets button{min-height:48px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-family:var(--f-display);font-size:18px;cursor:pointer}
+.pets button[aria-pressed="true"]{background:var(--spark);border-color:var(--spark);color:#2A1C00}
+.stage{position:relative;width:100%;aspect-ratio:4/3.4;max-width:100%;border-radius:24px;overflow:hidden;background:linear-gradient(var(--sky-top),var(--sky-bot));border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.status{position:absolute;left:12px;top:12px;background:var(--surface);color:var(--fg);border-radius:99px;padding:4px 12px;font-size:13px;border:1px solid var(--line)}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;pointer-events:none}
+.moves{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.moves.five{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:520px){.moves,.moves.five{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.moves button{min-height:52px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:15px;font-weight:700;cursor:pointer;padding:6px}
+.moves button[aria-pressed="true"]{background:var(--grass);color:var(--grass-ink);border-color:var(--grass)}
+.moves button.sig{border-color:var(--spark)}
+.moves button:focus-visible,.pets button:focus-visible,.toggle input:focus-visible{outline:3px solid var(--spark);outline-offset:2px}
+.toggle{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--muted)}
+.toggle input{width:20px;height:20px;accent-color:var(--grass)}
+.notes{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.notes h2{font-family:var(--f-display);font-weight:400;font-size:19px;margin:0}
+.notes ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.notes li{min-width:0}
+.tip{background:var(--spark-soft);border-radius:14px;padding:10px 14px;font-size:14px}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>寶寶動作試作</h1>
+    <p class="sub">三隻寶寶共用同一套程式動作，沒有用骨架。拖曳可以轉視角，點寶寶會「摸摸」。</p>
+  </header>
+
+  <div class="pets" role="group" aria-label="選寵物">
+    <button data-pet="bunny" aria-pressed="true">兔子</button>
+    <button data-pet="cow" aria-pressed="false">乳牛</button>
+    <button data-pet="puppy" aria-pressed="false">小狗</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="loading" id="loading">模型載入中…</div>
+    <span class="status" id="status" hidden>待機</span>
+  </div>
+
+  <div class="moves five" id="moves" role="group" aria-label="動作">
+    <button data-move="idle" aria-pressed="true">待機</button>
+    <button data-move="binky" aria-pressed="false">開心跳</button>
+    <button data-move="pet" aria-pressed="false">摸摸</button>
+    <button data-move="sleep" aria-pressed="false">睡覺</button>
+    <button data-move="walk" class="sig" aria-pressed="false" id="sigBtn">彈跳走路</button>
+  </div>
+  <label class="toggle"><input type="checkbox" id="ears" checked> 耳朵、尾巴跟著動作晃動</label>
+
+  <section class="notes">
+    <h2>這些動作怎麼做的</h2>
+    <ul>
+      <li><b>每隻五個動作</b>：待機、開心跳、摸摸、睡覺四個共用，第五個是各自的招牌動作（橘框按鈕）。表情依每隻的臉重新對準眼睛和嘴巴的位置。</li>
+      <li><b>兔子招牌「彈跳走路」</b>：一蹦一蹦往前走，踢到石頭跌倒，爬起來哭了。只有兔子會跌倒。兔子的開心跳也會在空中轉一圈。</li>
+      <li><b>乳牛招牌「甩尾打滾」</b>：先側過身甩尾巴，再蹲低往右滾一圈、滾回來，滾的時候眼睛笑成「^ ^」。大耳朵會上下拍動。</li>
+      <li><b>小狗招牌「追尾巴」</b>：發現自己的尾巴，原地追著轉三圈，轉完頭暈搖晃、眼睛變成蚊香圈、頭上繞星星，再開心搖尾巴。垂耳會跟著跳動甩動。</li>
+      <li><b>耳朵和尾巴</b>：沒有骨頭，程式依照每個點離根部多遠讓它擺動，越靠近尖端擺得越多；擺動角度有上限，耳朵不會插進頭裡。</li>
+      <li><b>摸摸的手套</b>：會先量出頭頂表面的位置再放上去，不會陷進頭裡或蓋住眼睛。</li>
+      <li><b>不花 Meshy 點數</b>：寶寶階段只要換模型，動作程式不用重做。</li>
+    </ul>
+    <p class="tip">這是試作：節奏、幅度、表情位置都還能調，例如乳牛滾遠一點、小狗轉少一圈，告訴我就好。</p>
+  </section>
+</div>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+// 3D動畫生成規範 2.1: rotations are written as quaternions (axis-angle products in X-Y-Z order, the same result as before)
+const __QX = new THREE.Vector3(1, 0, 0), __QY = new THREE.Vector3(0, 1, 0), __QZ = new THREE.Vector3(0, 0, 1), __qa = new THREE.Quaternion(), __qb = new THREE.Quaternion(), __qc = new THREE.Quaternion();
+function QR(o, x, y, z){ o.userData.__r = [x, y, z]; __qa.setFromAxisAngle(__QX, x); __qb.setFromAxisAngle(__QY, y); __qc.setFromAxisAngle(__QZ, z); o.quaternion.copy(__qa).multiply(__qb).multiply(__qc); return o; }
+function QRa(o){ return o.userData.__r || [o.rotation.x, o.rotation.y, o.rotation.z]; }   // the angles as last written (not re-derived)
+function QRc(o, ax, v){ const r = QRa(o); return QR(o, ax === 'x' ? v : r[0], ax === 'y' ? v : r[1], ax === 'z' ? v : r[2]); }
+
+import {makeParks} from './parkscenes.js';
+import {makeSfx} from './sparkee-sfx.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+// ---------- per-pet calibration (model space: feet at y=0, height 1.65, facing +z) ----------
+const PETS = {
+  bunny: {
+    label:'兔子', file:'bunny_model.json', size:'約 10 MB',
+    eye:[0.243,1.11], eyeR:[0.13,0.145], eyeZ:0.33, cover:[0.76,0.765,0.75], coverIn:null, split:0,
+    mouth:[0,0.962], mouthR:[0.115,0.052], mouthZ:0.42, mouthCover:[0.76,0.765,0.75], noseExclude:true,
+    frown:[0,0.958,0.05,0.028], open:[0,0.975], openR:[0.062,0.05], openRL:[0.042,0.036], cheek:[0.34,0.985,0.09,0.055],
+    headN:[0,1.05,-0.15], HC:[0,1.02,-0.02], HR:0.53,
+    ear:{x0:0.50, x1:0.57, y0:0.6, y1:9, px:0.55, py:1.34, L:0.65, vertical:true},
+    tail:null, tear:[0.26,0.98,0.5], binkySpin:true, sig:'walk', sigName:'彈跳走路', earClamp:[-0.6,0.8]
+  },
+  cow: {
+    label:'乳牛', file:'cow_model.json', size:'約 1.5 MB',
+    eye:[0.235,1.113], eyeR:[0.102,0.118], eyeZ:0.15, cover:[0.817,0.787,0.78], coverIn:null, split:0,
+    mouth:[0,0.80], mouthR:[0.12,0.05], mouthZ:0.35, mouthCover:[0.73,0.395,0.41], noseExclude:false,
+    frown:[0,0.79,0.06,0.03], open:[0,0.835], openR:[0.075,0.065], openRL:[0.05,0.045], cheek:[0.33,0.982,0.08,0.045],
+    headN:[0,1.026,0.076], HC:[0,1.05,-0.05], HR:0.5, petDir:[0.15,0.68,0.73],
+    ear:{x0:0.53, x1:0.60, y0:1.08, y1:1.45, px:0.53, py:1.25, L:0.25},
+    tail:{yaw:false, p:[0,0.42,-0.42], z0:0.40, z1:0.46, y0:-1, y1:0.5, L:0.4},
+    tear:[0.235,0.98,0.45], binkySpin:false, sig:'roll', sigName:'甩尾打滾', tailGain:1.6, earClamp:[-0.3,0.6]
+  },
+  puppy: {
+    label:'小狗', file:'puppy_model.json', size:'約 1.5 MB',
+    eye:[0.257,1.118], eyeR:[0.112,0.118], eyeZ:0.2, cover:[0.855,0.648,0.29], coverIn:[0.9,0.78,0.61], split:0.185,
+    mouth:[0,0.94], mouthR:[0.125,0.062], mouthZ:0.4, mouthCover:[0.9,0.78,0.61], noseExclude:false,
+    frown:[0,0.95,0.06,0.032], open:[0,0.985], openR:[0.07,0.07], openRL:[0.05,0.05], cheek:[0.36,0.98,0.08,0.045],
+    headN:[0,1.051,0.071], HC:[0,1.12,0.0], HR:0.56,
+    ear:{x0:0.54, x1:0.60, y0:1.0, y1:1.75, px:0.56, py:1.50, L:0.35},
+    tail:{yaw:true, p:[0,0.35,-0.30], z0:0.30, z1:0.38, y0:-1, y1:0.68, L:0.3},
+    tear:[0.257,0.99,0.55], binkySpin:false, sig:'chase', sigName:'追尾巴', tailGain:1.5, earClamp:[-0.06,0.7]
+  }
+};
+
+const stage = document.getElementById('stage');
+const statusEl = document.getElementById('status');
+const loadingEl = document.getElementById('loading');
+const earsToggle = document.getElementById('ears');
+const sigBtn = document.getElementById('sigBtn');
+const movesEl = document.getElementById('moves');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const DEBUG = new URLSearchParams(location.search).has('debug');
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:DEBUG});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb59a, 2.0));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3); scene.add(sun);
+const PARKS = makeParks(THREE, scene, ''); PARKS.show('baby-bunny:idle');
+const SFX = makeSfx({page:'baby', pet:'bunny', stage:'baby', autoLand:true, hasEvents:false, stageEl: document.getElementById('stage')});
+
+const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 50);
+camera.position.set(0.6, 1.25, 4.6);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.75, 0); controls.enablePan = false; controls.enableDamping = true;
+controls.minDistance = 2.5; controls.maxDistance = 7; controls.maxPolarAngle = Math.PI * 0.52;
+
+// ground: soft disc + blob shadow
+const ground = new THREE.Mesh(new THREE.CircleGeometry(2.2, 64), new THREE.MeshLambertMaterial({color:0xcfe5c4}));
+QRc(ground, 'x', -Math.PI/2); ground.material.depthWrite = false; ground.renderOrder = -2; scene.add(ground);
+const shCanvas = document.createElement('canvas'); shCanvas.width = shCanvas.height = 128;
+const sctx = shCanvas.getContext('2d'); const gr = sctx.createRadialGradient(64,64,4,64,64,62);
+gr.addColorStop(0,'rgba(30,50,35,0.45)'); gr.addColorStop(1,'rgba(30,50,35,0)'); sctx.fillStyle = gr; sctx.fillRect(0,0,128,128);
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.5,1.5), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shCanvas), transparent:true, depthWrite:false}));
+QRc(shadow, 'x', -Math.PI/2); shadow.position.y = 0.002; shadow.renderOrder = -1; scene.add(shadow);
+
+const rig = new THREE.Group(); scene.add(rig);        // whole-body motion (rotates around a pivot height)
+const off = new THREE.Group(); rig.add(off);          // shifts the model so the pivot sits at the rig origin
+const squash = new THREE.Group(); off.add(squash);    // squash & stretch around the feet
+const flatEU = {value:0}, flatMU = {value:0}, earU = {value:0}, tailU = {value:0}, dizzyU = {value:0}, lidU = {value:0}, cryU = {value:0}, happyU = {value:0}, loveU = {value:0}, dbgU = {value: DEBUG ? 1 : 0};
+
+// ---------- the pebble the pet trips over ----------
+const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.11, 0), new THREE.MeshStandardMaterial({color:0x9aa39a, roughness:0.95, flatShading:true}));
+rock.scale.set(1.2, 0.7, 1.0); rock.position.set(0.2, 0.06, 0.5); QR(rock, 0.3, 0.6, 0.1); rock.visible = false; scene.add(rock);
+const WALK_T = 7.2;
+
+// ---------- petting mitten (appears during 摸摸) ----------
+const hand = new THREE.Group(); off.add(hand); hand.visible = false;
+{
+  const glove = new THREE.MeshStandardMaterial({color:0xfff4e4, roughness:0.85});
+  const cuffM = new THREE.MeshStandardMaterial({color:0xf5a524, roughness:0.7});
+  const pad = new THREE.MeshStandardMaterial({color:0xffc9c2, roughness:0.9});
+  const ball = new THREE.SphereGeometry(1, 32, 24);
+  const palm = new THREE.Mesh(ball, glove); palm.scale.set(0.17, 0.08, 0.145); hand.add(palm);
+  const tip = new THREE.Mesh(ball, glove); tip.scale.set(0.11, 0.075, 0.135); tip.position.set(-0.12, 0.0, 0); hand.add(tip);
+  const thumb = new THREE.Mesh(new THREE.CapsuleGeometry(0.045, 0.06, 8, 16), glove);
+  QR(thumb, Math.PI/2, 0, -0.5); thumb.position.set(-0.04, 0.0, -0.14); hand.add(thumb);
+  const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.105, 0.115, 0.07, 32), cuffM);
+  QRc(cuff, 'z', Math.PI/2); cuff.position.set(0.19, 0.01, 0); hand.add(cuff);
+  const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.09, 0.6, 24), glove);
+  QRc(arm, 'z', -(Math.PI/2 - 0.5)); arm.position.set(0.48, 0.15, 0); hand.add(arm);
+  [[-0.13, 0.065, -0.05], [-0.15, 0.06, 0.03], [-0.04, 0.075, 0.0]].forEach(([x,y,z], i) => {
+    const d = new THREE.Mesh(ball, pad); const r = i === 2 ? 0.04 : 0.022; d.scale.set(r, 0.012, r); d.position.set(x, y, z); hand.add(d);
+  });
+}
+function handPose(t, sy){
+  const HC = new THREE.Vector3(...cfg.HC), HR = cfg.HR;
+  const per = 2.0, ph = (t % per) / per;
+  let a, stroke = 0;
+  if (ph < 0.18) a = ease(ph / 0.18);
+  else if (ph < 0.82) { a = 1; stroke = (ph - 0.18) / 0.64; }
+  else a = 1 - ease((ph - 0.82) / 0.18);
+  const sx = Math.sin(stroke * Math.PI * 4);          // two back-and-forth strokes across the forehead
+  const pd = cfg.petDir || [0.28, 0.72, 0.66];
+  const n = new THREE.Vector3(pd[0] * sx, pd[1], pd[2]).normalize();
+  const press = stroke > 0 ? 0.012 * Math.abs(Math.cos(stroke * Math.PI * 4)) : 0;
+  let reach = HR + 0.1;
+  if (cfg !== PETS.bunny && pts){                       // fit to the real head surface so the mitten never sinks in
+    let best = 0;
+    for (let i = 0; i < pts.length; i += 3){
+      const dx = pts[i] - HC.x, dy = pts[i+1] - HC.y, dz = pts[i+2] - HC.z;
+      const d = dx*n.x + dy*n.y + dz*n.z; if (d <= best) continue;
+      const ox = dx - n.x*d, oy = dy - n.y*d, oz = dz - n.z*d;
+      if (ox*ox + oy*oy + oz*oz < 0.16*0.16) best = d;   // anything under the palm counts
+    }
+    reach = best + 0.075;
+  }
+  const rest = HC.clone().addScaledVector(n, reach - press);
+  const p = new THREE.Vector3(1.5, 2.3, 1.2).lerp(rest, a);
+  p.y *= sy; const k = 1 / Math.sqrt(sy); p.x *= k; p.z *= k;   // follow the squash of the head
+  const want = new THREE.Vector3(0.7, 0.7, 0.15);
+  const xA = want.sub(n.clone().multiplyScalar(want.dot(n))).normalize();
+  const zA = new THREE.Vector3().crossVectors(xA, n);
+  hand.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xA, n, zA));
+  hand.position.copy(p);
+  hand.scale.setScalar(0.85 + 0.4 * a);
+  return stroke > 0;
+}
+
+// ---------- floating symbols: hearts, music notes, Zzz, tears, dust, stars ----------
+function makeTex(draw){
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); draw(g);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx;
+}
+const heartTex = makeTex(g => {
+  g.translate(64, 66); g.beginPath(); g.moveTo(0, 40);
+  g.bezierCurveTo(-64, -4, -36, -56, 0, -24); g.bezierCurveTo(36, -56, 64, -4, 0, 40); g.closePath();
+  g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ff6f8e'; g.fill();
+});
+const noteTex = color => makeTex(g => {
+  const shape = () => {
+    g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, Math.PI * 2);
+    g.moveTo(62, 92); g.lineTo(62, 20); g.quadraticCurveTo(92, 34, 96, 62);
+  };
+  g.lineJoin = 'round'; g.lineCap = 'round';
+  shape(); g.lineWidth = 20; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ffffff'; g.fill();
+  shape(); g.lineWidth = 9; g.strokeStyle = color; g.stroke();
+  g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, Math.PI * 2); g.fillStyle = color; g.fill();
+});
+const noteTexes = [noteTex('#f5a524'), noteTex('#2b7a4b')];
+const zTex = makeTex(g => {
+  g.font = '900 104px "Huninn", "Noto Sans TC", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.lineJoin = 'round'; g.strokeText('Z', 64, 68); g.fillStyle = '#5a6fa8'; g.fillText('Z', 64, 68);
+});
+const tearTex = makeTex(g => {
+  g.translate(64, 64); g.beginPath(); g.moveTo(0, -52); g.bezierCurveTo(22, -18, 40, 6, 40, 22);
+  g.arc(0, 22, 40, 0, Math.PI); g.bezierCurveTo(-40, 6, -22, -18, 0, -52); g.closePath();
+  g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#6fbfee'; g.fill();
+  g.beginPath(); g.ellipse(-14, 14, 8, 12, -0.4, 0, Math.PI * 2); g.fillStyle = 'rgba(255,255,255,0.8)'; g.fill();
+});
+const dustTex = makeTex(g => { g.beginPath(); g.arc(64, 64, 50, 0, Math.PI * 2); g.fillStyle = '#e6dcc8'; g.fill(); });
+const starTex = makeTex(g => {
+  g.translate(64, 64); g.beginPath();
+  for (let i = 0; i < 10; i++){ const r = i % 2 ? 22 : 54, a = -Math.PI / 2 + i * Math.PI / 5; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); }
+  g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#f5c24a'; g.fill();
+});
+let tearTimer = 0, oofDone = false;
+function tears(){
+  const [tx, ty, tz] = cfg.tear;
+  [-1, 1].forEach(side => {
+    const pos = new THREE.Vector3(side * tx, rig.position.y + ty, rig.position.z + tz);
+    spawn(tearTex, pos, new THREE.Vector3(side * (0.25 + Math.random() * 0.15), -0.05, 0.05), 0.75, 0.13);
+    fx[fx.length - 1].gravity = -2.2;
+  });
+}
+function burst(){
+  for (let i = 0; i < 6; i++){
+    const a = i / 6 * Math.PI * 2;
+    spawn(dustTex, new THREE.Vector3(cur.x + Math.cos(a) * 0.35, 0.12, cur.z + 0.55 + Math.sin(a) * 0.2), new THREE.Vector3(Math.cos(a) * 0.5, 0.25, Math.sin(a) * 0.2), 0.7, 0.2, 0.8);
+  }
+  for (let i = 0; i < 3; i++){
+    spawn(starTex, new THREE.Vector3(cur.x - 0.3 + i * 0.3, 0.75, cur.z + 0.75), new THREE.Vector3(-0.3 + i * 0.3, 0.6, 0), 0.9, 0.16);
+  }
+}
+const fx = [];
+function spawn(map, pos, vel, life, size, grow = 0){ SFX.fx(map);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map, transparent: true, depthWrite: false}));
+  sp.position.copy(pos); sp.renderOrder = 5; scene.add(sp);
+  fx.push({sp, vel, life, size, grow, age: 0, sway: Math.random() * Math.PI * 2});
+}
+function clearFx(){ fx.forEach(f => { scene.remove(f.sp); f.sp.material.dispose(); }); fx.length = 0; }
+function updateFx(dt){
+  for (let i = fx.length - 1; i >= 0; i--){
+    const f = fx[i]; f.age += dt;
+    if (f.age > f.life){ scene.remove(f.sp); f.sp.material.dispose(); fx.splice(i, 1); continue; }
+    const u = f.age / f.life;
+    if (f.gravity) f.vel.y += f.gravity * dt;
+    if (f.orbit){ const a = f.orbit.a + f.age * 4.5; f.sp.position.set(rig.position.x + Math.cos(a) * 0.42, f.orbit.y, rig.position.z + Math.sin(a) * 0.42); }
+    else { f.sp.position.addScaledVector(f.vel, dt); f.sp.position.x += Math.sin(f.age * 5 + f.sway) * 0.004; }
+    const s = f.size * (Math.min(1, f.age / 0.2) * 0.4 + 0.6) * (1 + f.grow * u);
+    f.sp.scale.set(s, s, s);
+    f.sp.material.opacity = Math.min(1, f.age / 0.15) * (u > 0.6 ? 1 - (u - 0.6) / 0.4 : 1);
+  }
+}
+let fxTimer = 0, noteFlip = 0, dizzyDone = false;
+function emitNote(base, r){
+  const side = (noteFlip++ % 2) ? 1 : -1;
+  spawn(noteTexes[noteFlip % 2], new THREE.Vector3(cur.x + side * (0.55 + r() * 0.15), base + 1.1 + r() * 0.3, cur.z + 0.25), new THREE.Vector3(side * 0.25, 0.55, 0), 1.2, 0.22);
+}
+function emit(t, dt, stroking, p){
+  fxTimer -= dt; if (fxTimer > 0 || reduceMotion) return;
+  const base = rig.position.y - cur.pc, r = Math.random;
+  if (move === 'pet' && stroking){
+    const side = r() < 0.5 ? -1 : 1;
+    spawn(heartTex, new THREE.Vector3(side * (0.45 + r() * 0.15), base + 1.35 + r() * 0.2, 0.35), new THREE.Vector3(side * 0.08, 0.45, 0), 1.3, 0.24);
+    fxTimer = 0.4;
+  } else if (move === 'binky'){
+    const per = cfg.binkySpin ? 1.7 : 1.4, ph = (t % per) / per;
+    if (ph > 0.2 && ph < 0.75){ emitNote(base, r); fxTimer = 0.16; }
+  } else if (move === 'sleep'){
+    spawn(zTex, new THREE.Vector3(0.38, base + 1.5, 0.3), new THREE.Vector3(0.16, 0.26, 0), 2.6, 0.14, 1.3);
+    fxTimer = 1.0;
+  } else if (move === 'sig' && p.notes){
+    emitNote(Math.max(0, rig.position.y - 0.8), r); fxTimer = 0.2;
+  }
+}
+function dizzyStars(){
+  for (let i = 0; i < 4; i++){
+    spawn(starTex, new THREE.Vector3(), new THREE.Vector3(), 1.4, 0.13);
+    fx[fx.length - 1].orbit = {a: i * Math.PI / 2, y: rig.position.y + 1.72};
+  }
+}
+
+function resize(){
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage); resize();
+
+// ---------- face prep: when an expression is drawn, the painted eye/mouth disappears into clean skin ----------
+// For each vertex on an eye or the mouth we store the skin colour of the surrounding ring, plus an offset and
+// a normal that sink the eye/mouth bump back onto the surrounding surface, so nothing looks like a closed lid.
+function prepFace(mesh, F){
+  const g = mesh.geometry, P = g.attributes.position, UV = g.attributes.uv, N = g.attributes.normal, n = P.count;
+  const img = mesh.material.map && mesh.material.map.image;
+  const W = img.width, H = img.height, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d', {willReadFrequently: true}); cx.drawImage(img, 0, 0); const px = cx.getImageData(0, 0, W, H).data;
+  const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const colOf = i => { const u = UV.getX(i), v = UV.getY(i);
+    const x = Math.min(W - 1, Math.max(0, Math.floor(((u % 1) + 1) % 1 * W))), y = Math.min(H - 1, Math.max(0, Math.floor(((v % 1) + 1) % 1 * H)));
+    const k = (y * W + x) * 4; return [lin(px[k]), lin(px[k + 1]), lin(px[k + 2])]; };
+  const re = new Float32Array(n), rm = new Float32Array(n), cols = new Array(n);
+  for (let i = 0; i < n; i++){
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i), s = x < 0 ? -1 : 1;
+    re[i] = z > F.eyeZ ? Math.hypot((x - F.eye[0] * s) / F.eyeR[0], (y - F.eye[1]) / F.eyeR[1]) : 99;
+    rm[i] = z > F.mouthZ ? Math.hypot((x - F.mouth[0]) / F.mouthR[0], (y - F.mouth[1]) / F.mouthR[1]) : 99;
+    if (re[i] < 2 || rm[i] < 2.1) cols[i] = colOf(i);
+  }
+  const lum = c => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  const ringE = [], ringM = [];
+  for (let i = 0; i < n; i++){
+    if (re[i] > 1.2 && re[i] < 1.9 && lum(cols[i]) > 0.15) ringE.push(i);
+    else if (rm[i] > 1.25 && rm[i] < 2.0 && re[i] > 1.35 && lum(cols[i]) > 0.15) ringM.push(i);
+  }
+  // centre of the head from the skin ring around the eyes (least-squares sphere)
+  const M = Array.from({length: 4}, () => [0, 0, 0, 0, 0]);
+  for (const i of ringE){ const x = P.getX(i), y = P.getY(i), z = P.getZ(i), r = [2*x, 2*y, 2*z, 1], b = x*x + y*y + z*z;
+    for (let a = 0; a < 4; a++){ for (let c = 0; c < 4; c++) M[a][c] += r[a] * r[c]; M[a][4] += r[a] * b; } }
+  for (let a = 0; a < 4; a++){ let p = a; for (let r = a + 1; r < 4; r++) if (Math.abs(M[r][a]) > Math.abs(M[p][a])) p = r; [M[a], M[p]] = [M[p], M[a]];
+    for (let r = 0; r < 4; r++){ if (r === a) continue; const f = M[r][a] / M[a][a]; for (let c = a; c < 5; c++) M[r][c] -= f * M[a][c]; } }
+  const C = [M[0][4] / M[0][0], M[1][4] / M[1][1], M[2][4] / M[2][2]];
+  // eyes are filled with the dominant skin colour around each eye (keeps a clean, even patch)
+  const domE = [-1, 1].map(sd => { const sel = ringE.filter(j => (P.getX(j) < 0 ? -1 : 1) === sd && P.getY(j) > F.eye[1] && re[j] < 1.6);   // upper half: forehead fur, away from snout and blush
+    return [0, 1, 2].map(k => { const v = sel.map(j => cols[j][k]).sort((a, b) => a - b); return v.length ? v[v.length >> 1] : 0.8; }); });
+  const aSkin = new Float32Array(n * 4), aFlat = new Float32Array(n * 4), aFlatN = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++){
+    aFlatN[i*3] = N.getX(i); aFlatN[i*3+1] = N.getY(i); aFlatN[i*3+2] = N.getZ(i);
+    const own = cols[i]; if (own){ aSkin[i*4] = own[0]; aSkin[i*4+1] = own[1]; aSkin[i*4+2] = own[2]; }
+    const isE = re[i] < 1.35, isM = !isE && rm[i] < 1.4;
+    if (!isE && !isM) continue;
+    const ring = isE ? ringE : ringM, r = isE ? re[i] : rm[i];
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+    const near = [];
+    for (const j of ring){ const d = Math.hypot(P.getX(j) - x, P.getY(j) - y, P.getZ(j) - z); if (near.length < 18 || d < near[near.length - 1][0]){ near.push([d, j]); near.sort((a, b) => a[0] - b[0]); if (near.length > 18) near.pop(); } }
+    if (!near.length) continue;
+    // colour: take ring samples lying in the same direction from the eye/mouth centre, so the skin pattern continues across
+    const sx = x < 0 ? -1 : 1, cxE = isE ? F.eye[0] * sx : F.mouth[0], cyE = isE ? F.eye[1] : F.mouth[1], rx = isE ? F.eyeR[0] : F.mouthR[0], ry = isE ? F.eyeR[1] : F.mouthR[1];
+    const ang = Math.atan2((y - cyE) / ry, (x - cxE) / rx), dirSet = [];
+    for (const j of ring){ const jx = P.getX(j), jy = P.getY(j); if (isE && (jx < 0) !== (x < 0)) continue;
+      let da = Math.abs(Math.atan2((jy - cyE) / ry, (jx - cxE) / rx) - ang); if (da > Math.PI) da = 2 * Math.PI - da;
+      if (da < 0.4) dirSet.push([Math.hypot(jx - x, jy - y, P.getZ(j) - z), j]); }
+    dirSet.sort((a, b) => a[0] - b[0]);
+    const pick = r < 0.6 || dirSet.length < 4 ? near : dirSet.slice(0, 8);   // the very middle blends from all around
+    const med = isE ? domE[x < 0 ? 0 : 1] : [0, 1, 2].map(k => { const v = pick.map(q => cols[q[1]][k]).sort((a, b) => a - b); return v[v.length >> 1]; });
+    let wsum = 0, rad = 0, nx = 0, ny = 0, nz = 0;
+    for (const [d, j] of near.slice(0, 10)){ const w = 1 / (d + 0.01); wsum += w;
+      rad += w * Math.hypot(P.getX(j) - C[0], P.getY(j) - C[1], P.getZ(j) - C[2]); nx += w * N.getX(j); ny += w * N.getY(j); nz += w * N.getZ(j); }
+    rad /= wsum; const nl = Math.hypot(nx, ny, nz) || 1;
+    const dx = x - C[0], dy = y - C[1], dz = z - C[2], dl = Math.hypot(dx, dy, dz) || 1;
+    const fade = 1 - Math.min(1, Math.max(0, (r - 1.05) / 0.3));
+    aSkin[i*4] = med[0]; aSkin[i*4+1] = med[1]; aSkin[i*4+2] = med[2]; aSkin[i*4+3] = fade;
+    aFlat[i*4] = C[0] + dx / dl * rad - x; aFlat[i*4+1] = C[1] + dy / dl * rad - y; aFlat[i*4+2] = C[2] + dz / dl * rad - z; aFlat[i*4+3] = isE ? 1 : 2;
+    aFlatN[i*3] = nx / nl; aFlatN[i*3+1] = ny / nl; aFlatN[i*3+2] = nz / nl;
+  }
+  g.setAttribute('aSkin', new THREE.BufferAttribute(aSkin, 4));
+  g.setAttribute('aFlat', new THREE.BufferAttribute(aFlat, 4));
+  g.setAttribute('aFlatN', new THREE.BufferAttribute(aFlatN, 3));
+}
+const FLAT_VS_HEAD = 'attribute vec4 aSkin;\nattribute vec4 aFlat;\nattribute vec3 aFlatN;\nuniform float uFlatE;\nuniform float uFlatM;\nvarying vec4 vSkin;\nvarying float vFlatW;\n';
+const FLAT_VS_NORMAL = `#include <beginnormal_vertex>
+  float flatW = (aFlat.w > 0.5 && aFlat.w < 1.5 ? uFlatE : (aFlat.w > 1.5 ? uFlatM : 0.0)) * aSkin.a;
+  objectNormal = normalize(mix(objectNormal, aFlatN, flatW));
+  vSkin = aSkin; vFlatW = flatW;`;
+
+// ---------- shaders: face expressions + ear / tail wobble, calibrated per pet ----------
+const f = x => Number(x).toFixed(4);
+const v2 = a => `vec2(${f(a[0])}, ${f(a[1])})`;
+const v3 = a => `vec3(${f(a[0])}, ${f(a[1])}, ${f(a[2])})`;
+function fragCode(c){
+  const EYE = (s) => `vec2(${f(c.eye[0])} * ${s}, ${f(c.eye[1])})`;
+  const cover = c.coverIn ? `(abs(vObj.x) < ${f(c.split)} ? ${v3(c.coverIn)} : ${v3(c.cover)})` : v3(c.cover);
+  const noseOK = c.noseExclude
+    ? `float nosePink = step(0.12, diffuseColor.r - diffuseColor.b) * step(0.45, dot(diffuseColor.rgb, vec3(0.333)));`
+    : `float nosePink = 0.0;`;
+  return `#include <map_fragment>
+  vec3 coverCol = vSkin.rgb;
+  float lidMask = 0.0;
+  if (uLid > 0.01 && vObj.z > ${f(c.eyeZ)}) {
+    float side = vObj.x < 0.0 ? -1.0 : 1.0;
+    vec2 e = (vObj.xy - ${EYE('side')}) / ${v2(c.eyeR)};
+    float r = length(e);
+    if (r < 1.25 && e.y > 1.0 - 2.0 * uLid) {
+      lidMask = smoothstep(1.25, 1.0, r);
+      diffuseColor.rgb = mix(diffuseColor.rgb, coverCol, lidMask);
+      if (uLid > 0.9 && abs(e.x) < 0.7) {
+        float yc = -0.1 - 0.35 * (1.0 - (e.x * e.x) / 0.49);
+        if (abs(e.y - yc) < 0.1) diffuseColor.rgb = vec3(0.09, 0.08, 0.08);
+      }
+    }
+  }
+  if (uCry > 0.01 && vObj.z > ${f(c.eyeZ)}) {
+    float side = vObj.x < 0.0 ? -1.0 : 1.0;
+    vec2 e = (vObj.xy - ${EYE('side')}) / ${v2(c.eyeR)};
+    float r = length(e);
+    if (r < 1.25) {
+      float mk = smoothstep(1.25, 1.0, r) * uCry;
+      diffuseColor.rgb = mix(diffuseColor.rgb, coverCol, mk);
+      lidMask = max(lidMask, mk);
+      if (uCry > 0.9) {
+        vec2 q = vec2(-e.x * side, e.y);
+        vec2 tip = vec2(0.42, 0.0);
+        vec2 a1 = vec2(-0.5, 0.42), a2 = vec2(-0.5, -0.42);
+        vec2 pa = q - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+        vec2 pb = q - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+        if (min(d1, d2) < 0.1) diffuseColor.rgb = vec3(0.09, 0.08, 0.08);
+      }
+    }
+    vec2 mo = (vObj.xy - ${v2(c.mouth)}) / ${v2(c.mouthR)};
+    ${noseOK}
+    if (vObj.z > ${f(c.mouthZ)} && dot(mo, mo) < 1.44 && nosePink < 0.5) {
+      float mm = smoothstep(1.2, 0.95, length(mo)) * uCry;
+      diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, mm);
+      lidMask = max(lidMask, mm);
+      vec2 fr = (vObj.xy - vec2(${f(c.frown[0])}, ${f(c.frown[1])})) / vec2(${f(c.frown[2])}, ${f(c.frown[3])});
+      if (uCry > 0.9 && abs(fr.x) < 1.0) {
+        float yc = -0.5 + 1.0 * (1.0 - fr.x * fr.x);
+        if (abs(fr.y - yc) < 0.32) diffuseColor.rgb = vec3(0.36, 0.2, 0.22);
+      }
+    }
+  }
+  float hl = max(max(uHappy, uLove), uDizzy);
+  if (hl > 0.01 && vObj.z > ${f(c.eyeZ)}) {
+    float side = vObj.x < 0.0 ? -1.0 : 1.0;
+    vec2 e = (vObj.xy - ${EYE('side')}) / ${v2(c.eyeR)};
+    float r = length(e);
+    if (r < 1.25) {
+      float mk = smoothstep(1.25, 1.0, r) * hl;
+      diffuseColor.rgb = mix(diffuseColor.rgb, coverCol, mk);
+      lidMask = max(lidMask, mk);
+      if (uHappy > 0.9) {
+        vec2 tip = vec2(0.0, 0.38), a1 = vec2(-0.5, -0.22), a2 = vec2(0.5, -0.22);
+        vec2 pa = e - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+        vec2 pb = e - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+        if (min(d1, d2) < 0.11) diffuseColor.rgb = vec3(0.09, 0.08, 0.08);
+      }
+      if (uDizzy > 0.9 && r < 0.86) {
+        float th = atan(e.y, e.x * side) + uDizzy * 0.0;
+        float sp = fract(r * 2.4 - th / 6.2832);
+        if (sp < 0.17 || sp > 0.83) diffuseColor.rgb = vec3(0.09, 0.08, 0.08);
+      }
+      if (uLove > 0.9) {
+        vec2 q = vec2(e.x, e.y + 0.1) * 1.35;
+        float hq = pow(q.x * q.x + q.y * q.y - 1.0, 3.0) - q.x * q.x * q.y * q.y * q.y;
+        vec2 q2 = q * 1.18;
+        float hq2 = pow(q2.x * q2.x + q2.y * q2.y - 1.0, 3.0) - q2.x * q2.x * q2.y * q2.y * q2.y;
+        if (hq < 0.0) diffuseColor.rgb = vec3(0.62, 0.1, 0.2);
+        if (hq2 < 0.0) diffuseColor.rgb = vec3(0.98, 0.32, 0.45);
+        if (length(q2 - vec2(-0.32, 0.3)) < 0.16) diffuseColor.rgb = vec3(1.0, 0.85, 0.88);
+      }
+    }
+    vec2 mo = (vObj.xy - ${v2(c.mouth)}) / ${v2(c.mouthR)};
+    ${noseOK}
+    if (vObj.z > ${f(c.mouthZ)} && dot(mo, mo) < 1.44 && nosePink < 0.5) {
+      float mm = smoothstep(1.2, 0.95, length(mo)) * hl;
+      diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, mm);
+      lidMask = max(lidMask, mm);
+      if (hl > 0.9) {
+        vec2 m = (vObj.xy - ${v2(c.open)}) / (uHappy > 0.5 ? ${v2(c.openR)} : ${v2(c.openRL)});
+        if (m.y < 0.1 && length(m) < 1.0) {
+          diffuseColor.rgb = vec3(0.42, 0.12, 0.16);
+          if (length(m - vec2(0.0, -0.78)) < 0.52) diffuseColor.rgb = vec3(0.95, 0.48, 0.55);
+        }
+      }
+    }
+    vec2 b = (vObj.xy - vec2(${f(c.cheek[0])} * side, ${f(c.cheek[1])})) / vec2(${f(c.cheek[2])}, ${f(c.cheek[3])});
+    float bl = length(b);
+    if (bl < 1.0 && vObj.z > 0.0) diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.97, 0.5, 0.56), 0.5 * hl * smoothstep(1.0, 0.2, bl));
+  }
+  if (uDbg > 0.5) diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.1, 0.1), vMask.x * 0.7) + vec3(0.0, 0.0, 0.8) * vMask.y;`;
+}
+function vertCode(c){
+  const E = c.ear;
+  const k = E.vertical ? `clamp((${f(E.py)} - position.y) / ${f(E.L)}, 0.0, 1.0)` : `clamp(length(position.xy - piv) / ${f(E.L)}, 0.0, 1.0)`;
+  let s = `#include <begin_vertex>
+  transformed += aFlat.xyz * flatW;
+  vObj = position;
+  vHeadN = normalize(normalMatrix * normalize(position - ${v3(c.headN)}));
+  float side = position.x < 0.0 ? -1.0 : 1.0;
+  float m = smoothstep(${f(E.x0)}, ${f(E.x1)}, abs(position.x)) * step(${f(E.y0)}, position.y) * step(position.y, ${f(E.y1)});
+  vec2 piv = vec2(${f(E.px)} * side, ${f(E.py)});
+  float k = ${k};
+  float ang = uEar * side * m * k;
+  vec2 d = transformed.xy - piv;
+  float c = cos(ang), s = sin(ang);
+  transformed.xy = mix(transformed.xy, piv + vec2(c*d.x - s*d.y, s*d.x + c*d.y), m);
+  vMask = vec2(m, 0.0);`;
+  if (c.tail){
+    const T = c.tail;
+    s += `
+  float tm = smoothstep(${f(T.z0)}, ${f(T.z1)}, -position.z) * step(${f(T.y0)}, position.y) * step(position.y, ${f(T.y1)});
+  vec3 tp = ${v3(T.p)};
+  float tk = clamp(length(position - tp) / ${f(T.L)}, 0.0, 1.0);
+  float ta = uTail * tm * tk;
+  vec3 dd = transformed - tp; float tc = cos(ta), ts = sin(ta);
+  vec3 rr = ${T.yaw ? 'vec3(tc*dd.x + ts*dd.z, dd.y, -ts*dd.x + tc*dd.z)' : 'vec3(tc*dd.x - ts*dd.y, ts*dd.x + tc*dd.y, dd.z)'};
+  transformed = mix(transformed, tp + rr, tm);
+  vMask.y = tm;`;
+  }
+  return s;
+}
+
+// ---------- model loading (glTF JSON with an embedded base64 buffer, rebuilt into a GLB) ----------
+async function fetchModel(file){
+  const res = await fetch(file);
+  if (!res.ok) throw new Error('fetch ' + res.status);
+  const j = await res.json();
+  const raw = atob(j._bin); delete j._bin;
+  const bin = new Uint8Array(raw.length); for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
+  delete j.buffers[0].uri; j.buffers[0].byteLength = bin.length;
+  let jb = new TextEncoder().encode(JSON.stringify(j));
+  const jLen = Math.ceil(jb.length / 4) * 4, bLen = Math.ceil(bin.length / 4) * 4;
+  const buf = new ArrayBuffer(12 + 8 + jLen + 8 + bLen), dv = new DataView(buf), u8 = new Uint8Array(buf);
+  dv.setUint32(0, 0x46546C67, true); dv.setUint32(4, 2, true); dv.setUint32(8, buf.byteLength, true);
+  dv.setUint32(12, jLen, true); dv.setUint32(16, 0x4E4F534A, true); u8.fill(0x20, 20, 20 + jLen); u8.set(jb, 20);
+  const o = 20 + jLen; dv.setUint32(o, bLen, true); dv.setUint32(o + 4, 0x004E4942, true); u8.set(bin, o + 8);
+  return new Promise((ok, fail) => new GLTFLoader().parse(buf, './', ok, fail));
+}
+const loaded = {};
+async function loadPet(key){
+  if (loaded[key]) return loaded[key];
+  const c = PETS[key];
+  const gltf = await fetchModel(c.file);
+  const model = gltf.scene; const pts = [];
+  model.traverse(o => {
+    if (!o.isMesh) return;
+    o.frustumCulled = false;
+    prepFace(o, c);
+    const pos = o.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i += 2) pts.push(pos.getX(i), pos.getY(i), pos.getZ(i));
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    mats.forEach(m => {
+      m.onBeforeCompile = (sh) => {
+        Object.assign(sh.uniforms, {uFlatE:flatEU, uFlatM:flatMU, uDizzy:dizzyU, uEar:earU, uTail:tailU, uLid:lidU, uCry:cryU, uHappy:happyU, uLove:loveU, uDbg:dbgU});
+        sh.fragmentShader = 'uniform float uDizzy;\nuniform float uLid;\nuniform float uCry;\nuniform float uHappy;\nuniform float uLove;\nuniform float uDbg;\nvarying vec3 vObj;\nvarying vec3 vHeadN;\nvarying vec2 vMask;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader
+          .replace('#include <map_fragment>', fragCode(c))
+          .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+          roughnessFactor = mix(roughnessFactor, 0.85, max(lidMask, vFlatW));`).replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+          metalnessFactor = mix(metalnessFactor, 0.0, max(lidMask, vFlatW));`).replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+          normal = normalize(mix(normal, nonPerturbedNormal, max(lidMask, vFlatW)));`);
+        sh.vertexShader = FLAT_VS_HEAD + 'uniform float uEar;\nuniform float uTail;\nvarying vec3 vObj;\nvarying vec3 vHeadN;\nvarying vec2 vMask;\n' + sh.vertexShader.replace('#include <beginnormal_vertex>', FLAT_VS_NORMAL).replace('#include <begin_vertex>', vertCode(c));
+      };
+      m.customProgramCacheKey = () => 'pet-' + key;
+      m.needsUpdate = true;
+    });
+  });
+  loaded[key] = {model, pts: new Float32Array(pts)};
+  return loaded[key];
+}
+
+let cfg = PETS.bunny, petKey = 'bunny', pts = null, loadToken = 0;
+async function selectPet(key){
+  const token = ++loadToken;
+  document.querySelectorAll('.pets button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pet === key)));
+  if (!loaded[key]){ loadingEl.textContent = `${PETS[key].label}寶寶載入中（${PETS[key].size}）…`; loadingEl.hidden = false; }
+  try {
+    const L = await loadPet(key);
+    if (token !== loadToken) return;
+    while (squash.children.length) squash.remove(squash.children[0]);
+    squash.add(L.model); pts = L.pts; cfg = PETS[key]; petKey = key;
+    loadingEl.hidden = true; statusEl.hidden = false;
+    const wasSig = move === 'walk' || move === 'sig';
+    sigBtn.dataset.move = cfg.sig === 'walk' ? 'walk' : 'sig'; sigBtn.textContent = cfg.sigName;
+    clearFx();
+    setMove(wasSig ? sigBtn.dataset.move : move);
+    if (!running){ running = true; requestAnimationFrame(loop); }
+  } catch (e) {
+    console.error(e); if (token === loadToken){ loadingEl.textContent = '模型載入失敗，請重新整理頁面。'; loadingEl.hidden = false; }
+  }
+}
+document.querySelectorAll('.pets button').forEach(b => b.addEventListener('click', () => selectPet(b.dataset.pet)));
+
+// ---------- motions ----------
+const baseNames = {idle:'待機', walk:'走路', binky:'開心跳', pet:'摸摸', sleep:'睡覺'};
+let move = 'idle', t0 = performance.now()/1000;
+const TAU = Math.PI * 2;
+const ease = x => x<0.5 ? 2*x*x : 1 - Math.pow(-2*x+2, 2)/2;
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const ROLL_T = 6.0, CHASE_T = 5.2;
+
+function pose(name, t){
+  const p = {x:0, y:0, z:0, rx:0, ry:0, rz:0, sy:1, pc:0, ear:0, tail:0, lid:0, cry:0, happy:0, love:0, dz:0, tears:false, oof:false, notes:false, dizzy:false};
+  const dog = petKey === 'puppy', cow = petKey === 'cow';
+  if (name === 'idle'){
+    p.sy = 1 + 0.025*Math.sin(TAU*t/2.4);
+    p.rz = 0.035*Math.sin(TAU*t/3.3);
+    p.ry = 0.12*Math.sin(TAU*t/7);
+    p.ear = 0.05*Math.sin(TAU*t/2.4 + 1.2);
+    p.tail = dog ? 0.28*Math.sin(TAU*t*2.2) : 0.3*Math.sin(TAU*t/1.8);
+    const b = (t % 4.2) / 0.2; p.lid = b < 1 ? Math.sin(Math.PI*b) : 0;   // blink
+  } else if (name === 'walk'){
+    const T = t % WALK_T;
+    p.tail = (dog ? 0.35 : 0.25) * Math.sin(TAU*T*(dog ? 2.6 : 1.2));
+    if (T < 2.4){                                   // bounce-walk toward the camera
+      p.z = -1.15 + 1.2 * (T / 2.4);
+      const per = 0.46, ph = (T % per) / per;      // big springy hops (bunny only)
+      p.y = 0.14 * Math.sin(Math.PI*ph);
+      p.sy = 1 + 0.07*Math.sin(Math.PI*ph) - 0.10*Math.pow(Math.cos(Math.PI*ph), 10);
+      p.rz = 0.13 * Math.sin(TAU*T/(per*2));
+      p.rx = 0.10;
+      p.ry = 0.10 * Math.sin(TAU*T/(per*2));
+    } else if (T < 2.85){                           // toe hits the pebble, tips forward
+      const a = (T - 2.4) / 0.45;
+      p.z = 0.05 + 0.18 * a; p.rx = 0.1 + 1.05 * a * a; p.y = 0.09 * Math.sin(p.rx); p.ear = 0.4; p.sy = 1.04; p.lid = a > 0.3 ? 1 : 0;
+    } else if (T < 3.7){                            // flat on the tummy
+      const a = (T - 2.85) / 0.85;
+      p.z = 0.23; p.rx = 1.15; p.y = 0.09 * Math.sin(1.15); p.sy = 1 - 0.08 * Math.exp(-a * 6); p.rz = 0.05 * Math.sin(T * 9) * (1 - a);
+      p.ear = -0.3; p.oof = T < 2.95; p.lid = 1; p.tail = 0;
+    } else if (T < 4.3){                            // gets back up
+      const a = ease((T - 3.7) / 0.6);
+      p.z = 0.23; p.rx = 1.15 * (1 - a); p.y = 0.09 * Math.sin(p.rx); p.ear = -0.2; p.cry = a > 0.7 ? 1 : 0; p.lid = a > 0.7 ? 0 : 1; p.tail = 0;
+    } else {                                        // sobbing, tail drooping still
+      p.z = 0.23; p.cry = T < WALK_T - 0.25 ? 1 : 0; p.tears = T < WALK_T - 0.5; p.tail = 0.05*Math.sin(T*3);
+      p.y = 0.025 * Math.abs(Math.sin(T * 9)); p.sy = 1 - 0.025 * Math.abs(Math.sin(T * 9)); p.ear = -0.3; p.rz = 0.03 * Math.sin(T * 4.5);
+    }
+  } else if (name === 'binky'){
+    if (cfg.binkySpin){                             // bunny signature: jump and spin in the air
+      const per = 1.7, ph = (t % per) / per;
+      p.happy = ph > 0.12 && ph < 0.94 ? 1 : 0;
+      if (ph < 0.18){ const a = ph/0.18; p.sy = 1 - 0.2*ease(a); p.ear = 0.15*a; }
+      else if (ph < 0.68){ const a = (ph-0.18)/0.5; p.y = 0.75 * Math.sin(Math.PI*a); p.sy = 1.12 - 0.12*a; p.ry = TAU*ease(a); p.rz = 0.25*Math.sin(Math.PI*a); }
+      else if (ph < 0.82){ const a = (ph-0.68)/0.14; p.sy = 1 - 0.18*Math.sin(Math.PI*a); }
+      else { p.sy = 1 + 0.02*Math.sin(TAU*(ph-0.82)/0.18); }
+    } else {                                        // cow & puppy: happy hop with a wiggle
+      const per = 1.4, ph = (t % per) / per;
+      p.happy = ph > 0.1 && ph < 0.95 ? 1 : 0;
+      p.tail = (dog ? 0.6 : 0.45) * Math.sin(TAU*t*(dog ? 3.6 : 2.4));
+      if (ph < 0.2){ const a = ph/0.2; p.sy = 1 - 0.18*ease(a); p.ear = 0.15*a; }
+      else if (ph < 0.7){ const a = (ph-0.2)/0.5; p.y = 0.55 * Math.sin(Math.PI*a); p.sy = 1.1 - 0.1*a; p.rz = 0.18*Math.sin(TAU*a); p.ry = 0.3*Math.sin(TAU*a); }
+      else if (ph < 0.84){ const a = (ph-0.7)/0.14; p.sy = 1 - 0.16*Math.sin(Math.PI*a); }
+      else { p.sy = 1 + 0.02*Math.sin(TAU*(ph-0.84)/0.16); p.rz = 0.05*Math.sin(TAU*t*3); }
+    }
+  } else if (name === 'pet'){
+    const per = 2.0, ph = (t % per) / per;
+    const tilt = Math.sin(Math.PI*Math.min(ph/0.8,1));
+    p.rz = 0.28*tilt + 0.05*Math.sin(TAU*t*3)*tilt;
+    p.sy = 1 - 0.07*tilt;
+    p.ear = 0.35*tilt;
+    p.tail = (dog ? 0.55 : 0.35) * Math.sin(TAU*t*(dog ? 3.2 : 1.6));
+    p.love = ph > 0.12 && ph < 0.88 ? 1 : 0;
+  } else if (name === 'sleep'){
+    p.rx = 0.22; p.y = -0.01;
+    p.sy = 0.96 + 0.03*Math.sin(TAU*t/4);
+    p.rz = 0.04*Math.sin(TAU*t/8);
+    p.ear = -0.18 + 0.03*Math.sin(TAU*t/4);
+    p.tail = 0.06*Math.sin(TAU*t/4);
+    p.lid = 1;
+  } else if (name === 'sig' && cfg.sig === 'roll'){
+    // cow: swish the tail with a side view, crouch, roll right one full turn, roll back, happy bounce
+    const T = t % ROLL_T;
+    if (T < 1.8){
+      const a = ease(clamp01(T / 0.5)) * (1 - ease(clamp01((T - 1.3) / 0.5)));
+      p.ry = 1.2 * a; p.tail = 0.75 * Math.sin(TAU*T*1.9) * (0.4 + 0.6*a);
+      p.rz = 0.05*Math.sin(TAU*T*1.9 + 1); p.ear = 0.1*Math.sin(TAU*T*1.9); p.happy = T > 0.4 && T < 1.6 ? 1 : 0;
+    } else if (T < 2.2){
+      const a = (T - 1.8) / 0.4; p.sy = 1 - 0.15*Math.sin(Math.PI*a*0.5); p.pc = 0.8*ease(a); p.ear = 0.2*a;
+    } else if (T < 3.4){
+      const a = ease((T - 2.2) / 1.2); p.pc = 0.8; p.rz = -TAU*a; p.x = 0.75*a; p.happy = 1; p.notes = true; p.sy = 0.92; p.ear = 0.4*Math.sin(TAU*a*2);
+      p.tail = 0.4*Math.sin(TAU*T*2);
+    } else if (T < 3.6){
+      p.pc = 0.8; p.rz = -TAU; p.x = 0.75; p.happy = 1; p.sy = 0.92;
+    } else if (T < 4.8){
+      const a = ease((T - 3.6) / 1.2); p.pc = 0.8; p.rz = -TAU*(1 - a); p.x = 0.75*(1 - a); p.happy = 1; p.notes = true; p.sy = 0.92; p.ear = 0.4*Math.sin(TAU*a*2);
+      p.tail = 0.4*Math.sin(TAU*T*2);
+    } else {
+      const a = (T - 4.8) / 1.2; p.pc = 0.8*(1 - ease(clamp01(a*2))); p.happy = 1;
+      p.y = 0.12*Math.abs(Math.sin(Math.PI*a*2)); p.sy = 1 + 0.04*Math.sin(Math.PI*a*4); p.tail = 0.5*Math.sin(TAU*T*2.4);
+    }
+  } else if (name === 'sig' && cfg.sig === 'chase'){
+    // puppy: notices her tail, chases it for three turns, gets dizzy, then wags happily
+    const T = t % CHASE_T;
+    p.tail = 0.6*Math.sin(TAU*T*4);
+    if (T < 0.8){
+      const a = ease(T / 0.8); p.ry = 0.5*a; p.rz = 0.08*a; p.ear = 0.2*a;
+    } else if (T < 3.4){
+      const a = (T - 0.8) / 2.6, e = a < 0.15 ? a*a/0.3 : (a > 0.85 ? 0.85 - (1-a)*(1-a)/0.3 : a - 0.075);
+      p.ry = 0.5 + (3*TAU - 0.5) * e / 0.85; p.rz = 0.16; p.rx = 0.12; p.happy = 1; p.notes = true;
+      p.y = 0.07*Math.abs(Math.sin(TAU*T*2.4)); p.ear = 0.25 + 0.2*Math.sin(TAU*T*2.4); p.tail = 0.9*Math.sin(TAU*T*5);
+    } else if (T < 4.4){
+      const a = (T - 3.4) / 1.0; p.ry = 3*TAU; p.dizzy = T < 3.5;
+      p.rz = 0.22*Math.sin(TAU*a*2.2)*(1 - a); p.rx = 0.06*Math.sin(TAU*a*1.6)*(1 - a); p.dz = 1; p.ear = 0.3*Math.sin(TAU*a*2.2)*(1 - a); p.tail = 0.2*Math.sin(TAU*T*2);
+    } else {
+      const a = (T - 4.4) / 0.8; p.ry = 3*TAU; p.happy = 1; p.tail = 0.85*Math.sin(TAU*T*5.5);
+      p.y = 0.08*Math.abs(Math.sin(Math.PI*a*2)); p.sy = 1 - 0.04*Math.abs(Math.sin(Math.PI*a*2));
+    }
+  }
+  return p;
+}
+
+// ear spring: lags behind vertical motion so the ears flop
+let earAng = 0, earVel = 0, lastY = 0;
+const cur = {x:0, y:0, z:0, rx:0, ry:0, rz:0, sy:1, pc:0, tail:0};
+
+function setMove(name){
+  PARKS.show('baby-' + petKey + ':' + (name === 'walk' ? 'sig' : name)); SFX.setPet(petKey); SFX.move(name, PARKS.key);
+  move = name; t0 = performance.now()/1000; dizzyDone = false;
+  if (name === 'sig'){ cur.ry = ((cur.ry % TAU) + TAU) % TAU; if (cur.ry > Math.PI) cur.ry -= TAU; }
+  document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
+  statusEl.textContent = (name === 'sig' || name === 'walk') ? cfg.sigName : (name === 'binky' && cfg.binkySpin ? '開心跳（空中轉圈）' : baseNames[name]);
+}
+document.querySelectorAll('.moves button').forEach(b => b.addEventListener('click', () => setMove(b.dataset.move)));  // the 5th button's move is set per pet
+
+// tap the pet -> pet
+const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2(); let downAt = null;
+renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!downAt || Math.hypot(e.clientX-downAt[0], e.clientY-downAt[1]) > 6) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+  ray.setFromCamera(ndc, camera);
+  const hit = ray.ray.intersectsSphere(new THREE.Sphere(new THREE.Vector3(cur.x, rig.position.y - cur.pc + 0.8, cur.z), 0.75));
+  if (hit) setMove('pet');
+});
+
+// exact ground contact: lowest point of the rotated, squashed model
+const _q = new THREE.Quaternion(), _m = new THREE.Matrix4(), _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion();
+function groundLift(){
+  if (!pts) return 0;
+  _m.makeRotationFromQuaternion(_q1.setFromAxisAngle(new THREE.Vector3(1, 0, 0), cur.rx).multiply(_q2.setFromAxisAngle(new THREE.Vector3(0, 1, 0), cur.ry)).multiply(_q3.setFromAxisAngle(new THREE.Vector3(0, 0, 1), cur.rz)));   // spec 2.1: quaternions
+  const el = _m.elements, r0 = el[1], r1 = el[5], r2 = el[9];   // second row of the rotation
+  const sq = 1 / Math.sqrt(cur.sy), sy = cur.sy, pc = cur.pc;
+  let mn = Infinity;
+  for (let i = 0; i < pts.length; i += 3){
+    const y = r0 * pts[i] * sq + r1 * (pts[i+1] * sy - pc) + r2 * pts[i+2] * sq;
+    if (y < mn) mn = y;
+  }
+  return -mn - pc;   // how far the pivot must rise so the lowest point touches y=0 (relative to standing)
+}
+
+let last = performance.now()/1000, running = false, frozen = null;
+function loop(){
+  const now = performance.now()/1000, dt = Math.min(now-last, 0.05); last = now;
+  const t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  const p = pose(move, t);
+  const k = 1 - Math.pow(0.0005, dt);           // smooth blend between moves
+  if (Math.abs(p.z - cur.z) > 0.6) cur.z = p.z;   // walk loop restarts at the far end
+  const snapSpin = (move === 'binky' && cfg.binkySpin) || move === 'sig';
+  for (const key of ['x','y','z','rx','ry','rz','sy','pc','tail']){
+    const direct = snapSpin && (key === 'ry' || (move === 'sig' && (key === 'rz' || key === 'x' || key === 'pc')));
+    cur[key] += (p[key]-cur[key]) * (direct ? 1 : k);
+  }
+  off.position.y = -cur.pc;
+  QR(rig, cur.rx, cur.ry, cur.rz);
+  const lift = groundLift();
+  rig.position.set(cur.x, cur.y + cur.pc + lift, cur.z);
+  shadow.position.x = cur.x; shadow.position.z = cur.z + Math.sin(cur.rx) * 0.45;
+  rock.visible = move === 'walk';
+  cryU.value = move === 'walk' ? p.cry : cryU.value + (p.cry - cryU.value) * (1 - Math.pow(0.0005, dt));
+  happyU.value = p.happy; loveU.value = p.love; dizzyU.value = p.dz;
+  flatMU.value = Math.max(cryU.value, p.happy, p.love, p.dz);
+  if (p.oof && !oofDone){ oofDone = true; burst(); }
+  if (!p.oof && move === 'walk' && (t % WALK_T) < 1) oofDone = false;
+  if (p.dizzy && !dizzyDone){ dizzyDone = true; dizzyStars(); }
+  if (!p.dizzy && move === 'sig' && (t % CHASE_T) < 1) dizzyDone = false;
+  if (p.tears) tearTimer -= dt; if (p.tears && tearTimer <= 0){ tearTimer = 0.22; tears(); }
+  hand.visible = move === 'pet'; const stroking = hand.visible ? handPose(t, cur.sy) : false;
+  emit(t, dt, stroking, p); updateFx(dt);
+  lidU.value += ((move==='sleep' ? 1 : p.lid) - lidU.value) * (move==='sleep' ? 1 - Math.pow(0.02, dt) : 1);
+  flatEU.value = Math.max(lidU.value, cryU.value, p.happy, p.love, p.dz);
+  const syc = Math.max(0.92, Math.min(1.08, cur.sy));   // 3D動畫生成規範 1.4: squash & stretch per axis 0.92 - 1.08
+  squash.scale.set(Math.min(1.08, 1/Math.sqrt(syc)), syc, Math.min(1.08, 1/Math.sqrt(syc)));
+  const vy = (rig.position.y - lastY) / Math.max(dt, 1e-3); lastY = rig.position.y;
+  const target = earsToggle.checked ? p.ear - Math.max(-3, Math.min(3, vy))*0.45 : 0;
+  earVel += (target - earAng) * 120 * dt; earVel *= Math.pow(0.02, dt); earAng += earVel * dt;
+  earU.value = Math.max(Math.max(-0.52, cfg.earClamp[0]), Math.min(Math.min(0.52, cfg.earClamp[1]), earAng));   // spec 3.2: ear bend <= 30 deg
+  tailU.value = earsToggle.checked ? Math.max(-0.52, Math.min(0.52, cur.tail * (cfg.tailGain || 1))) : 0;   // spec 3.2: tail bend <= 30 deg
+  const s = 1 - Math.min(rig.position.y - cur.pc - lift, 0.8)*0.6; shadow.scale.set(s, s, s); shadow.material.opacity = 0.4 + 0.6*s;
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+window.__sparkee = {setMove, selectPet, camera, controls, get cfg(){ return cfg; }, setT(x){ t0 = performance.now()/1000 - x; }, freeze(x){ frozen = x; }};
+selectPet(new URLSearchParams(location.search).get('pet') || 'bunny');
+
+// sound tags
+for (const [n, g] of [['heart', () => heartTex], ['star', () => starTex], ['z', () => zTex], ['tear', () => tearTex], ['dust', () => dustTex], ['note', () => noteTexes], ['num', () => numTex], ['conf', () => confTex]]) { try { SFX.tag(g(), n); } catch (e) {} }
+SFX.track(rig);
+</script>
