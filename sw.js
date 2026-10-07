@@ -1,5 +1,5 @@
 // Sparkee service worker: the app shell and the 3D pet files are cached so the app opens fast and works with a weak signal.
-const CACHE = 'sparkee-v1';
+const CACHE = 'sparkee-v2';
 self.addEventListener('install', e => { self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
