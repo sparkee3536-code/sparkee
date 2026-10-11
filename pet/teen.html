@@ -100,6 +100,7 @@ function QRa(o){ return o.userData.__r || [o.rotation.x, o.rotation.y, o.rotatio
 function QRc(o, ax, v){ const r = QRa(o); return QR(o, ax === 'x' ? v : r[0], ax === 'y' ? v : r[1], ax === 'z' ? v : r[2]); }
 
 import {makeParks} from './parkscenes.js';
+import {startBar, fetchJSON, endBar} from './loadbar.js';
 import {makeSfx} from './sparkee-sfx.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -306,8 +307,7 @@ function patch(m){
 }
 
 async function fetchModel(file){
-  const res = await fetch(file); if (!res.ok) throw new Error('fetch ' + res.status);
-  const j = await res.json(); const raw = atob(j._bin); delete j._bin;
+  const j = await fetchJSON(file); const raw = atob(j._bin); delete j._bin;
   const bin = new Uint8Array(raw.length); for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
   delete j.buffers[0].uri; j.buffers[0].byteLength = bin.length;
   const jb = new TextEncoder().encode(JSON.stringify(j)); const jLen = Math.ceil(jb.length/4)*4, bLen = Math.ceil(bin.length/4)*4;
@@ -371,6 +371,7 @@ function avoid(){
   }
 }
 
+startBar(loadingEl, '兔子少年', ['teen_model.json']);
 fetchModel('teen_model.json').then(gltf => {
   model = gltf.scene; model.scale.setScalar(CFG.scale);
   model.traverse(o => {
@@ -391,7 +392,7 @@ fetchModel('teen_model.json').then(gltf => {
     for (let i = 0; i < 90; i++){ resetPose(); sampleClip(name, d * i / 90); mn = Math.min(mn, feetLow()); }
     clipLift[name] = Math.max(0, restFeet - mn); }
   resetPose();
-  loadingEl.hidden = true; statusEl.hidden = false;
+  endBar(); loadingEl.hidden = true; statusEl.hidden = false;
   setMove('idle'); requestAnimationFrame(loop);
 }).catch(e => { console.error(e); loadingEl.textContent = '模型載入失敗，請重新整理頁面。'; });
 
