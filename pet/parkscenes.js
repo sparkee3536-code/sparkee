@@ -15,6 +15,7 @@ export function makeParks(THREE, scene, prefix = '') {
     golden: { h: 1.0, s: 1.0, hc: 0xfff6ee, hg: 0xaaa890, sc: 0xffe8cc },
     dusk:   { h: 0.95, s: 0.8, hc: 0xffe4d8, hg: 0x8a7a8a, sc: 0xffb98a },
     night:  { h: 0.72, s: 0.5, hc: 0xc9d4ff, hg: 0x5a6280, sc: 0xb4c2ff },
+    rain:   { h: 0.85, s: 0.45, hc: 0xdfe6ee, hg: 0x7f8f88, sc: 0xcfd8e0 },
   };
   function applyLight(name) {
     const L = LIGHT[name];
@@ -76,7 +77,8 @@ export function makeParks(THREE, scene, prefix = '') {
 
   // ---------- scene registry ----------
   const scenes = {}, built = {};
-  let active = null, activeKey = null;
+  let active = null, activeKey = null, room = null, lastMove = null;
+  const rains = [];
   const clock = { t: 0, last: performance.now() / 1000 };
 
   // ---------- ground: big soft disc + painted 20 m square that fades into it ----------
@@ -988,6 +990,17 @@ export function makeParks(THREE, scene, prefix = '') {
       fireflyCloud(g, r, 20, 0xfff2c0, [-4, 4, 0.4, 1.8, -5, -2.8]);
     } };
 
+  // ---------- 寵物頁場景（2026-10-18 積分商店）：平常待著的地方換成買到的場景；才藝表演的場景不變 ----------
+  const ROOM = { sand: 'teen-puppy:dig', water: 'adult-puppy:bubble', picnic: 'teen-cow:milk', dusk: 'baby-bunny:sleep', night: 'adult-puppy:sleep' };
+  for (const [k, src] of Object.entries(ROOM)) if (scenes[src]) scenes['room:' + k] = scenes[src];
+  scenes['room:rain'] = { name: '雨天', light: 'rain', sky: ['#6f7c8c', '#9aa6b2', '#c9d0d6'],
+    ground: { base: '#7fae6a', specks: ['rgba(40,60,80,0.10)', 'rgba(0,30,0,0.08)'], decals: [{ type: 'ellipse', x: -2.4, z: -1.6, rx: 0.9, rz: 0.5, color: '#8fa8b8', edge: '#7a94a6' }, { type: 'ellipse', x: 2.6, z: -2.4, rx: 0.7, rz: 0.4, color: '#8fa8b8', edge: '#7a94a6' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'], cloudN: 8, cloudCol: 0xc8ced6, hills: [0x7fa070, 0x6f9262, 0x86a678] });
+      const m = mat(0xe4eef8, { transparent: true, opacity: 0.75 });
+      for (let i = 0; i < 160; i++) { const d = add(g, G.box, m, [(r() - 0.5) * 16, r() * 7, -r() * 10 + 2], [0.02, 0.36, 0.02]); rains.push({ o: d, sp: 6 + r() * 3 }); }
+      tree(g, -4.6, -5.4, 'round', 1.5); tree(g, 4.4, -5.8, 'poplar', 1.4);
+    } };
+
   // ---------- build / show ----------
   function build(key) {
     const S = scenes[key]; const g = new THREE.Group(); g.name = key; root.add(g);
@@ -1004,7 +1017,9 @@ export function makeParks(THREE, scene, prefix = '') {
     return built[key];
   }
   function show(move) {
-    const key = move == null ? null : prefix ? prefix + ':' + move : move;
+    lastMove = move;
+    let key = move == null ? null : prefix ? prefix + ':' + move : move;
+    if (room && key && /:idle$/.test(key) && scenes['room:' + room]) key = 'room:' + room;
     if (key === activeKey) return; activeKey = key;
     if (active) active.g.visible = false;
     if (!key || !scenes[key]) { active = null; scene.background = null; scene.fog = null; applyLight(null); return; }
@@ -1031,6 +1046,7 @@ export function makeParks(THREE, scene, prefix = '') {
     for (const b of birds) { const a = t * b.sp + b.ph; b.o.position.set(Math.sin(a) * b.R, b.y + Math.sin(a * 3) * 0.3, b.z + Math.cos(a) * 1.5); b.o.rotation.y = a + Math.PI / 2; const f = Math.sin(t * 9 + b.ph) * 0.5; b.w1.rotation.z = f; b.w2.rotation.z = -f; }
     for (const f of flames) { f.o.scale.y = f.h * (0.85 + 0.3 * Math.abs(Math.sin(t * 7 + f.ph * 2))); }
     for (const tw of twinkles) { if (tw.soft) continue; }
+    for (const d of rains) { if (!d.o.parent.visible) break; d.o.position.y -= d.sp * dt; if (d.o.position.y < 0) d.o.position.y += 7; }
     // camera occlusion: hide a park piece while it sits between the camera and the actor
     _c.copy(cam.position); _d.copy(_t).sub(_c); const L = _d.length(); _d.divideScalar(L);
     for (const s of active.solids) { _p.copy(s.sphere.center).sub(_c); const k = _p.dot(_d); let hide = false;
@@ -1062,7 +1078,8 @@ export function makeParks(THREE, scene, prefix = '') {
   }
   function extent() { const b = new THREE.Box3(); samples.forEach(q => b.union(q.box)); return { min: b.min.toArray().map(v => +v.toFixed(2)), max: b.max.toArray().map(v => +v.toFixed(2)), n: samples.length }; }
 
-  const api = { show, root, names: () => Object.fromEntries(Object.entries(scenes).filter(([k]) => !prefix || k.startsWith(prefix + ':')).map(([k, v]) => [k, v.name])),
+  function setRoom(k) { room = k && k !== 'park' ? k : null; const m = lastMove; activeKey = undefined; show(m); }
+  const api = { show, setRoom, root, names: () => Object.fromEntries(Object.entries(scenes).filter(([k]) => !prefix || k.startsWith(prefix + ':')).map(([k, v]) => [k, v.name])),
     get key() { return activeKey; }, audit: { sample, check, extent, clear() { samples.length = 0; } } };
   window.__parks = api;
   return api;

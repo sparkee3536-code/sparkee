@@ -2,7 +2,7 @@
 // 2026-10-11: big files (3D models, textures, face-detector files, three.js from the CDN) are cache-first with NO
 // background re-download — before, every visit to the pet page re-downloaded the models in the background.
 // When a model file changes, bump CACHE so everyone fetches the new one once.
-const CACHE = 'sparkee-v3';
+const CACHE = 'sparkee-v4';   // 2026-10-18 第 2a 批：寵物頁場景（parkscenes.js）更新
 self.addEventListener('install', e => { self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 const BIG = /(_model\.json|\.jpe?g|\.png|\.wasm|\.onnx|\.mjs)$/i;
