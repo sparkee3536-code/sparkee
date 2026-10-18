@@ -1001,6 +1001,215 @@ export function makeParks(THREE, scene, prefix = '') {
       tree(g, -4.6, -5.4, 'round', 1.5); tree(g, 4.4, -5.8, 'poplar', 1.4);
     } };
 
+  // 2026-10-18：雷克斯三個階段的公園場景（從公園背景審查頁合併進來）
+  // ====================== BABY · 雷克斯 ======================
+  function fern(p, x, z, s = 1, col = 0x4f9a46) {
+    const g = new THREE.Group(); g.position.set(x, 0, z); p.add(g);
+    for (let i = 0; i < 7; i++) { const a = i / 7 * TAU + x; const l = new THREE.Group(); l.rotation.y = a; g.add(l);
+      add(l, G.cone6, i % 2 ? col : 0x5fae4f, [0, 0.32 * s, 0.22 * s], [0.07 * s, 0.6 * s, 0.025 * s], [1.0, 0, 0], { flatShading: true }); }
+    add(g, G.ico, 0x3f8a3f, [0, 0.08 * s, 0], 0.1 * s, null, { flatShading: true });
+    sways.push({ o: g, a: 0.04, f: 0.7, ph: x * 2 + z, axis: 'z' }); g.userData.solid = true; return g;
+  }
+  function dinoSkeleton(p, x, z, ry = 0, s = 1, col = 0xf1e6cf) {       // fossil sculpture: spine, ribs, skull, tail
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; g.scale.setScalar(s); p.add(g);
+    const spine = [[-1.6, 0.5], [-1.0, 0.8], [-0.4, 1.05], [0.2, 1.15], [0.8, 1.2], [1.2, 1.45]];
+    for (let i = 0; i < spine.length - 1; i++) beam(g, [spine[i][0], spine[i][1], 0], [spine[i + 1][0], spine[i + 1][1], 0], 0.05, col);
+    spine.forEach(q => add(g, G.sph, col, [q[0], q[1], 0], 0.075));
+    for (let i = 0; i < 5; i++) { const xx = -0.3 + i * 0.25, yy = 1.08 + i * 0.02; const r = add(g, new THREE.TorusGeometry(0.32 - i * 0.03, 0.03, 6, 16, Math.PI), col, [xx, yy - 0.02, 0], 1, [0, Math.PI / 2, Math.PI]); }
+    add(g, G.box, col, [1.45, 1.55, 0], [0.42, 0.24, 0.24], [0, 0, -0.25]); add(g, G.box, col, [1.62, 1.42, 0], [0.3, 0.08, 0.2], [0, 0, -0.25]);
+    add(g, G.sph, 0x6b5a48, [1.5, 1.6, 0.11], 0.04); add(g, G.sph, 0x6b5a48, [1.5, 1.6, -0.11], 0.04);
+    [[-0.1, 0.12], [0.6, 0.12]].forEach(q => { beam(g, [q[0], 1.05, q[1]], [q[0] + 0.1, 0.45, q[1]], 0.045, col); beam(g, [q[0] + 0.1, 0.45, q[1]], [q[0] - 0.05, 0.02, q[1]], 0.04, col);
+      beam(g, [q[0], 1.05, -q[1]], [q[0] + 0.1, 0.45, -q[1]], 0.045, col); beam(g, [q[0] + 0.1, 0.45, -q[1]], [q[0] - 0.05, 0.02, -q[1]], 0.04, col); });
+    add(g, G.box, 0x8a7a66, [0, 0.06, 0], [3.6, 0.12, 0.8]);
+    g.userData.solid = true; return g;
+  }
+  function volcanoSlide(p, x, z, ry = 0) {
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; p.add(g);
+    add(g, new THREE.CylinderGeometry(0.45, 1.25, 1.5, 9), 0x8a6a52, [0, 0.75, 0], 1, null, { flatShading: true });
+    add(g, new THREE.CylinderGeometry(0.42, 0.46, 0.12, 9), 0xff8a3d, [0, 1.52, 0], 1, null, { flatShading: true });
+    add(g, G.sph, 0xffb43a, [0, 1.6, 0], [0.3, 0.1, 0.3], null, { glow: true });
+    const sl = add(g, G.box, 0xf6c445, [0.95, 0.72, 0.2], [0.45, 0.05, 1.7], [0.62, -0.9, 0]);
+    for (let i = 0; i < 5; i++) add(g, G.box, 0x6b4a32, [-0.95 + i * 0.05, 0.25 + i * 0.27, -0.6 + i * 0.1], [0.4, 0.05, 0.12], [0, 0.9, 0]);
+    for (let i = 0; i < 4; i++) { const a = i * 1.7; add(g, G.ico, 0x6fbf5a, [Math.cos(a) * 0.95, 0.5 + i * 0.15, Math.sin(a) * 0.95], 0.18, null, { flatShading: true }); }
+    g.userData.solid = true; return g;
+  }
+  function weeble(p, x, z, col, face = true, s = 1) {
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.scale.setScalar(s); p.add(g);
+    add(g, G.sph, col, [0, 0.42, 0], [0.42, 0.42, 0.42]); add(g, G.sph, 0xfff3e0, [0, 0.95, 0], 0.26);
+    if (face) { add(g, G.sph, 0x222222, [0.08, 1.0, 0.23], 0.03); add(g, G.sph, 0x222222, [-0.08, 1.0, 0.23], 0.03); add(g, G.sph, 0xff8fa8, [0.16, 0.93, 0.2], [0.05, 0.03, 0.02]); add(g, G.sph, 0xff8fa8, [-0.16, 0.93, 0.2], [0.05, 0.03, 0.02]); }
+    add(g, G.cone, col, [0, 1.28, 0], [0.12, 0.22, 0.12]);
+    sways.push({ o: g, a: 0.12, f: 0.8, ph: x * 1.3, axis: 'z' }); g.userData.solid = true; return g;
+  }
+  function eggSculpture(p, x, z, col = 0xe8d6b0, s = 1) { const m = add(p, G.sph, col, [x, 0.36 * s, z], [0.26 * s, 0.36 * s, 0.26 * s]); m.userData.solid = true; add(p, G.cone, 0xf6c445, [x, 0.76 * s, z], [0.05 * s, 0.1 * s, 0.05 * s]); return m; }
+  function digGrid(p, x, z, w = 2.4, d = 1.2) {
+    const g = new THREE.Group(); g.position.set(x, 0, z); p.add(g);
+    const nx = 4, nz = 2; for (let i = 0; i <= nx; i++) for (let k = 0; k <= nz; k++) { if (i % nx && k % nz) continue; add(g, G.cyl6, 0x9a6a3a, [-w / 2 + i * w / nx, 0.12, -d / 2 + k * d / nz], [0.025, 0.24, 0.025]); }
+    for (let i = 0; i <= nx; i++) beam(g, [-w / 2 + i * w / nx, 0.2, -d / 2], [-w / 2 + i * w / nx, 0.2, d / 2], 0.006, 0xffffff);
+    for (let k = 0; k <= nz; k++) beam(g, [-w / 2, 0.2, -d / 2 + k * d / nz], [w / 2, 0.2, -d / 2 + k * d / nz], 0.006, 0xffffff);
+    add(g, G.box, 0xefe2c6, [0.3, 0.03, 0.1], [0.5, 0.04, 0.12], [0, 0.4, 0]); add(g, G.sph, 0xefe2c6, [0.58, 0.04, 0.0], 0.07);
+    add(g, G.box, 0xefe2c6, [-0.5, 0.03, -0.2], [0.3, 0.04, 0.08], [0, -0.7, 0]);
+    g.userData.solid = true; return g;
+  }
+  function bucket(p, x, z, col = 0xe8584a) { const g = new THREE.Group(); g.position.set(x, 0, z); p.add(g); add(g, new THREE.CylinderGeometry(0.13, 0.1, 0.22, 14), col, [0, 0.11, 0]); add(g, G.torus, 0x777777, [0, 0.22, 0], [0.13, 0.13, 0.5], [0, 0, 0]); beam(g, [0.18, 0.02, 0.05], [0.35, 0.05, 0.15], 0.015, 0xf6c445); add(g, G.box, 0xc9894a, [0.42, 0.06, 0.18], [0.1, 0.05, 0.04], [0, -0.5, 0]); g.userData.solid = true; return g; }
+
+  scenes['baby-rex:idle'] = { name: '恐龍化石廣場', light: 'day', sky: SKY.day,
+    ground: { base: '#88c46c', decals: [{ type: 'tiles', x: 0, z: -4.2, r: 2.4, rings: 3, colors: ['#e8dcc4', '#d6c6a6'] }, { type: 'path', pts: [[0, -1.8], [0, 3]], w: 1.2, color: '#ddcfb4' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      dinoSkeleton(g, -0.2, -4.4, 0.15, 1.0);
+      fern(g, -2.7, -2.7, 1.1); fern(g, 2.8, -2.8, 1.0); fern(g, -3.6, -3.8, 1.3); fern(g, 3.7, -4.0, 1.2);
+      const sg = new THREE.Group(); sg.position.set(-1.95, 0, -2.3); sg.rotation.y = 0.3; g.add(sg); [-0.45, 0.45].forEach(sx => add(sg, G.box, 0x8a6240, [sx, 0.5, 0], [0.06, 1.0, 0.06])); board(sg, '恐龍化石廣場', '#6b8a3a', '#ffffff', [0, 0.92, 0.04], 1.05, 0.32); sg.userData.solid = true;
+      tree(g, -4.8, -5.6, 'round', 1.5); tree(g, 4.9, -5.8, 'pine', 1.4); bench(g, 3.4, -2.4, -0.7);
+    } };
+  scenes['baby-rex:binky'] = { name: '火山溜滑梯', light: 'day', sky: SKY.bright,
+    ground: { base: '#86c66b', decals: [{ type: 'stepping', pts: [[-2.4, -2.4], [-1.8, -2.9], [-1.1, -3.2], [-0.3, -3.3], [0.5, -3.2], [1.2, -2.9]] }, { type: 'ellipse', x: 2.4, z: -4.2, rx: 1.8, rz: 1.3, color: '#e8b98a', edge: 'rgba(150,100,60,0.35)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'] });
+      volcanoSlide(g, 2.4, -4.4, -0.5);
+      fern(g, -3.2, -3.4, 1.1); fern(g, -1.6, -4.4, 0.9); fern(g, 4.4, -2.6, 1.0);
+      for (let i = 0; i < 5; i++) rock(g, -4.2 + i * 0.5, -4.8 - (i % 2) * 0.3, 0.16, 0x9a8a7a);
+      balloonBunch(g, -3.6, -2.4, [0xff8a3d, 0xf6c445, 0x7cc45a, 0xe8584a]);
+      tree(g, -5.2, -5.6, 'round', 1.5, 'lime'); tree(g, 5.4, -6.0, 'round', 1.4);
+    } };
+  scenes['baby-rex:pet'] = { name: '蕨類小森林', light: 'morning', sky: SKY.morning,
+    ground: { base: '#7fbf68', decals: [{ type: 'river', pts: [[-9, -4.8], [-4, -4.2], [0, -4.6], [4, -4.0], [9, -4.6]], w: 0.8, color: '#7cc3e6', bank: '#a89a72' }, { type: 'dots', n: 200, x0: -8, x1: 8, z0: -8, z1: 2, colors: ['#ffffff', '#fff2a0'] }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine', 'round'], ringLeaf: ['deep', 'round'] });
+      [[-2.6, -2.6, 1.2], [-1.6, -3.3, 1.0], [2.4, -2.6, 1.3], [1.4, -3.4, 0.9], [-3.8, -3.0, 1.4], [3.8, -3.2, 1.3], [-0.6, -3.6, 0.8], [0.6, -3.7, 0.9]].forEach(q => fern(g, q[0], q[1], q[2], q[2] > 1.1 ? 0x3f8f4a : 0x4f9a46));
+      for (let i = 0; i < 5; i++) rock(g, -2.2 + i * 1.1, -5.3, 0.2, 0x8f8a80);
+      tree(g, -4.6, -6.0, 'big', 1.3, 'deep'); tree(g, 4.6, -6.2, 'big', 1.2, 'deep'); bridge(g, 1.8, -4.4, 0.08, 1.6);
+    } };
+  scenes['baby-rex:sleep'] = { name: '化石沙坑・星夜', light: 'night', sky: SKY.night,
+    ground: { base: '#4a7354', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [{ type: 'ellipse', x: 0, z: -3.6, rx: 3.0, rz: 1.4, color: '#b8a27a', edge: '#7a6248' }] },
+    build(g, r) { std(g, r, { night: true, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x2f4b48, 0x3b5a52], tuft: 0x3f6a48, moon: [-5, 9, -24, 1.5] });
+      eggSculpture(g, -1.6, -3.4, 0xd8c8a6, 1.0); eggSculpture(g, -1.0, -3.9, 0xe2d4b6, 0.8); eggSculpture(g, 1.5, -3.6, 0xd2c09a, 0.9);
+      sandbox(g, 2.6, -4.6, 1.4, 1.0, false); lamp(g, -3.2, -2.8, true); fern(g, 3.4, -2.6, 1.0, 0x2f6b4f); fern(g, -3.9, -3.9, 1.2, 0x2f6b4f);
+      fireflyCloud(g, r, 28, 0xfff2a0, [-4.5, 4.5, 0.3, 2.0, -5.5, -2.4]);
+    } };
+  scenes['baby-rex:roar'] = { name: '回音岩石山丘', light: 'golden', sky: SKY.golden,
+    ground: { base: '#8cbf68', decals: [{ type: 'dots', n: 220, x0: -8, x1: 8, z0: -8, z1: 2, colors: ['#ffffff', '#ffe46a'] }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'], hills: [0xa8b878, 0x98aa6a], cloudCol: 0xfff0e0 });
+      [[-2.8, -3.6, 0.9], [-1.7, -4.4, 1.3], [-0.2, -5.0, 1.7], [1.6, -4.5, 1.2], [2.9, -3.7, 0.8], [3.8, -4.6, 1.1]].forEach(q => { const m = add(g, G.dodec, 0xb0a48e, [q[0], q[2] * 0.45, q[1]], [q[2], q[2] * 0.9, q[2] * 0.8], [q[0], q[1], 0], { flatShading: true }); m.userData.solid = true; });
+      fern(g, -3.8, -2.6, 1.0); fern(g, 4.2, -2.8, 1.1);
+      const sg = new THREE.Group(); sg.position.set(-2.4, 0, -2.4); sg.rotation.y = 0.35; g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.5, 0], [0.06, 1.0, 0.06]); board(sg, '回音山丘', '#c98a3a', '#ffffff', [0, 0.95, 0.04], 1.0, 0.32); sg.userData.solid = true;
+      birdFlock(g, r, 3);
+    } };
+  scenes['baby-rex:shell'] = { name: '化石挖掘沙坑', light: 'day', sky: SKY.warm,
+    ground: { base: '#89c46c', decals: [{ type: 'ellipse', x: 0.2, z: -0.4, rx: 3.0, rz: 2.4, color: '#e9d3a0', edge: '#c9a46a' }, { type: 'dots', n: 900, x0: -2.7, x1: 3.1, z0: -2.6, z1: 1.8, colors: ['#dcc28c', '#f3e2b8'], size: 0.02 }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'] });
+      digGrid(g, -1.4, -2.9, 2.0, 0.9); bucket(g, 2.0, -2.5, 0xe8584a); bucket(g, 2.5, -2.9, 0x4aa3df);
+      flag(g, -2.7, -2.3, 0xe8584a, 0.7); flag(g, 3.2, -2.2, 0xf6c445, 0.7); flag(g, 0.4, -3.4, 0x7cc45a, 0.8);
+      const sg = new THREE.Group(); sg.position.set(-0.2, 0, -3.6); g.add(sg); [-0.6, 0.6].forEach(sx => add(sg, G.box, 0x8a6240, [sx, 0.6, 0], [0.06, 1.2, 0.06])); board(sg, '化石挖掘區', '#f6c445', '#5a3a28', [0, 1.1, 0.04], 1.3, 0.38); sg.userData.solid = true;
+      for (let i = 0; i < 14; i++) { const a = Math.PI * 0.62 + i / 13 * Math.PI * 0.76; rock(g, 0.2 + Math.sin(a) * 3.3, -0.4 + Math.cos(a) * 2.65, 0.12, 0xc9a46a); }
+      tree(g, -4.6, -4.8, 'round', 1.5); tree(g, 4.8, -5.0, 'poplar', 1.4); fern(g, 4.0, -3.2, 1.0);
+    } };
+  scenes['baby-rex:tumble'] = { name: '不倒翁遊戲區', light: 'day', sky: SKY.bright,
+    ground: { base: '#87c66b', decals: [{ type: 'grid', x: 0, z: -3.4, w: 8.4, d: 2.6, cell: 0.7, colors: ['#ffb3a0', '#ffe08a', '#a8d8f0', '#b8e6b0'], shift: 2 }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'] });
+      weeble(g, -2.6, -3.0, 0xe8584a, true, 1.0); weeble(g, -1.0, -3.9, 0x4aa3df, true, 1.2); weeble(g, 1.3, -3.7, 0x7cc45a, true, 1.1); weeble(g, 2.9, -2.9, 0xf6c445, true, 0.9);
+      bunting(g, [-4.2, 2.0, -4.6], [4.2, 2.0, -4.6], [0xe8584a, 0xf6c445, 0x4aa3df, 0x7cc45a], 0.45); pole(g, -4.2, -4.6, 2.0); pole(g, 4.2, -4.6, 2.0);
+      tree(g, -5.2, -5.2, 'round', 1.5); tree(g, 5.2, -5.4, 'round', 1.4, 'lime');
+    } };
+
+
+  // ---------- 雷克斯少年 (teen-rex): five parks ----------
+  function dandePatch(p, x, z, n, r, s = 1) {              // little dandelion clocks in the grass
+    const g = new THREE.Group(); g.position.set(x, 0, z); p.add(g);
+    for (let i = 0; i < n; i++) { const a = r() * TAU, d = Math.sqrt(r()) * 0.9, h = (0.22 + r() * 0.2) * s;
+      const px = Math.cos(a) * d, pz = Math.sin(a) * d * 0.6;
+      beam(g, [px, 0, pz], [px, h, pz], 0.006 * s, 0x6fa84a);
+      if (i % 3) add(g, G.sph, 0xffffff, [px, h, pz], 0.05 * s, null, { transparent: true, opacity: 0.85 });
+      else add(g, G.sph, 0xf7d23a, [px, h, pz], [0.045 * s, 0.025 * s, 0.045 * s]); }
+    g.userData.solid = true; return g;
+  }
+  function homeBase(p, x, z, ry = 0.78) { const m = add(p, G.box, 0xffffff, [x, 0.02, z], [0.32, 0.04, 0.32], [0, ry, 0]); m.userData.solid = true; return m; }
+  function appleTree(p, x, z, s = 1) { const g = tree(p, x, z, 'big', s, 'round'); const crown = g.children[g.children.length - 1];
+    [[0.5, 0.5, 0.55], [-0.4, 0.45, 0.5], [0.2, 0.25, 0.7], [0.8, 0.7, 0.2], [-0.7, 0.8, 0.1], [0.1, 1.0, 0.5]].forEach(q => add(crown, G.sph, 0xe03a32, [q[0] * s, q[1] * s, q[2] * s], 0.07 * s)); return g; }
+  scenes['teen-rex:idle'] = { name: '恐龍步道入口', light: 'day', sky: SKY.day,
+    ground: { base: '#88c46c', decals: [{ type: 'path', pts: [[0, 3], [0, -1.5], [-1.2, -3.4], [-3.5, -5]], w: 1.4, color: '#ddcfb4', gravel: true },
+      { type: 'stepping', color: '#b89a6a', pts: [[-0.5, -2.2], [-0.9, -2.9], [-1.5, -3.5], [-2.1, -4.0]] }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      dinoSkeleton(g, 2.6, -4.6, -0.5, 0.75);
+      fern(g, -2.6, -2.2, 1.1); fern(g, 2.5, -2.4, 1.0); fern(g, -3.6, -3.4, 1.3);
+      const sg = new THREE.Group(); sg.position.set(-1.9, 0, -2.0); sg.rotation.y = 0.35; g.add(sg); [-0.5, 0.5].forEach(sx => add(sg, G.box, 0x8a6240, [sx, 0.55, 0], [0.07, 1.1, 0.07])); board(sg, '恐龍步道', '#6b8a3a', '#ffffff', [0, 1.0, 0.04], 1.15, 0.34); sg.userData.solid = true;
+      tree(g, -4.6, -5.4, 'big', 1.2); tree(g, 4.8, -5.6, 'pine', 1.4); bench(g, 3.3, -2.6, -0.7);
+    } };
+  scenes['teen-rex:dandelion'] = { name: '蒲公英草原', light: 'morning', sky: SKY.morning,
+    ground: { base: '#93cc72', decals: [{ type: 'dots', n: 420, x0: -8, x1: 8, z0: -8, z1: 3, colors: ['#ffffff', '#ffe46a', '#ffffff'] }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'], hills: [0xa6d488, 0x93c47a] });
+      dandePatch(g, -2.6, -2.4, 26, r, 1.1); dandePatch(g, 2.8, -3.0, 30, r, 1.2); dandePatch(g, -0.6, -4.2, 34, r, 1.3); dandePatch(g, 3.4, -0.4, 14, r, 1.0); dandePatch(g, -3.4, 0.2, 14, r, 1.0);
+      const sg = new THREE.Group(); sg.position.set(-2.2, 0, -1.2); sg.rotation.y = 0.45; g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.5, 0], [0.07, 1.0, 0.07]); board(sg, '蒲公英草原', '#5a9a3a', '#ffffff', [0, 1.0, 0.05], 1.2, 0.32); sg.userData.solid = true;
+      tree(g, -4.8, -5.2, 'round', 1.4); tree(g, 4.6, -5.8, 'poplar', 1.5); bench(g, 2.9, -1.9, -0.6);
+    } };
+  scenes['teen-rex:baseball'] = { name: '樂樂棒球場', light: 'day', sky: SKY.bright,
+    ground: { base: '#7fbf5e', decals: [{ type: 'stripes', w: 1.0, color: 'rgba(255,255,255,0.05)' }, { type: 'ellipse', x: 0.4, z: -1.0, rx: 2.7, rz: 1.9, color: '#d9a876', edge: 'rgba(140,90,50,0.35)' },
+      { type: 'ellipse', x: 1.45, z: 0.1, rx: 0.42, rz: 0.32, color: '#c8925e' }, { type: 'ellipse', x: -0.6, z: 0, rx: 0.5, rz: 0.36, color: '#c8925e' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      homeBase(g, 0.4, -2.2); homeBase(g, -1.3, -1.7); homeBase(g, 2.1, -1.6);
+      fence(g, [-3.0, 0, -1.2], [-3.0, 0, 1.4], 'picket', 0xf3ead8, 0.9); fence(g, [-3.0, 0, -1.2], [-2.0, 0, -2.4], 'picket', 0xf3ead8, 0.9);
+      bleachers(g, 0.6, -4.8, 0, 3.2); const sg = new THREE.Group(); sg.position.set(-1.7, 0, -3.3); g.add(sg); [-0.5, 0.5].forEach(sx => add(sg, G.box, 0xffffff, [sx, 0.6, 0], [0.07, 1.2, 0.07])); board(sg, '樂樂棒球場', '#2b7a4b', '#ffffff', [0, 1.15, 0.05], 1.2, 0.32); sg.userData.solid = true;
+      flag(g, 3.9, -3.2, 0xe8584a, 1.4); tree(g, -4.9, -4.8, 'round', 1.4); tree(g, 5.0, -5.0, 'pine', 1.3);
+    } };
+  scenes['teen-rex:apple'] = { name: '蘋果果園', light: 'golden', sky: SKY.golden,
+    ground: { base: '#8cc46a', decals: [{ type: 'path', pts: [[3, 2], [1.2, 0.6], [-0.4, -0.4], [-3, -1.6]], w: 0.9, color: '#d8c49c' }, { type: 'dots', n: 90, x0: -6, x1: 6, z0: -7, z1: -2.5, colors: ['#e03a32'] }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'], hills: [0x9cc77a, 0x8ab86a] });
+      appleTree(g, -3.6, -4.8, 0.85); appleTree(g, 0.6, -5.4, 0.9); appleTree(g, 3.2, -4.6, 0.85); appleTree(g, 5.0, -2.8, 0.8);
+      basket(g, 2.2, -1.6); basket(g, 2.6, -1.9); blanket(g, 3.4, -1.0, 1.2, 0.9, -0.4, '#e8584a', '#ffffff');
+      const sg = new THREE.Group(); sg.position.set(-2.6, 0, -1.3); sg.rotation.y = 0.5; g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.5, 0], [0.07, 1.0, 0.07]); board(sg, '蘋果果園', '#b8432f', '#ffffff', [0, 1.0, 0.05], 1.1, 0.32); sg.userData.solid = true;
+    } };
+  scenes['teen-rex:sleep'] = { name: '星光草坡・夜', light: 'night', sky: SKY.night,
+    ground: { base: '#45704f', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [{ type: 'path', pts: [[-4, -2.8], [-1, -2.4], [2, -2.9], [5, -2.2]], w: 0.8, color: '#7d7a68' }] },
+    build(g, r) { std(g, r, { night: true, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x2f4b48, 0x3b5a52], tuft: 0x3f6a48, moon: [5, 9, -24, 1.4] });
+      lamp(g, -2.6, -2.2, true); lamp(g, 2.8, -2.6, true); bench(g, 1.4, -3.2, 0.1, 0x8a6240);
+      fern(g, -3.6, -3.4, 1.1, 0x2f6b4f); fern(g, 3.8, -3.8, 1.2, 0x2f6b4f); tree(g, -4.4, -5.0, 'big', 1.2, 'night');
+      fireflyCloud(g, r, 30, 0xfff2a0, [-4.5, 4.5, 0.3, 2.0, -5.5, -2.0]);
+    } };
+
+  // ---------- 雷克斯成年 (adult-rex): six parks ----------
+  scenes['adult-rex:idle'] = { name: '恐龍公園大門', light: 'day', sky: SKY.day,
+    ground: { base: '#86c26a', decals: [{ type: 'path', pts: [[0, 3], [0, -1.6], [0, -5]], w: 1.6, color: '#ddcfb4', gravel: true }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      arch(g, 0, -4.4, '恐龍公園', [0x5aa06a, 0xf6c445, 0xe8584a], 3.4);
+      dinoSkeleton(g, -3.4, -4.2, 0.5, 0.8); volcanoSlide(g, 3.6, -4.8, -0.5);
+      fern(g, -2.6, -2.8, 1.1); fern(g, 2.6, -2.9, 1.0); fern(g, -4.4, -2.6, 1.3); fern(g, 4.4, -2.5, 1.2);
+      tree(g, -5.0, -6.0, 'big', 1.3); tree(g, 5.2, -6.2, 'pine', 1.4); bench(g, 3.6, -2.4, -0.6);
+    } };
+  scenes['adult-rex:fossil'] = { name: '化石挖掘場', light: 'morning', sky: SKY.morning,
+    ground: { base: '#9cc678', decals: [{ type: 'ellipse', x: 0, z: -3.4, rx: 3.6, rz: 1.5, color: '#d8c29a', edge: '#a88a62' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'], hills: [0xb8b080, 0xa8a070] });
+      digGrid(g, -1.8, -3.6, 2.0, 0.9); digGrid(g, 1.8, -3.8, 2.0, 0.9); dinoSkeleton(g, 3.4, -5.6, -0.4, 0.9);
+      bucket(g, -3.2, -2.8, 0xe8584a); bucket(g, 3.3, -2.9, 0x4aa3df); rock(g, -3.9, -3.6, 0.25, 0x9a8f80); rock(g, 3.9, -4.2, 0.3, 0x9a8f80);
+      signpost(g, -3.4, -2.2, 0.4, [['化石挖掘', '#a8743a'], ['小心輕刷', '#5aa94b']]);
+      tree(g, -5.0, -5.8, 'round', 1.3); tree(g, 5.0, -5.6, 'poplar', 1.4);
+    } };
+  scenes['adult-rex:bridge'] = { name: '松鼠森林小溪', light: 'day', sky: SKY.bright,
+    ground: { base: '#7fbe62', decals: [{ type: 'dots', n: 120, x0: -7, x1: 7, z0: -8, z1: -2.6, colors: ['#f6e37a', '#ffffff'] }] },
+    build(g, r) { std(g, r, { ring: ['pine', 'round', 'pine'], ringLeaf: ['deep', 'round'] });
+      tree(g, -3.6, -3.6, 'big', 1.2, 'deep'); tree(g, 3.8, -4.4, 'pine', 1.4); tree(g, -1.2, -5.6, 'pine', 1.3); tree(g, 4.3, -6.2, 'big', 1.2);
+      fern(g, -2.6, -3.0, 1.0); fern(g, 3.0, -3.0, 1.1); reeds(g, -3.0, -1.6, 6); reeds(g, 3.4, -2.0, 5);
+      rock(g, -2.2, -2.9, 0.2); rock(g, 2.4, -3.2, 0.18); mushroomHouse(g, 4.3, -2.8, 0.8);
+    } };
+  scenes['adult-rex:fireworks'] = { name: '星空草原・煙火夜', light: 'night', sky: SKY.deepNight,
+    ground: { base: '#3f6a4c', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'] },
+    build(g, r) { std(g, r, { night: true, starN: 420, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x283f3e, 0x2f4b48], tuft: 0x3f6a48, moon: [-6, 9, -26, 1.1] });
+      lamp(g, -3.2, -2.8, true); lamp(g, 3.3, -2.8, true); bleachers(g, 0, -5.4, 0, 3.6, [0x3a5a8a, 0x8a3a5a, 0x8a7a3a]);
+      stringLights(g, [[-3.2, 2.2, -2.8], [0, 2.6, -4.6], [3.3, 2.2, -2.8]], [0xffd27a, 0xff7ab0, 0x8fd0ff]);
+      blanket(g, -2.6, -3.8, 1.1, 0.8, 0.3, '#4a5a9a', '#ffffff'); fireflyCloud(g, r, 24, 0xfff2a0, [-5, 5, 0.3, 1.6, -6, -2.6]);
+    } };
+  scenes['adult-rex:guide'] = { name: '遊客服務中心廣場', light: 'day', sky: SKY.day,
+    ground: { base: '#88c46c', decals: [{ type: 'ellipse', x: 0, z: -0.2, rx: 3.0, rz: 2.2, color: '#e2d4b4', edge: 'rgba(140,110,70,0.35)' }, { type: 'path', pts: [[0, -2.2], [0, -6]], w: 1.4, color: '#ddcfb4' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      const hq = new THREE.Group(); hq.position.set(0, 0, -5.2); g.add(hq); add(hq, G.box, 0xf3ead8, [0, 0.9, 0], [3.0, 1.8, 1.4]); add(hq, G.box, 0x5aa06a, [0, 1.95, 0], [3.3, 0.3, 1.7]);
+      add(hq, G.box, 0x6fb6ee, [-0.8, 0.9, 0.71], [0.8, 0.7, 0.02]); add(hq, G.box, 0x8a6240, [0.8, 0.6, 0.71], [0.6, 1.2, 0.02]); board(hq, '遊客中心', '#2b7a4b', '#ffffff', [0, 1.55, 0.73], 1.5, 0.36); hq.userData.solid = true;
+      signpost(g, -3.4, -2.8, 0.4, [['溜滑梯 ←', '#e8784a'], ['廁所 →', '#2b7a4b']]); flag(g, 3.6, -3.4, 0x2b7a4b, 1.6); flag(g, -4.4, -4.2, 0xf6c445, 1.4);
+      bench(g, 3.8, -2.4, -0.7); tree(g, -5.0, -5.4, 'round', 1.3); tree(g, 5.0, -5.8, 'big', 1.2); bush(g, -2.4, -3.6, 0.9, 0x5cae4f, true); bush(g, 2.4, -3.6, 0.9, 0x5cae4f, true);
+    } };
+  scenes['adult-rex:sleep'] = { name: '老樹林・星夜', light: 'night', sky: SKY.night,
+    ground: { base: '#45704f', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'] },
+    build(g, r) { std(g, r, { night: true, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x2f4b48, 0x3b5a52], tuft: 0x3f6a48, moon: [5, 9, -24, 1.4] });
+      tree(g, -3.6, -3.8, 'big', 1.3, 'night'); tree(g, 3.8, -4.2, 'big', 1.2, 'night'); tree(g, -1.4, -6.0, 'pine', 1.5, 'night'); tree(g, 2.0, -6.4, 'pine', 1.4, 'night');
+      lamp(g, 2.8, -2.6, true); fern(g, -2.8, -2.6, 1.1, 0x2f6b4f); fern(g, 3.6, -3.0, 1.0, 0x2f6b4f);
+      fireflyCloud(g, r, 30, 0xfff2a0, [-4.5, 4.5, 0.3, 2.0, -5.5, -2.0]);
+    } };
+
+
   // ---------- build / show ----------
   function build(key) {
     const S = scenes[key]; const g = new THREE.Group(); g.name = key; root.add(g);
