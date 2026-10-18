@@ -72,6 +72,11 @@ h1{font-family:var(--f-display);font-weight:400;font-size:28px;margin:0;text-wra
     <button data-move="cheer" aria-pressed="false">歡呼慶祝</button>
     <button data-move="sleep" aria-pressed="false">睡覺</button>
   </div>
+  <div class="moves" role="group" aria-label="餵食反應">
+    <button data-move="eat" aria-pressed="false">開心吃</button>
+    <button data-move="snack" aria-pressed="false">最愛點心</button>
+    <button data-move="refuse" aria-pressed="false">搖頭不吃</button>
+  </div>
   <label class="toggle"><input type="checkbox" id="ears" checked> 耳朵跟著動作晃動</label>
 
   <section class="notes">
@@ -103,6 +108,7 @@ import {makeParks} from './parkscenes.js';
 import {startBar, fetchJSON, endBar} from './loadbar.js';
 import {makeSfx} from './sparkee-sfx.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {makeEat, phases, isEat} from './eatkit.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
 // ---------- teen calibration (model space of the rigged GLB: feet at 0, height 2.2, facing +z) ----------
@@ -143,7 +149,7 @@ const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.1,1.1), new THREE.MeshBa
 QRc(shadow, 'x', -Math.PI/2); shadow.position.y = 0.002; shadow.renderOrder = -1; scene.add(shadow);
 
 const rig = new THREE.Group(); scene.add(rig);
-const flatEU = {value:0}, flatMU = {value:0}, earU = {value:0}, lidU = {value:0}, calmU = {value:0}, happyU = {value:0};
+const flatEU = {value:0}, flatMU = {value:0}, earU = {value:0}, lidU = {value:0}, calmU = {value:0}, happyU = {value:0}, sadU = {value:0};
 
 // ---------- jump rope ----------
 const ropeMat = new THREE.MeshStandardMaterial({color:0xff7aa2, roughness:0.6});
@@ -252,15 +258,15 @@ const v3 = a => `vec3(${f(a[0])}, ${f(a[1])}, ${f(a[2])})`;
 function patch(m){
   const c = CFG;
   m.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, {uFlatE:flatEU, uFlatM:flatMU, uEar:earU, uLid:lidU, uCalm:calmU, uHappy:happyU});
-    sh.fragmentShader = 'uniform float uLid;\nuniform float uCalm;\nuniform float uHappy;\nvarying vec3 vObj;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+    Object.assign(sh.uniforms, {uFlatE:flatEU, uFlatM:flatMU, uEar:earU, uLid:lidU, uCalm:calmU, uHappy:happyU, uSad:sadU});
+    sh.fragmentShader = 'uniform float uLid;\nuniform float uCalm;\nuniform float uHappy;\nuniform float uSad;\nvarying vec3 vObj;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
       float coverM = 0.0;
-      float eyeK = max(uLid, uHappy);
+      float eyeK = max(max(uLid, uHappy), uSad);
       if (eyeK > 0.01 && vObj.z > ${f(c.eyeZ)}) {
         float side = vObj.x < 0.0 ? -1.0 : 1.0;
         vec2 e = (vObj.xy - vec2(${f(c.eye[0])} * side, ${f(c.eye[1])})) / ${v2(c.eyeR)};
         float r = length(e);
-        if (r < 1.25 && (uHappy > 0.5 || e.y > 1.0 - 2.0 * uLid)) {
+        if (r < 1.25 && (uHappy > 0.5 || uSad > 0.5 || e.y > 1.0 - 2.0 * uLid)) {
           coverM = smoothstep(1.25, 1.0, r);
           diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, coverM);
           if (uHappy > 0.9) {
@@ -268,22 +274,29 @@ function patch(m){
             vec2 pa = e - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
             vec2 pb = e - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
             if (min(d1, d2) < 0.12) diffuseColor.rgb = vec3(0.09, 0.08, 0.08);
+          } else if (uSad > 0.9) {
+            // 難過：「> <」眼（2026-10-18 搖頭不吃）
+            vec2 q = vec2(-e.x * side, e.y), tip = vec2(0.42, 0.0), a1 = vec2(-0.5, 0.42), a2 = vec2(-0.5, -0.42);
+            vec2 pa = q - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = q - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.12) diffuseColor.rgb = vec3(0.09, 0.08, 0.08);
           } else if (uLid > 0.9 && abs(e.x) < 0.7) {
             float yc = -0.1 - 0.35 * (1.0 - (e.x * e.x) / 0.49);
             if (abs(e.y - yc) < 0.11) diffuseColor.rgb = vec3(0.09, 0.08, 0.08);
           }
         }
       }
-      if (uCalm > 0.01 && vObj.z > ${f(c.mouthZ)}) {
+      float mouthK = max(uCalm, uSad);
+      if (mouthK > 0.01 && vObj.z > ${f(c.mouthZ)}) {
         vec2 mo = (vObj.xy - ${v2(c.mouth)}) / ${v2(c.mouthR)};
         float r = length(mo);
         if (r < 1.2) {
-          float mm = smoothstep(1.2, 0.95, r) * uCalm;
+          float mm = smoothstep(1.2, 0.95, r) * mouthK;
           diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, mm);
           coverM = max(coverM, mm);
           vec2 q = (vObj.xy - vec2(0.0, ${f(c.mouth[1] + 0.01)})) / vec2(0.045, 0.02);
-          if (uCalm > 0.9 && abs(q.x) < 1.0) {
-            float yc = -0.6 * (1.0 - q.x * q.x);
+          if (mouthK > 0.9 && abs(q.x) < 1.0) {
+            float yc = (uSad > 0.5 ? 0.6 : -0.6) * (1.0 - q.x * q.x);   // 難過時嘴角往下
             if (abs(q.y - yc) < 0.38) diffuseColor.rgb = vec3(0.36, 0.2, 0.22);
           }
         }
@@ -342,7 +355,18 @@ const FEET = ['LeftFoot','RightFoot','LeftToeBase','RightToeBase','LeftToe_End',
 const _v = new THREE.Vector3();
 function wpos(n, out = new THREE.Vector3()){ return bones[n].getWorldPosition(out); }
 function feetLow(){ let mn = Infinity; model.updateMatrixWorld(true); for (const n of FEET){ if (bones[n]) mn = Math.min(mn, wpos(n, _v).y); } return mn; }
-let restFeet = 0, headOff = null;
+let restFeet = 0, headOff = null, faceFront = 0.45, chestFront = 0.3;
+// 手伸到某一點（兩節 CCD，只調上臂和前臂）
+const _j = new THREE.Vector3(), _e = new THREE.Vector3(), _d1 = new THREE.Vector3(), _d2 = new THREE.Vector3(), _ra = new THREE.Vector3();
+function reach(side, target, w){
+  if (w <= 0) return;
+  for (let it = 0; it < 8; it++) for (const n of [side + 'ForeArm', side + 'Arm']){
+    model.updateMatrixWorld(true); wpos(n, _j); gripPoint(side, _e);
+    _d1.subVectors(_e, _j).normalize(); _d2.subVectors(target, _j).normalize();
+    const ang = Math.acos(Math.max(-1, Math.min(1, _d1.dot(_d2)))); if (ang < 1e-3) continue;
+    _ra.crossVectors(_d1, _d2).normalize(); rotWorld(bones[n], _ra, ang * w);
+  }
+}
 
 // keep the hands out of the big head and the round tummy (the library motions were made for slimmer people)
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _n = new THREE.Vector3(), _ax = new THREE.Vector3();
@@ -380,6 +404,14 @@ fetchModel('teen_model.json').then(gltf => {
   });
   rig.add(model); rig.updateMatrixWorld(true); restFeet = feetLow();
   headOff = bones.Head.worldToLocal(model.localToWorld(new THREE.Vector3(0, 1.33, 0)));
+  { // 嘴巴高度附近臉最前面的位置（世界座標）：食物放在它前面
+    let sk = null; model.traverse(o => { if (o.isSkinnedMesh) sk = o; });
+    const v = new THREE.Vector3(), my = CFG.mouth[1] * CFG.scale; let fz = 0;
+    let cz = 0;
+    for (let i = 0; i < sk.geometry.attributes.position.count; i += 3){ sk.getVertexPosition(i, v); sk.localToWorld(v);
+      if (Math.abs(v.x) < 0.2 && v.y > my - 0.25 && v.y < my + 0.08 && v.z > fz) fz = v.z;
+      if (Math.abs(v.x) < 0.22 && v.y > 0.7 && v.y < 1.0 && v.z > cz) cz = v.z; }   // 胸口、肚子最前面
+    faceFront = fz; chestFront = cz; window.__teenSkin = sk; }
   gltf.animations.forEach(a => {
     clips[a.name] = a;
     samplers[a.name] = a.tracks.map(tr => {
@@ -397,15 +429,34 @@ fetchModel('teen_model.json').then(gltf => {
 }).catch(e => { console.error(e); loadingEl.textContent = '模型載入失敗，請重新整理頁面。'; });
 
 // ---------- motions ----------
-const names = {idle:'待機', rope:'跳繩', jacks:'開合跳', cheer:'歡呼慶祝', sleep:'睡覺'};
+const names = {idle:'待機', rope:'跳繩', jacks:'開合跳', cheer:'歡呼慶祝', sleep:'睡覺', eat:'開心吃', snack:'最愛點心', refuse:'搖頭不吃'};
 const CLIP_MOVES = {jacks:'jacks', cheer:'cheer'};
 let move = 'idle', t0 = performance.now()/1000, frozen = null;
 const TAU = Math.PI * 2, ROPE_T = 0.58, YES_AT = 3.72;
 const bell = x => Math.sin(Math.PI * Math.max(0, Math.min(1, x)));
 const ease = x => x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
 function pose(name, t){
-  const p = {hop:0, ear:0, earDirect:false, lid:0, calm:0, happy:0, rope:false, theta:0, ry:0, clip:false, sy:1, star:false, count:0, cheerFx:false, yes:false};
+  const p = {hop:0, ear:0, earDirect:false, lid:0, calm:0, happy:0, sad:0, rope:false, theta:0, ry:0, spin:0, clip:false, sy:1, star:false, count:0, cheerFx:false, yes:false};
   resetPose();
+  if (isEat(name)){
+    // 餵食：開心吃／最愛點心＝雙手抱住食物、舉到嘴巴前，低頭咬三口；搖頭不吃＝湊近聞、搖頭難過、雙手把食物推開
+    const P = phases(name, t); p.eat = P;
+    const br = Math.sin(TAU*t/3.2);
+    rot('Spine1','x', 0.02*br); rot('LeftForeArm','x', -0.12); rot('RightForeArm','x', -0.12);
+    const b = (t % 4.0) / 0.2, blink = b < 1 ? Math.sin(Math.PI*b) : 0;
+    if (name === 'refuse'){
+      const sn = ease(P.sniff) * (1 - ease(P.shake));
+      rot('Spine','x', 0.1*sn); rot('Neck','x', 0.06*sn); rot('Head','x', 0.12*sn);
+      if (P.shake > 0 && P.shake < 1){ const k = Math.sin(Math.PI*P.shake); rot('Head','y', 0.42*Math.sin(TAU*P.shake*3)*k); rot('Head','z', -0.06*k); rot('Spine2','x', -0.04*k); }
+      p.sad = P.sad; p.ear = P.sad ? -0.3 : 0.06*Math.sin(TAU*t/2.6); p.lid = P.sad ? 0 : blink;
+    } else {
+      const nod = P.biting ? P.lunge : 0;
+      rot('Spine2','x', 0.05*nod); rot('Neck','x', 0.1*nod); rot('Head','x', 0.14*nod + 0.05*P.hold);
+      p.happy = P.happy && !P.chew ? 1 : 0; p.lid = P.chew ? 1 : (p.happy ? 0 : blink); p.calm = P.chew;
+      p.hop = 0.08*P.hop; p.spin = TAU*P.spin; p.ear = 0.12*P.hold + (P.yum ? 0.1*Math.sin(TAU*t*1.6) : 0);
+    }
+    return p;
+  }
   if (name === 'jacks'){
     const d = clips.jacks.duration, T = t % d;
     sampleClip('jacks', T); p.clip = true;
@@ -489,7 +540,8 @@ function sampleClip(name, time){
 // smooth hand-over between moves: blend from the last shown pose for 0.35 s
 const snap = {}; let blendStart = -10;
 function setMove(name){
-  PARKS.show(name); SFX.move(name, PARKS.key);
+  if (EATK.wait(name, 'bunny', setMove)) return;   // 食物載好才開始
+  PARKS.show(isEat(name) ? 'idle' : name); SFX.move(name, PARKS.key); EATK.show(name, 'bunny', 0.3);
   if (model){ for (const n in bones){ snap[n] = [bones[n].quaternion.clone(), bones[n].position.clone()]; } snap.rigY = rig.position.y; blendStart = performance.now()/1000; }
   move = name; t0 = performance.now()/1000;
   document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
@@ -501,6 +553,58 @@ document.querySelectorAll('.moves button').forEach(b => b.addEventListener('clic
 const _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3();
 const grips = [new THREE.Vector3(), new THREE.Vector3()];
 function gripPoint(side, out){ wpos(side+'Hand', _p0); wpos(side+'HandMiddle4', _p1); return out.copy(_p0).lerp(_p1, 0.5); }
+
+// ---------- 餵食：食物放在哪裡、手怎麼抱 ----------
+const EATK = makeEat(THREE, GLTFLoader, scene, makeTex, spawn, fx);
+EATK.preload(['hay', 'carrot_cake']); window.__eatPreload = n => EATK.preload(n);
+const FOOD_S = 0.3, _hold = new THREE.Vector3(), _gl = new THREE.Vector3(), _gr = new THREE.Vector3(), _fp = new THREE.Vector3();
+const cpt = (x, y, z, out = new THREE.Vector3()) => rig.localToWorld(out.set(x, y, z));   // 角色空間（腳在 0、面向 +z）→ 世界
+function holdPoint(P, out){
+  const S = CFG.scale, mouthY = CFG.mouth[1] * S;
+  const chest = [0, 0.76, chestFront + FOOD_S / 2 + 0.05], up = [0, mouthY - 0.09, faceFront + FOOD_S / 2 + 0.03];
+  const k = ease(P.lift ?? 0) * (1 - ease(P.lower ?? 0));
+  return cpt(chest[0], chest[1] + (up[1] - chest[1]) * k, chest[2] + (up[2] - chest[2]) * k, out);
+}
+// 頭上靠近食物的點（蒙皮後的實際位置）跑進食物就把食物往前推，手跟著過去（規範：道具不穿模）
+let headIdx = null; const _hv = new THREE.Vector3(), _fbx = new THREE.Box3(), foodPos = new THREE.Vector3();
+function pushOut(pos, k){
+  const sk = window.__teenSkin; if (!sk || k < 0.01) return pos;
+  if (!headIdx){ headIdx = []; const SI = sk.geometry.attributes.skinIndex, SW = sk.geometry.attributes.skinWeight, ids = new Set(sk.skeleton.bones.map((b, i) => /Head|Neck/.test(b.name) ? i : -1).filter(i => i >= 0));
+    for (let i = 0; i < sk.geometry.attributes.position.count; i++){ let w = 0; for (let c = 0; c < 4; c++) if (ids.has(SI.getComponent(i, c))) w += SW.getComponent(i, c); if (w > 0.05 && sk.geometry.attributes.position.getZ(i) > 0) headIdx.push(i); } }
+  model.updateMatrixWorld(true); sk.skeleton.update();
+  EATK.place(pos, k, 1, 0.6); EATK.food.updateMatrixWorld(true); _fbx.setFromObject(EATK.food);   // 轉過、傾斜後真正佔的範圍
+  let push = 0;
+  for (const i of headIdx){ sk.getVertexPosition(i, _hv); sk.localToWorld(_hv);
+    if (_hv.x < _fbx.min.x || _hv.x > _fbx.max.x || _hv.y < _fbx.min.y || _hv.y > _fbx.max.y) continue;
+    const need = _hv.z + 0.006 - _fbx.min.z; if (need > push) push = need; }
+  pos.z += push; window.__teenPush = push; return pos;
+}
+function foodTarget(P){
+  if (move === 'refuse') return cpt(0, 0.76 + 0.06 * Math.sin(Math.PI * P.food.out), chestFront + FOOD_S / 2 + 0.05 + 0.55 * P.food.out, foodPos);
+  holdPoint(P, foodPos); if (P.appear < 1) foodPos.y -= 0.12 * (1 - ease(P.appear));
+  return pushOut(foodPos, P.food.s);
+}
+function eatArms(p){
+  const P = p.eat; model.updateMatrixWorld(true);
+  let w = P.hold || 0, base = foodTarget(P).clone();
+  if (move === 'refuse'){ w = Math.sin(Math.PI * Math.min(1, P.push * 1.25)); base = cpt(0, 0.76, chestFront + FOOD_S / 2 + 0.05 + 0.12 * P.food.out, _hold); }
+  if (w <= 0.001) return;
+  const half = FOOD_S / 2 + 0.05;   // 手掌貼在食物兩側，不埋進去
+  reach('Left', cpt(half, 0, -0.02, _gl).sub(cpt(0, 0, 0, _fp)).add(base), w);
+  reach('Right', cpt(-half, 0, -0.02, _gr).sub(cpt(0, 0, 0, _fp)).add(base), w);
+}
+function placeFood(p, dt){
+  const P = p.eat; model.updateMatrixWorld(true);
+  // 食物固定在要的位置，手伸過來抱（手不夠長時寧可差一點，也不讓食物被拉進身體）；在胸前從下面長大冒出來，不擋臉
+  foodTarget(P);   // 身體高度定好之後再算一次（手和食物一起跟著身體上下）
+  if (move === 'refuse'){
+    EATK.place(foodPos, P.food.s, P.food.a, P.T * 0.6 * (1 - P.food.out));
+  } else {
+    EATK.place(foodPos, P.food.s, P.food.a, P.hold > 0 ? 0.6 : P.T * 0.8);
+    EATK.bite(P, reduceMotion);
+    EATK.yum(P, move, wpos('Head', _gl), dt, reduceMotion);
+  }
+}
 // the rope loop through both grips: tall enough to clear the ears, long enough to sweep under the feet
 function ropePoint(u, theta, out){
   const S = CFG.scale, up = 1.75 * S, down = 0.95 * S, depth = 0.72 * S;
@@ -585,13 +689,13 @@ function extraFx(p, t, dt){
 
 let earAng = 0, earVel = 0, lastY = 0, last = performance.now()/1000, zTimer = 0, ry = 0, starDone = -1;
 function loop(){
-  const now = performance.now()/1000, dt = Math.min(now - last, 0.05); last = now;
+  const now = performance.now()/1000, dt = Math.max(0, Math.min(now - last, 0.05)); last = now;
   const t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
   rig.position.y = 0; QRc(rig, 'y', ry); rig.scale.set(1, 1, 1);
   const p = pose(move, t);
-  ry += (p.ry - ry) * (1 - Math.pow(0.002, dt)); QRc(rig, 'y', ry);
+  ry += (p.ry - ry) * (1 - Math.pow(0.002, dt)); QRc(rig, 'y', ry + p.spin);
   rig.updateMatrixWorld(true);
-  avoid();
+  if (p.eat) eatArms(p); else avoid();
   // blend from the previous pose right after a switch
   const bw = frozen !== null ? 1 : Math.min(1, (now - blendStart) / 0.35);
   if (bw < 1){ const e = ease(bw); for (const n in bones){ if (!snap[n]) continue; bones[n].quaternion.slerpQuaternions(snap[n][0], bones[n].quaternion.clone(), e); bones[n].position.lerpVectors(snap[n][1], bones[n].position.clone(), e); } }
@@ -601,10 +705,11 @@ function loop(){
   if (bw < 1) y = snap.rigY + (y - snap.rigY) * ease(bw);
   rig.position.y = y; rig.scale.set(1/Math.sqrt(p.sy), p.sy, 1/Math.sqrt(p.sy));
   rig.updateMatrixWorld(true);
+  if (p.eat) placeFood(p, dt);
   if (p.rope) updateRope(p.theta); else { if (ropeMesh) ropeMesh.visible = false; handles.forEach(h => h.visible = false); }
   lidU.value = move === 'sleep' ? lidU.value + (1 - lidU.value) * (1 - Math.pow(0.02, dt)) : p.lid;
-  calmU.value = p.calm; happyU.value = p.happy;
-  flatEU.value = Math.max(lidU.value, p.happy); flatMU.value = p.calm;
+  calmU.value = p.calm; happyU.value = p.happy; sadU.value = p.sad;
+  flatEU.value = Math.max(lidU.value, p.happy, p.sad); flatMU.value = Math.max(p.calm, p.sad);
   if (move === 'sleep' && !reduceMotion){ zTimer -= dt; if (zTimer <= 0){ zTimer = 1.1; spawn(zTex, new THREE.Vector3(0.35, 1.75, 0.3), new THREE.Vector3(0.14, 0.24, 0), 2.6, 0.15, 1.3); } }
   const jumpNo = Math.floor(t / ROPE_T);
   if (p.star && starDone !== jumpNo && !reduceMotion){ starDone = jumpNo; for (let i = 0; i < 5; i++){ const a = i/5*TAU; spawn(starTex, new THREE.Vector3(Math.cos(a)*0.45, 0.15, Math.sin(a)*0.3 + 0.2), new THREE.Vector3(Math.cos(a)*0.4, 0.7, Math.sin(a)*0.2), 0.8, 0.14); } }
@@ -619,7 +724,7 @@ function loop(){
   controls.update(); renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
-window.__teen = {setMove, camera, controls, freeze(x){ frozen = x; }};
+window.__teen = {setMove, camera, controls, freeze(x){ frozen = x; }, food: EATK.food, THREE, get skin(){ return window.__teenSkin; }, get faceFront(){ return faceFront; }};
 
 // sound tags
 for (const [n, g] of [['heart', () => heartTex], ['star', () => starTex], ['z', () => zTex], ['tear', () => tearTex], ['dust', () => dustTex], ['note', () => noteTexes], ['num', () => numTex], ['conf', () => confTex]]) { try { SFX.tag(g(), n); } catch (e) {} }
