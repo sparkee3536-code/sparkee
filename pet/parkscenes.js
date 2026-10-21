@@ -750,6 +750,315 @@ export function makeParks(THREE, scene, prefix = '') {
       lamp(g, -2.4, -2.6); lamp(g, 2.4, -2.6); tree(g, 0, -5.6, 'big', 1.2);
     } };
 
+  // ====================== BABY · 溜溜象（2026-10-21，傳說第一位：最愛溜滑梯、想念冰河）======================
+  scenes['baby-mammoth:idle'] = { name: '溜滑梯廣場', light: 'day', sky: SKY.bright,
+    ground: { base: '#8bc96e', decals: [{ type: 'ellipse', x: 0, z: -3.4, rx: 4.4, rz: 1.7, color: '#e9c98a', edge: 'rgba(150,110,60,0.3)' }, { type: 'dots', n: 160, x0: -8, x1: 8, z0: -8, z1: 2, colors: ['#ffffff', '#fff2a0'] }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'] });
+      slide(g, -2.5, -3.6, 0.5, 0xff8a3d, 0x4aa3df); slide(g, 2.7, -3.9, -0.55, 0x7cc45a, 0xe8584a);
+      const sg = new THREE.Group(); sg.position.set(0.2, 0, -4.6); g.add(sg); [-0.7, 0.7].forEach(sx => add(sg, G.box, 0x8a6240, [sx, 0.6, 0], [0.08, 1.2, 0.08])); board(sg, '溜溜公園', '#8fd0ef', '#1f4f6e', [0, 1.1, 0.05], 1.3, 0.42); sg.userData.solid = true;
+      tree(g, -4.6, -5.0, 'round', 1.4); tree(g, 4.8, -5.4, 'poplar', 1.3, 'lime'); bush(g, -1.0, -2.6, 0.8, 0x5cae4f, [0xffffff, 0xf7a8c0]); bush(g, 1.4, -2.5, 0.8, 0x5cae4f, [0xffd84a]);
+    } };
+  scenes['baby-mammoth:binky'] = { name: '大象溜滑梯', light: 'day', sky: SKY.day,
+    ground: { base: '#86c96f', decals: [{ type: 'court', x: 0, z: -3.4, w: 7.5, d: 2.6, color: '#9fd3ef', line: '#ffffff', dots: [[-2.6, -3.0], [0, -3.6], [2.6, -3.0]], dotCols: ['#f6c445', '#e8584a', '#7cc45a'] }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      slide(g, 0, -4.4, 0, 0x8fd0ef, 0x9b7fd1); springRider(g, -2.4, -3.0, 0.3, 0xf6c445, 'duck'); springRider(g, 2.5, -3.1, -0.3, 0xf7a8c0, 'bunny');
+      balloonBunch(g, -3.8, -4.2, [0x8fd0ef, 0xf6c445, 0xe8584a, 0x7cc45a]); tree(g, 4.6, -5.0, 'round', 1.4); tree(g, -5.2, -5.6, 'pine', 1.3);
+    } };
+  scenes['baby-mammoth:pet'] = { name: '大樹下的長椅', light: 'golden', sky: SKY.golden,
+    ground: { base: '#89c26a', decals: [{ type: 'path', pts: [[-9, -2.7], [-3, -2.5], [3, -2.7], [9, -2.4]], w: 0.6, color: '#d8c8a8' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'round', 'pine'], cloudCol: 0xfff0e0 });
+      tree(g, -1.8, -3.6, 'big', 1.5); bench(g, 0.9, -3.2, 0); lamp(g, 2.6, -3.0, false);
+      bush(g, -3.6, -2.6, 0.9, 0x5cae4f, [0xffffff]); bush(g, 3.8, -2.8, 0.9, 0x5cae4f, [0xe8584a]); birdFlock(g, r, 2);
+    } };
+  scenes['baby-mammoth:sleep'] = { name: '星空草坡', light: 'night', sky: SKY.night,
+    ground: { base: '#4f7a55', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [] },
+    build(g, r) { std(g, r, { night: true, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x3b5a52, 0x2f4b48, 0x45665a], tuft: 0x3f6a48, moon: [-5, 9, -24, 1.5] });
+      slide(g, 2.6, -4.2, -0.4, 0x6a8fb0, 0x55667a); fireflyCloud(g, r, 28, 0xfff2a0, [-4.5, 4.5, 0.3, 2.2, -5.5, -2.2]); lamp(g, -2.8, -3.0, true);
+    } };
+  scenes['baby-mammoth:sig'] = { name: '冰河溜冰場', light: 'morning', sky: SKY.teal,
+    ground: { base: '#eef6f8', specks: ['rgba(140,190,220,0.12)', 'rgba(255,255,255,0.3)'], decals: [{ type: 'ellipse', x: 0.5, z: -0.6, rx: 3.6, rz: 2.0, color: '#bfe3f4', edge: 'rgba(120,180,215,0.6)' }] },
+    build(g, r) { std(g, r, { ring: ['pine'], ringN: 18, ringLeaf: ['mint'], hills: [0xffffff, 0xe6f1f6, 0xf4f9fb], hillH: [2.4, 5], tuftN: 0 });
+      for (let i = 0; i < 9; i++) { const a = i / 8 * Math.PI, x = Math.cos(a) * 5.2, z = -2.6 - Math.sin(a) * 2.6; const sb = add(g, G.sph, 0xffffff, [x, 0, z], [0.5 + r() * 0.4, 0.3 + r() * 0.2, 0.45]); sb.userData.solid = true; }
+      tree(g, -3.8, -4.6, 'pine', 1.2, 'mint'); tree(g, 4.2, -4.8, 'pine', 1.3, 'mint');
+      const sg = new THREE.Group(); sg.position.set(-2.4, 0, -3.0); sg.rotation.y = 0.3; g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.5, 0], [0.07, 1.0, 0.07]); board(sg, '冰河溜冰場', '#ffffff', '#2f6f9a', [0, 0.95, 0.05], 1.2, 0.36); sg.userData.solid = true;
+      clouds(g, r, 4, 0xffffff);
+    } };
+
+  // ====================== BABY · 夜巡石虎（2026-10-21，傳說第二位：傍晚出來巡邏公園）======================
+  scenes['baby-leopard:idle'] = { name: '傍晚的草叢小徑', light: 'dusk', sky: SKY.dusk,
+    ground: { base: '#7fae5e', specks: ['rgba(255,190,120,0.08)', 'rgba(0,40,0,0.08)'], decals: [{ type: 'path', pts: [[-9, 1.0], [-3, 0.3], [0, -0.2], [3, -1.2], [9, -2.0]], w: 1.1, color: '#cbb48c' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'big'], ringLeaf: ['dusk'], hills: [0x9b7fa8, 0x8a6f9a, 0xa98aaa], sun: [-7, 2.2, -26, 2.2, 0xffa060], cloudN: 4, cloudCol: 0xffd2c0, tuft: 0x5f8f42 });
+      bush(g, -2.6, -2.6, 1.0, 0x6f9a4f); bush(g, 2.4, -2.9, 1.1, 0x6f9a4f); bush(g, -4.0, -1.8, 0.9, 0x6f9a4f); lamp(g, 3.4, -2.2, true); tree(g, -1.4, -4.4, 'big', 1.5, 'dusk');
+      reeds(g, 1.2, -2.4); fireflyCloud(g, r, 8, 0xffe88a, [-4, 4, 0.3, 1.4, -5, -2.4]);
+    } };
+  scenes['baby-leopard:binky'] = { name: '黃昏鞦韆', light: 'golden', sky: SKY.golden,
+    ground: { base: '#86c36b', decals: [{ type: 'ellipse', x: 0, z: -3.6, rx: 3.2, rz: 1.3, color: '#d9c49a', edge: 'rgba(150,110,60,0.3)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'], cloudCol: 0xfff0e0 });
+      swings(g, 0, -4.0, 0); bench(g, -3.0, -3.2, 0.3); tree(g, 3.8, -4.8, 'autumn', 1.4); tree(g, -4.6, -5.2, 'round', 1.4); lamp(g, 2.6, -2.8, true);
+    } };
+  scenes['baby-leopard:pet'] = { name: '路燈下的長椅', light: 'dusk', sky: SKY.lavender,
+    ground: { base: '#7fae5e', decals: [{ type: 'grid', x: 0, z: -3.0, w: 4.4, d: 1.6, cell: 0.4, colors: ['#d8cbb5', '#cbbca3', '#e2d6c1'] }] },
+    build(g, r) { std(g, r, { ring: ['round', 'big'], ringLeaf: ['dusk'], hills: [0x8a6f9a, 0x9b7fa8], tuft: 0x5f8f42 });
+      bench(g, -0.3, -3.1, 0); lamp(g, 1.5, -3.2, true); lamp(g, -2.2, -3.0, true); bush(g, -3.6, -2.6, 0.9, 0x6f9a4f); bush(g, 3.6, -2.6, 0.9, 0x6f9a4f); fireflyCloud(g, r, 10, 0xffe88a, [-4, 4, 0.4, 1.6, -5, -2.4]);
+    } };
+  scenes['baby-leopard:sleep'] = { name: '月光樹洞', light: 'night', sky: SKY.deepNight,
+    ground: { base: '#4c7556', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [] },
+    build(g, r) { std(g, r, { night: true, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x2f4b48, 0x3b5a52], tuft: 0x3f6a48, moon: [-6, 8.5, -22, 1.6] });
+      tree(g, -1.8, -3.4, 'big', 1.6, 'night'); fireflyCloud(g, r, 24, 0xfff2a0, [-4, 4, 0.3, 1.8, -5, -2.4]); bush(g, 2.4, -2.8, 1.0, 0x3f6a48);
+    } };
+  scenes['baby-leopard:sig'] = { name: '螢火蟲草原', light: 'night', sky: SKY.night,
+    ground: { base: '#557f58', specks: ['rgba(200,255,150,0.05)', 'rgba(0,20,0,0.1)'], decals: [{ type: 'dots', n: 120, x0: -8, x1: 8, z0: -8, z1: 2, colors: ['#e8f7a0', '#ffffff'] }] },
+    build(g, r) { std(g, r, { night: true, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x3b5a52, 0x2f4b48, 0x45665a], tuft: 0x3f6a48, moon: [6, 9, -24, 1.4] });
+      reeds(g, -2.6, -2.4); reeds(g, 2.8, -2.6); bush(g, -4.0, -3.0, 1.0, 0x3f6a48); bush(g, 3.9, -3.4, 1.0, 0x3f6a48); fireflyCloud(g, r, 36, 0xe8ff8a, [-4.5, 4.5, 0.3, 2.0, -5.5, -2.0]); lamp(g, -3.0, -3.6, true);
+    } };
+
+  // ====================== BABY · 領角鴞博士（2026-10-21，傳說第三位：住在大樹上、筆記本記下每座公園）======================
+  const books = (g, x, z, rot, cols) => { const bg = new THREE.Group(); bg.position.set(x, 0, z); bg.rotation.y = rot; g.add(bg);
+    cols.forEach((c, i) => add(bg, G.box, c, [0.03 * (i % 2 ? 1 : -1), 0.06 + i * 0.12, 0], [0.5 - i * 0.04, 0.11, 0.36 - i * 0.02], 1, [0, i * 0.25, 0])); bg.userData.solid = true; };
+  scenes['baby-owl:idle'] = { name: '大樹下的觀察站', light: 'day', sky: SKY.bright,
+    ground: { base: '#87c66c', decals: [{ type: 'path', pts: [[-9, -2.6], [-3, -2.3], [3, -2.6], [9, -2.2]], w: 0.7, color: '#e0d2b2' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'big'] });
+      tree(g, -2.2, -4.2, 'big', 1.7); tree(g, 4.4, -5.0, 'round', 1.4);
+      const sg = new THREE.Group(); sg.position.set(1.8, 0, -3.4); sg.rotation.y = -0.2; g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.55, 0], [0.07, 1.1, 0.07]); board(sg, '公園百科', '#fff4d6', '#6b4a2a', [0, 1.05, 0.05], 1.1, 0.36); sg.userData.solid = true;
+      bush(g, -4.2, -2.6, 0.9, 0x5cae4f, [0xffffff, 0xf7a8c0]); bush(g, 3.6, -2.4, 0.8, 0x5cae4f, [0xffd84a]); birdFlock(g, r, 3);
+    } };
+  scenes['baby-owl:binky'] = { name: '樹屋溜滑梯', light: 'day', sky: SKY.day,
+    ground: { base: '#86c96f', decals: [{ type: 'ellipse', x: 0, z: -3.6, rx: 3.6, rz: 1.4, color: '#e9c98a', edge: 'rgba(150,110,60,0.3)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      tree(g, -3.0, -4.6, 'big', 1.6); slide(g, 0.4, -4.2, -0.2, 0x9b7fd1, 0xf6c445); springRider(g, 2.8, -3.0, -0.3, 0x8fd0ef, 'duck');
+      balloonBunch(g, -1.6, -3.4, [0xf6c445, 0x9b7fd1, 0x8fd0ef]); tree(g, 4.8, -5.4, 'poplar', 1.3, 'lime');
+    } };
+  scenes['baby-owl:pet'] = { name: '樹蔭下的閱讀椅', light: 'golden', sky: SKY.golden,
+    ground: { base: '#89c26a', decals: [{ type: 'grid', x: 0, z: -3.0, w: 4.0, d: 1.4, cell: 0.4, colors: ['#e3d6bd', '#d6c7a8', '#ecdfc8'] }] },
+    build(g, r) { std(g, r, { ring: ['round', 'round', 'pine'], cloudCol: 0xfff0e0 });
+      tree(g, -2.6, -3.8, 'big', 1.5); bench(g, 0.6, -3.2, 0); books(g, 1.9, -3.0, 0.3, [0xe8584a, 0x4aa3df, 0xf6c445]); lamp(g, 3.0, -3.1, false);
+      bush(g, -4.2, -2.6, 0.9, 0x5cae4f, [0xffffff]); bush(g, 4.2, -2.8, 0.9, 0x5cae4f, [0xe8584a]);
+    } };
+  scenes['baby-owl:sleep'] = { name: '月夜的大樹', light: 'night', sky: SKY.deepNight,
+    ground: { base: '#4c7556', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [] },
+    build(g, r) { std(g, r, { night: true, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x2f4b48, 0x3b5a52], tuft: 0x3f6a48, moon: [5, 9, -22, 1.8] });
+      tree(g, -1.6, -3.6, 'big', 1.7, 'night'); fireflyCloud(g, r, 14, 0xfff2a0, [-4, 4, 0.4, 2.2, -5, -2.4]); bush(g, 2.6, -2.8, 1.0, 0x3f6a48); lamp(g, 3.2, -3.4, true);
+    } };
+  scenes['baby-owl:sig'] = { name: '大樹下的圖書角', light: 'morning', sky: SKY.bright,
+    ground: { base: '#8bc96e', decals: [{ type: 'ellipse', x: 0, z: -0.4, rx: 2.4, rz: 1.5, color: '#e9dcc4', edge: 'rgba(150,120,80,0.35)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'big'] });
+      tree(g, 0.2, -4.6, 'big', 1.8);
+      const sg = new THREE.Group(); sg.position.set(-2.4, 0, -3.0); sg.rotation.y = 0.3; g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.5, 0], [0.07, 1.0, 0.07]); board(sg, '博士的圖書角', '#fff4d6', '#6b4a2a', [0, 0.95, 0.05], 1.3, 0.36); sg.userData.solid = true;
+      books(g, -1.4, -2.4, 0.4, [0xe8584a, 0x4aa3df, 0x7cc45a, 0xf6c445]); books(g, 1.8, -2.6, -0.3, [0x9b7fd1, 0xf7a8c0, 0x4aa3df]); bench(g, 2.8, -3.6, -0.3);
+      bush(g, -4.0, -3.2, 0.9, 0x5cae4f, [0xffffff]); bush(g, 4.2, -3.4, 0.9, 0x5cae4f, [0xffd84a]); birdFlock(g, r, 2);
+    } };
+
+  // ====================== BABY · 鋼鐵神龜（2026-10-21，傳說第四位：沙坑底下睡了一百年，每週都來的孩子叫得醒牠）======================
+  const pail = (g, x, z, col) => { const pg = new THREE.Group(); pg.position.set(x, 0, z); g.add(pg); add(pg, new THREE.CylinderGeometry(0.13, 0.1, 0.2, 18), col, [0, 0.1, 0]); add(pg, new THREE.TorusGeometry(0.12, 0.008, 6, 18, Math.PI), 0x5b6d78, [0, 0.2, 0]); pg.userData.solid = true; };
+  const sandpit = (x, z, rx, rz) => ({ type: 'ellipse', x, z, rx, rz, color: '#ecd29a', edge: 'rgba(160,120,60,0.45)' });
+  scenes['baby-turtle:idle'] = { name: '沙坑旁的大樹', light: 'day', sky: SKY.bright,
+    ground: { base: '#88c66c', decals: [sandpit(0, -0.6, 2.6, 1.6)] },
+    build(g, r) { std(g, r, { ring: ['round', 'big'] });
+      tree(g, -3.2, -4.4, 'big', 1.6); pail(g, -1.6, -1.6, 0xe8584a); pail(g, 1.9, -1.9, 0x4aa3df); bench(g, 3.2, -3.4, -0.3); bush(g, -4.4, -2.4, 0.9, 0x5cae4f, [0xffffff]);
+    } };
+  scenes['baby-turtle:binky'] = { name: '沙坑小山丘', light: 'day', sky: SKY.day,
+    ground: { base: '#86c96f', decals: [sandpit(0, -1.6, 3.4, 1.8)] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      const hill = add(g, G.sph, 0xe6c98f, [-2.0, 0, -3.2], [0.9, 0.45, 0.7]); hill.userData.solid = true; slide(g, 2.4, -4.2, -0.3, 0xf6c445, 0x7cc45a); pail(g, -0.9, -2.4, 0xf6c445);
+      balloonBunch(g, 3.8, -3.6, [0x4aa3df, 0xf6c445, 0xe8584a]); tree(g, -4.8, -5.2, 'round', 1.4);
+    } };
+  scenes['baby-turtle:pet'] = { name: '沙坑邊的長椅', light: 'golden', sky: SKY.golden,
+    ground: { base: '#89c26a', decals: [sandpit(-0.4, -1.2, 2.2, 1.3)] },
+    build(g, r) { std(g, r, { ring: ['round', 'round', 'pine'], cloudCol: 0xfff0e0 });
+      bench(g, 1.6, -3.3, -0.2); tree(g, -2.8, -4.0, 'big', 1.5); pail(g, -1.4, -1.2, 0x9b7fd1); lamp(g, 3.2, -3.0, false); bush(g, 4.2, -2.6, 0.9, 0x5cae4f, [0xe8584a]);
+    } };
+  scenes['baby-turtle:sleep'] = { name: '月光下的沙坑', light: 'night', sky: SKY.deepNight,
+    ground: { base: '#4c7556', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [{ type: 'ellipse', x: 0, z: -0.6, rx: 2.6, rz: 1.6, color: '#b9a57a', edge: 'rgba(60,50,30,0.4)' }] },
+    build(g, r) { std(g, r, { night: true, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x2f4b48, 0x3b5a52], tuft: 0x3f6a48, moon: [-5, 9, -22, 1.7] });
+      tree(g, 2.4, -3.8, 'big', 1.6, 'night'); pail(g, -1.8, -1.6, 0x6a8fb0); fireflyCloud(g, r, 18, 0xfff2a0, [-4, 4, 0.3, 2.0, -5, -2.4]); lamp(g, -3.0, -3.2, true);
+    } };
+  scenes['baby-turtle:sig'] = { name: '大沙坑', light: 'morning', sky: SKY.bright,
+    ground: { base: '#8bc96e', decals: [sandpit(0.3, 0, 3.2, 2.2)] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'] });
+      pail(g, -1.5, -0.6, 0xe8584a); pail(g, 2.3, -1.4, 0x4aa3df);
+      [[-2.2, -2.0, 0.35], [1.6, -2.6, 0.28]].forEach(([x, z, s]) => { const c = add(g, new THREE.CylinderGeometry(s * 0.9, s, s * 0.7, 18), 0xe6c98f, [x, s * 0.35, z]); c.userData.solid = true; add(g, new THREE.ConeGeometry(s * 0.5, s * 0.6, 16), 0xd4b273, [x, s * 0.7 + s * 0.3, z]); });
+      const sg = new THREE.Group(); sg.position.set(-3.2, 0, -3.2); sg.rotation.y = 0.3; g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.5, 0], [0.07, 1.0, 0.07]); board(sg, '沙堡工地', '#fff4d6', '#8a5a2a', [0, 0.95, 0.05], 1.1, 0.36); sg.userData.solid = true;
+      tree(g, 4.4, -4.8, 'round', 1.4); tree(g, -5.0, -5.2, 'poplar', 1.3, 'lime');
+    } };
+
+  // ====================== BABY · 鐵甲小穿（2026-10-21，傳說第五位：每天巡邏公園、最怕遊具壞掉，縮成球滾去找人幫忙）======================
+  scenes['baby-pangolin:idle'] = { name: '鞦韆旁的巡邏站', light: 'day', sky: SKY.bright,
+    ground: { base: '#88c66c', decals: [{ type: 'ellipse', x: 0.2, z: -3.6, rx: 3.4, rz: 1.4, color: '#d9c49a', edge: 'rgba(150,110,60,0.3)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'big'] });
+      swings(g, -0.4, -4.0, 0); const sg = new THREE.Group(); sg.position.set(2.6, 0, -3.2); sg.rotation.y = -0.3; g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.5, 0], [0.07, 1.0, 0.07]); board(sg, '公園守護隊', '#fff4d6', '#9a5a2a', [0, 0.95, 0.05], 1.2, 0.36); sg.userData.solid = true;
+      tree(g, -4.4, -5.0, 'round', 1.4); bush(g, 4.2, -2.6, 0.9, 0x5cae4f, [0xffffff]);
+    } };
+  scenes['baby-pangolin:binky'] = { name: '彈簧搖搖馬', light: 'day', sky: SKY.day,
+    ground: { base: '#86c96f', decals: [{ type: 'court', x: 0, z: -3.4, w: 7.0, d: 2.4, color: '#f2c98a', line: '#ffffff', dots: [[-2.4, -3.0], [2.4, -3.0]], dotCols: ['#e8584a', '#4aa3df'] }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      springRider(g, -2.4, -3.0, 0.3, 0xf6c445, 'duck'); springRider(g, 2.4, -3.1, -0.3, 0xe8584a, 'bunny'); slide(g, 0, -4.6, 0, 0xff8a3d, 0x4aa3df); tree(g, 4.8, -5.2, 'round', 1.4);
+    } };
+  scenes['baby-pangolin:pet'] = { name: '樹下的長椅', light: 'golden', sky: SKY.golden,
+    ground: { base: '#89c26a', decals: [{ type: 'path', pts: [[-9, -2.7], [-3, -2.4], [3, -2.7], [9, -2.4]], w: 0.6, color: '#d8c8a8' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'round', 'pine'], cloudCol: 0xfff0e0 });
+      tree(g, -2.2, -3.8, 'big', 1.5); bench(g, 1.0, -3.2, 0); bucket(g, 2.4, -2.8, 0x4aa3df); lamp(g, 3.2, -3.0, false); bush(g, -4.0, -2.6, 0.9, 0x5cae4f, [0xe8584a]);
+    } };
+  scenes['baby-pangolin:sleep'] = { name: '月夜的鞦韆', light: 'night', sky: SKY.deepNight,
+    ground: { base: '#4c7556', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [] },
+    build(g, r) { std(g, r, { night: true, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x2f4b48, 0x3b5a52], tuft: 0x3f6a48, moon: [5, 9, -22, 1.6] });
+      swings(g, -1.2, -4.2, 0.2); tree(g, 3.0, -4.0, 'big', 1.5, 'night'); fireflyCloud(g, r, 16, 0xfff2a0, [-4, 4, 0.3, 2.0, -5, -2.4]); lamp(g, -3.4, -3.0, true);
+    } };
+  scenes['baby-pangolin:sig'] = { name: '滾滾大草坪', light: 'morning', sky: SKY.bright,
+    ground: { base: '#8fcf72', decals: [{ type: 'ellipse', x: 0, z: -0.5, rx: 2.8, rz: 1.8, color: '#a6dc86', edge: 'rgba(80,140,60,0.35)' }, { type: 'dots', n: 140, x0: -8, x1: 8, z0: -8, z1: 2, colors: ['#ffffff', '#fff2a0', '#f7a8c0'] }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'] });
+      tree(g, -4.2, -4.6, 'round', 1.4); tree(g, 4.4, -4.8, 'poplar', 1.3, 'lime'); bush(g, -2.6, -3.4, 0.9, 0x5cae4f, [0xffffff]); bush(g, 2.8, -3.6, 0.9, 0x5cae4f, [0xffd84a]);
+      const sg = new THREE.Group(); sg.position.set(0, 0, -4.0); g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.5, 0], [0.07, 1.0, 0.07]); board(sg, '滾滾草坪', '#fff4d6', '#9a5a2a', [0, 0.95, 0.05], 1.1, 0.36); sg.userData.solid = true; birdFlock(g, r, 2);
+    } };
+
+  // ====================== BABY · 企鵝船長（2026-10-21，傳說第六位：開著小船找最好玩的水，夏天最愛玩水公園）======================
+  scenes['baby-penguin:idle'] = { name: '玩水公園碼頭', light: 'day', sky: SKY.bright,
+    ground: { base: '#88c66c', decals: [{ type: 'water', x: 0.8, z: -4.6, rx: 4.4, rz: 1.8, deep: '#3f8fbf', shallow: '#86c9e2', bank: '#a58e66' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'] });
+      const sg = new THREE.Group(); sg.position.set(-2.6, 0, -2.8); sg.rotation.y = 0.3; g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.5, 0], [0.07, 1.0, 0.07]); board(sg, '船長碼頭', '#ffffff', '#1f3f6e', [0, 0.95, 0.05], 1.1, 0.36); sg.userData.solid = true;
+      tree(g, 4.6, -5.4, 'round', 1.4); bush(g, 3.4, -2.6, 0.9, 0x5cae4f, [0xffffff]); birdFlock(g, r, 3);
+    } };
+  scenes['baby-penguin:binky'] = { name: '噴水廣場', light: 'day', sky: SKY.day,
+    ground: { base: '#86c96f', decals: [{ type: 'tiles', x: 0, z: -3.6, r: 2.2, rings: 4, colors: ['#dfeff6', '#c4e3f0'], star: '#4aa3df' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      fountain(g, 0, -4.0, 0.9); balloonBunch(g, -3.2, -3.6, [0x4aa3df, 0xffffff, 0xe8584a]); tree(g, 4.6, -5.0, 'round', 1.4);
+    } };
+  scenes['baby-penguin:pet'] = { name: '水邊的長椅', light: 'golden', sky: SKY.golden,
+    ground: { base: '#89c26a', decals: [{ type: 'water', x: 1.0, z: -5.0, rx: 4.0, rz: 1.6, deep: '#3f7fae', shallow: '#86c0dc', bank: '#a58e66' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'round', 'pine'], cloudCol: 0xfff0e0 });
+      bench(g, -0.6, -3.2, 0); lamp(g, 1.4, -3.0, false); tree(g, -3.4, -4.0, 'big', 1.5); bush(g, 3.8, -2.6, 0.9, 0x5cae4f, [0xe8584a]);
+    } };
+  scenes['baby-penguin:sleep'] = { name: '月光下的水池', light: 'night', sky: SKY.deepNight,
+    ground: { base: '#4c7556', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [{ type: 'water', x: 1.6, z: -4.8, rx: 3.4, rz: 1.6, deep: '#1f3f6a', shallow: '#3c6a8f', bank: '#3d4a3a' }] },
+    build(g, r) { std(g, r, { night: true, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x2f4b48, 0x3b5a52], tuft: 0x3f6a48, moon: [-5, 9, -22, 1.6] });
+      tree(g, -2.6, -3.8, 'big', 1.5, 'night'); fireflyCloud(g, r, 14, 0xfff2a0, [-4, 4, 0.3, 2.0, -5, -2.4]); lamp(g, 3.4, -3.0, true);
+    } };
+  scenes['baby-penguin:sig'] = { name: '划船湖', light: 'morning', sky: SKY.bright,
+    ground: { base: '#8bc96e', decals: [{ type: 'water', x: 3.0, z: 0.4, rx: 2.7, rz: 2.7, deep: '#3f8fbf', shallow: '#8fd0e6', bank: '#c8b27c' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'], skip: (x, z) => Math.hypot((x - 3.0) / 2.9, (z - 0.4) / 2.9) < 1 });
+      const sg = new THREE.Group(); sg.position.set(-1.9, 0, -2.0); sg.rotation.y = 0.3; g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.5, 0], [0.07, 1.0, 0.07]); board(sg, '小船碼頭', '#ffffff', '#1f3f6e', [0, 0.95, 0.05], 1.0, 0.36); sg.userData.solid = true;
+      bench(g, -2.8, -3.4, 0.2); tree(g, -4.6, -4.6, 'round', 1.4); tree(g, 6.4, -5.4, 'poplar', 1.3, 'lime'); bush(g, -3.6, -1.6, 0.8, 0x5cae4f, [0xffffff]);
+    } };
+
+  // ====================== BABY · 黑熊月牙（2026-10-21，傳說第七位：住在高高的山上，到處旅行、在地圖上蓋熊掌印）======================
+  scenes['baby-bear:idle'] = { name: '山上的登山口', light: 'day', sky: SKY.bright,
+    ground: { base: '#84c169', decals: [{ type: 'path', pts: [[-1.0, 3], [-0.6, -2.4], [0.8, -5.0], [1.6, -9]], w: 1.0, color: '#d9c39a', edge: 'rgba(130,100,60,0.3)' }] },
+    build(g, r) { std(g, r, { ring: ['pine', 'pine', 'round'], hills: [0x6f9a6a, 0x5f8a62, 0x7aa872] });
+      const sg = new THREE.Group(); sg.position.set(-2.2, 0, -2.8); sg.rotation.y = 0.3; g.add(sg); add(sg, G.box, 0x8a6240, [0, 0.5, 0], [0.07, 1.0, 0.07]); board(sg, '月牙步道', '#fff4d6', '#3a3a48', [0, 0.95, 0.05], 1.0, 0.36); sg.userData.solid = true;
+      tree(g, 2.8, -3.8, 'pine', 1.5); tree(g, -4.2, -4.6, 'pine', 1.7); tree(g, 4.6, -5.6, 'pine', 1.4); rock(g, 1.8, -2.4, 0.22); rock(g, -3.4, -1.8, 0.16); fern(g, 2.2, -2.0, 1.0); fern(g, -1.6, -2.2, 0.9); birdFlock(g, r, 2);
+    } };
+  scenes['baby-bear:binky'] = { name: '森林遊戲場', light: 'day', sky: SKY.day,
+    ground: { base: '#86c66d', decals: [{ type: 'ellipse', x: 0, z: -3.6, rx: 3.6, rz: 1.4, color: '#c9a878', edge: 'rgba(120,90,50,0.3)' }] },
+    build(g, r) { std(g, r, { ring: ['pine', 'round'] });
+      slide(g, -0.6, -4.2, 0.2, 0x7cc45a, 0xc0864a); swings(g, 2.6, -4.0, -0.3, [0xf6c445, 0x7cc45a]); tree(g, -3.6, -4.4, 'pine', 1.6); tree(g, 4.6, -5.2, 'pine', 1.5); bush(g, -2.4, -2.6, 0.8, 0x5cae4f, [0xffffff]);
+    } };
+  scenes['baby-bear:pet'] = { name: '野餐草坡', light: 'golden', sky: SKY.golden,
+    ground: { base: '#8ac36b', decals: [] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'], cloudCol: 0xfff0e0 });
+      blanket(g, 0.4, -3.0, 2.0, 1.4, 0.1, '#e8584a', '#ffffff'); basket(g, 1.1, -3.1); picnicTable(g, -2.6, -3.6, 0.3); tree(g, 3.4, -4.2, 'big', 1.5); bush(g, -4.0, -2.6, 0.9, 0x5cae4f, [0xffd84a]);
+    } };
+  scenes['baby-bear:sleep'] = { name: '山頂星空營地', light: 'night', sky: SKY.deepNight,
+    ground: { base: '#4c7556', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [] },
+    build(g, r) { std(g, r, { night: true, starN: 380, ring: ['pine'], ringLeaf: ['night'], hills: [0x2f4b48, 0x283f3e], tuft: 0x3f6a48, moon: [5, 9, -22, 1.6] });
+      tent(g, -1.8, -3.6, 0.3, 0x3f6e9a, 0xf6c445); campfire(g, 1.4, -2.8); tree(g, 3.6, -4.4, 'pine', 1.5, 'night'); fireflyCloud(g, r, 10, 0xfff2a0, [-4, 4, 0.3, 2.0, -5, -2.4]);
+    } };
+  scenes['baby-bear:sig'] = { name: '月光守護山丘', light: 'night', sky: SKY.night,
+    ground: { base: '#557f58', specks: ['rgba(200,220,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [] },
+    build(g, r) { std(g, r, { night: true, starN: 320, ring: ['pine', 'round'], ringLeaf: ['night'], hills: [0x3b5a52, 0x2f4b48, 0x45665a], tuft: 0x3f6a48, moon: [-5, 9.5, -24, 2.0], skip: (x, z) => Math.hypot(x - 0.95, z) < 0.9 });
+      tree(g, -2.8, -3.6, 'pine', 1.5, 'night'); tree(g, 3.8, -4.4, 'pine', 1.6, 'night'); lamp(g, -3.6, -2.6, true); bush(g, 2.8, -2.6, 0.9, 0x3f6a48); fireflyCloud(g, r, 16, 0xfff2a0, [-4.5, 4.5, 0.3, 2.0, -5.5, -2.0]);
+    } };
+
+  // ====================== BABY · 獨角獸 Sparky（2026-10-21，傳說第八位：角上的火花會指路，帶大家找到地圖上沒有的新公園）======================
+  scenes['baby-sparky:idle'] = { name: '探險步道入口', light: 'morning', sky: SKY.morning,
+    ground: { base: '#8cc96f', decals: [{ type: 'path', pts: [[1.2, 3], [0.8, -1.6], [-0.4, -4.2], [-1.6, -9]], w: 0.9, color: '#e3cfa2', edge: 'rgba(130,100,60,0.28)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'], hills: [0x8cc77a, 0x9ed38a, 0x7ab86a] });
+      signpost(g, -2.0, -2.6, 0.3, [['新公園 →', '#b48cc4'], ['← 溜滑梯', '#4aa3df'], ['秘密草原 ↑', '#f5a524']]);
+      tree(g, 2.8, -4.0, 'round', 1.4); tree(g, -3.8, -4.8, 'poplar', 1.5); bush(g, 2.0, -2.4, 0.8, 0x5cae4f, [0xf7a8c0, 0xffffff]); bush(g, -3.2, -2.0, 0.7, 0x5cae4f, [0xb9a2f0]); birdFlock(g, r, 3);
+    } };
+  scenes['baby-sparky:binky'] = { name: '新發現的遊戲場', light: 'day', sky: SKY.bright,
+    ground: { base: '#86c66d', decals: [{ type: 'ellipse', x: 0.2, z: -3.6, rx: 3.8, rz: 1.5, color: '#e8d6ae', edge: 'rgba(120,90,50,0.25)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      slide(g, -1.2, -4.2, 0.25, 0xb48cc4, 0x7ec8e3); seesaw(g, 1.8, -3.6, -0.4, 0xf6c445); springRider(g, 3.2, -2.8, -0.6, 0xf7a8c0, 'duck');
+      bunting(g, [-3.2, 2.0, -4.6], [3.4, 2.0, -4.6], [0xb9a2f0, 0x9cd7f0, 0xf7a8c0, 0xf6c445]); tree(g, -4.2, -4.0, 'round', 1.5); flag(g, 0.4, -5.0, 0xb9a2f0, 1.2);
+    } };
+  scenes['baby-sparky:pet'] = { name: '野花小徑', light: 'golden', sky: SKY.golden,
+    ground: { base: '#8ac36b', decals: [{ type: 'path', pts: [[-3, -1.6], [-0.4, -2.6], [2.2, -2.2], [5, -3.2]], w: 0.8, color: '#e6d3a8', edge: 'rgba(120,90,50,0.25)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'], cloudCol: 0xfff0e0 });
+      roseArch(g, -0.4, -3.4, 0, [0xb9a2f0, 0xf7a8c0, 0xffffff]); bench(g, 2.6, -3.0, -0.3); bush(g, -2.8, -2.6, 0.9, 0x5cae4f, [0xf7a8c0, 0xb9a2f0]); bush(g, 3.8, -4.0, 0.8, 0x5cae4f, [0xffffff, 0xf6c445]);
+      petalFall(g, r, 30, 0xe9d8ff, [-5, 5, 0, 3.2, -6, -1.5]);
+    } };
+  scenes['baby-sparky:sleep'] = { name: '星星小丘', light: 'night', sky: SKY.deepNight,
+    ground: { base: '#4f7a5a', specks: ['rgba(180,170,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [] },
+    build(g, r) { std(g, r, { night: true, starN: 420, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x34505a, 0x2c4450], tuft: 0x3f6a48, moon: [6, 9, -22, 1.4] });
+      telescope(g, -1.8, -3.0, 0.5); lamp(g, 2.6, -3.0, true); bush(g, 3.4, -2.4, 0.8, 0x3f6a48); fireflyCloud(g, r, 14, 0xe9d8ff, [-4.5, 4.5, 0.3, 2.2, -5.5, -2.2]);
+    } };
+  scenes['baby-sparky:sig'] = { name: '秘密草原', light: 'morning', sky: SKY.lavender,
+    ground: { base: '#86bf72', specks: ['rgba(255,240,200,0.05)', 'rgba(0,30,0,0.08)'], decals: [] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'], hills: [0x7a9a8a, 0x8aa88a, 0x6f8f86], cloudCol: 0xffe6f0, skip: (x, z) => x > -1.0 && x < 2.3 && z > -2.9 && z < 1.6 });
+      tree(g, -2.8, -3.4, 'round', 1.5); tree(g, 3.6, -4.2, 'poplar', 1.5); bush(g, -2.0, -1.8, 0.8, 0x5cae4f, [0xb9a2f0, 0xffffff]); bush(g, 3.2, -2.0, 0.7, 0x5cae4f, [0xf7a8c0]);
+      fireflyCloud(g, r, 12, 0xffe9a8, [-4.5, 4.5, 0.4, 2.2, -5.5, -2.4]);
+    } };
+
+  // ====================== BABY · 台灣藍鵲 長尾（2026-10-21，傳說第九位：每玩一種遊具，長尾巴就長出一根亮藍色羽毛）======================
+  scenes['baby-magpie:idle'] = { name: '藍鵲的大樹', light: 'morning', sky: SKY.morning,
+    ground: { base: '#88c56c', decals: [{ type: 'path', pts: [[-2.6, 3], [-1.4, -1.0], [0.6, -3.4], [2.4, -9]], w: 0.9, color: '#e1cc9e', edge: 'rgba(130,100,60,0.28)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'big'], hills: [0x8cc77a, 0x7ab86a, 0x9ed38a] });
+      tree(g, 2.6, -3.4, 'big', 1.8); tree(g, -3.6, -4.6, 'round', 1.5); bench(g, -2.2, -2.6, 0.4); bush(g, 3.8, -2.2, 0.8, 0x5cae4f, [0xffffff]); birdFlock(g, r, 4);
+    } };
+  scenes['baby-magpie:binky'] = { name: '盪鞦韆廣場', light: 'day', sky: SKY.bright,
+    ground: { base: '#86c66d', decals: [{ type: 'ellipse', x: 0.2, z: -3.6, rx: 4.0, rz: 1.5, color: '#e6d3a8', edge: 'rgba(120,90,50,0.25)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      swings(g, -1.6, -4.0, 0.2, [0x3d82cc, 0xd6342c]); slide(g, 2.2, -3.8, -0.3, 0x3d82cc, 0xf6c445); seesaw(g, -3.6, -2.6, 0.5, 0xd6342c);
+      bunting(g, [-3.4, 2.0, -5.0], [3.6, 2.0, -5.0], [0x3d82cc, 0xffffff, 0xd6342c, 0x1e2a3a]); tree(g, 4.2, -4.6, 'round', 1.5);
+    } };
+  scenes['baby-magpie:pet'] = { name: '攀爬架小角落', light: 'golden', sky: SKY.golden,
+    ground: { base: '#8ac36b', decals: [] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'], cloudCol: 0xfff0e0 });
+      fitness(g, -1.6, -3.4, 0.3, 'bars'); fitness(g, 1.4, -3.8, -0.2, 'bars'); tree(g, 3.6, -3.8, 'big', 1.5); bush(g, -3.4, -2.4, 0.9, 0x5cae4f, [0xf6c445]);
+    } };
+  scenes['baby-magpie:sleep'] = { name: '月光大樹', light: 'night', sky: SKY.night,
+    ground: { base: '#4c7556', specks: ['rgba(160,190,255,0.06)', 'rgba(0,20,0,0.1)'], decals: [] },
+    build(g, r) { std(g, r, { night: true, starN: 340, ring: ['round', 'pine'], ringLeaf: ['night'], hills: [0x2f4b48, 0x283f3e], tuft: 0x3f6a48, moon: [-5, 9.5, -22, 1.6] });
+      tree(g, 2.4, -3.2, 'big', 1.8, 'night'); lamp(g, -2.6, -2.8, true); bush(g, -3.6, -2.0, 0.8, 0x3f6a48); fireflyCloud(g, r, 12, 0xfff2a0, [-4.5, 4.5, 0.3, 2.2, -5.5, -2.2]);
+    } };
+  scenes['baby-magpie:sig'] = { name: '風箏大草坪', light: 'day', sky: SKY.bright,
+    ground: { base: '#86c66d', decals: [] },
+    build(g, r) { std(g, r, { ring: ['round', 'poplar'], hills: [0x8cc77a, 0x7ab86a, 0x9ed38a], cloudN: 7, skip: (x, z) => Math.hypot(x, z + 1.7) < 1.9 });
+      kite(g, -3.2, 4.2, -6, 0xd6342c, 0xffffff, [-2.4, 0, -3.6]); kite(g, 3.6, 4.8, -7, 0x3d82cc, 0xf6c445, [2.8, 0, -4.0]);
+      tree(g, -5.4, -5.8, 'round', 1.5); tree(g, 5.4, -6.2, 'big', 1.6); birdFlock(g, r, 3);
+    } };
+
+  // ====================== BABY · 火山小赤龍（2026-10-22，傳說第十位：九位傳說小夥伴到齊時從火山飛出來，全台灣的公園都被你點亮了）======================
+  scenes['baby-dragon:idle'] = { name: '火山步道口', light: 'morning', sky: SKY.warm,
+    ground: { base: '#93b866', decals: [{ type: 'path', pts: [[1.6, 3], [0.8, -1.2], [-0.8, -3.6], [-2.0, -9]], w: 0.9, color: '#c9a07a', edge: 'rgba(110,70,40,0.3)' }] },
+    build(g, r) { std(g, r, { ring: ['pine', 'round'], hills: [0x9c6a52, 0x8a5a48, 0xa8785c] });
+      signpost(g, -2.2, -2.6, 0.3, [['火山口 ↑', '#e8584a'], ['溫泉 →', '#f5a524']]); rock(g, 2.2, -2.6, 0.3, 0x8a7a70); rock(g, 2.7, -3.0, 0.2, 0x8a7a70); rock(g, -3.4, -1.8, 0.22, 0x8a7a70);
+      tree(g, 3.6, -4.4, 'pine', 1.5); tree(g, -4.0, -4.8, 'round', 1.4); birdFlock(g, r, 2);
+    } };
+  scenes['baby-dragon:binky'] = { name: '熔岩溜滑梯', light: 'day', sky: SKY.bright,
+    ground: { base: '#8cc46c', decals: [{ type: 'ellipse', x: 0, z: -3.6, rx: 3.8, rz: 1.5, color: '#e8c79a', edge: 'rgba(120,80,40,0.25)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'] });
+      slide(g, -1.0, -4.2, 0.2, 0xe8584a, 0xf5a524); swings(g, 2.4, -4.0, -0.3, [0xf5a524, 0xe8584a]); bunting(g, [-3.2, 2.0, -4.8], [3.4, 2.0, -4.8], [0xe8584a, 0xf5a524, 0xffd84a, 0xffffff]);
+      tree(g, -4.2, -4.2, 'round', 1.5);
+    } };
+  scenes['baby-dragon:pet'] = { name: '溫泉小廣場', light: 'golden', sky: SKY.golden,
+    ground: { base: '#8ac36b', decals: [{ type: 'ellipse', x: 1.6, z: -3.0, rx: 1.2, rz: 0.7, color: '#9fd6e0', edge: 'rgba(200,170,140,0.9)' }] },
+    build(g, r) { std(g, r, { ring: ['round', 'pine'], cloudCol: 0xfff0e0 });
+      rock(g, 0.6, -3.2, 0.22, 0x9a8a80); rock(g, 2.7, -2.6, 0.2, 0x9a8a80); bench(g, -2.4, -2.8, 0.4); tree(g, -3.8, -4.4, 'round', 1.5); lamp(g, 3.6, -3.4, false);
+    } };
+  scenes['baby-dragon:sleep'] = { name: '火山星空', light: 'night', sky: SKY.deepNight,
+    ground: { base: '#4f6f55', specks: ['rgba(255,170,120,0.05)', 'rgba(0,20,0,0.1)'], decals: [] },
+    build(g, r) { std(g, r, { night: true, starN: 420, ring: ['pine'], ringLeaf: ['night'], hills: [0x4a3038, 0x3a2830, 0x553640], tuft: 0x3f6a48, moon: [6, 9, -22, 1.3] });
+      campfire(g, 1.8, -2.8); tent(g, -2.0, -3.4, 0.3, 0xe8584a, 0xf5a524); fireflyCloud(g, r, 14, 0xffb070, [-4.5, 4.5, 0.3, 2.2, -5.5, -2.2]);
+    } };
+  scenes['baby-dragon:sig'] = { name: '燈籠小徑', light: 'dusk', sky: SKY.dusk,
+    ground: { base: '#7fae68', specks: ['rgba(255,200,140,0.05)', 'rgba(0,20,0,0.1)'], decals: [{ type: 'path', pts: [[1.3, 1.9], [1.3, -13.6]], w: 1.0, color: '#d8b48a', edge: 'rgba(110,70,40,0.3)' }, { type: 'ellipse', x: 1.3, z: -10.6, rx: 3.0, rz: 1.6, color: '#e2c49a', edge: 'rgba(110,70,40,0.25)' }] },   // 第 3 版：林蔭步道一路往遠方延伸到公園（參考使用者給的夜晚步道圖，步道在畫面中間往後消失）
+    build(g, r) { std(g, r, { ring: ['round', 'pine'], hills: [0x6a5a70, 0x5a4a64, 0x7a6478], cloudCol: 0xffd8c0, skip: (x, z) => (z < 2.0 && z > -14 && Math.abs(x - 1.3) < 1.7) || Math.hypot(x, z) < 1.3 });
+      tree(g, 2.7, -1.45, 'round', 0.62); tree(g, -0.1, -3.15, 'round', 0.68); tree(g, 2.7, -3.15, 'round', 0.68); tree(g, -0.1, -4.85, 'round', 0.74); tree(g, 2.7, -4.85, 'round', 0.74); tree(g, -0.1, -6.55, 'round', 0.8); tree(g, 2.7, -6.55, 'round', 0.8); 
+      bush(g, 2.35, -0.6, 0.5, 0x4f9a46); bush(g, 0.25, -2.3, 0.5, 0x4f9a46); bush(g, 2.35, -2.3, 0.5, 0x4f9a46); bush(g, 0.25, -4.0, 0.5, 0x4f9a46); bush(g, 2.35, -4.0, 0.5, 0x4f9a46); bush(g, 0.25, -5.7, 0.5, 0x4f9a46); bush(g, 2.35, -5.7, 0.5, 0x4f9a46); bush(g, 0.25, -7.4, 0.5, 0x4f9a46); bush(g, 2.35, -7.4, 0.5, 0x4f9a46); 
+      arch(g, 1.3, -8.8, '公園', [0xe8584a, 0xf5a524, 0xffd84a], 2.4); slide(g, -0.7, -10.6, 0.3, 0xe8584a, 0xf5a524); swings(g, 3.4, -11.0, -0.2, [0xf5a524, 0xe8584a]); springRider(g, 2.3, -10.2, -0.3, 0xffd84a, 'duck');
+      lamp(g, -0.2, -8.6, true); lamp(g, 2.8, -8.6, true); stringLights(g, [[-1.5, 2.2, -9.6], [1.3, 2.7, -11.4], [4.1, 2.2, -9.6]], [0xffd84a, 0xff8a4a, 0xffffff]);
+    } };
+
   // ====================== TEEN · 兔子 ======================
   scenes['teen-rabbit:idle'] = { name: '遊樂場入口拱門', light: 'day', sky: SKY.bright,
     ground: { base: '#87c76c', decals: [{ type: 'path', pts: [[0, 3], [0, -8]], w: 1.8, color: '#e6d6b4', edge: 'rgba(150,120,80,0.35)' }] },

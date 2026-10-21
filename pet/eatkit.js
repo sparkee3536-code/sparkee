@@ -1,8 +1,8 @@
 // 餵食共用（2026-10-18 第 3 批）：少年、成年頁的「開心吃／最愛點心／搖頭不吃」。
 // 食物 3D 是 Meshy 做的（./food/*.glb，每個約 1 MB）；寶寶頁有自己的一份（baby.html）。
 // 每頁自己決定手和頭怎麼動；這裡管：載入食物、時間軸分段、食物大小（咬一口變小）、碎屑、愛心和星星。
-export const FOOD = { bunny: ['hay', 'carrot_cake'], cow: ['corn', 'apple_pie'], puppy: ['bone', 'cheese_cake'], rex: ['meatball', 'spark'] };
-export const WRONG = { bunny: 'bone', cow: 'meatball', puppy: 'corn', rex: 'hay' };   // 搖頭不吃：拿別人的日常食物示範
+export const FOOD = { bunny: ['hay', 'carrot_cake'], cow: ['corn', 'apple_pie'], puppy: ['bone', 'cheese_cake'], rex: ['meatball', 'spark'], mammoth: ['watermelon', 'mango_ice'], leopard: ['fish', 'sushi'], owl: ['gummy', 'pancake'], turtle: ['cucumber', 'pudding'], pangolin: ['antstick', 'eggtart'], penguin: ['sardine', 'soda'], bear: ['acorn', 'berryjelly'], sparky: ['cloudmallow', 'macaron'], magpie: ['papaya', 'pineapplecake'], dragon: ['sweetpotato', 'bubbletea'] };
+export const WRONG = { bunny: 'bone', cow: 'meatball', puppy: 'corn', rex: 'hay', mammoth: 'chili', leopard: 'onion', owl: 'bittermelon', turtle: 'coffee', pangolin: 'chili', penguin: 'onion', bear: 'bittermelon', sparky: 'coffee', magpie: 'chili', dragon: 'onion' };   // 搖頭不吃：拿別人的日常食物示範
 export const EAT_T = 6.0, SNACK_T = 7.0, REFUSE_T = 5.0;
 export const isEat = m => m === 'eat' || m === 'snack' || m === 'refuse';
 export const period = m => (m === 'snack' ? SNACK_T : m === 'refuse' ? REFUSE_T : EAT_T);

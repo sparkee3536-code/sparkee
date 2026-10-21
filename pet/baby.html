@@ -33,7 +33,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15
 .wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:24px 48px;display:flex;flex-direction:column;gap:18px}
 h1{font-family:var(--f-display);font-weight:400;font-size:28px;margin:0;text-wrap:balance}
 .sub{margin:4px 0 0;color:var(--muted)}
-.pets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .pets button{min-height:48px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-family:var(--f-display);font-size:18px;cursor:pointer}
 .pets button[aria-pressed="true"]{background:var(--spark);border-color:var(--spark);color:#2A1C00}
 .stage{position:relative;width:100%;aspect-ratio:4/3.4;max-width:100%;border-radius:24px;overflow:hidden;background:linear-gradient(var(--sky-top),var(--sky-bot));border:1px solid var(--line)}
@@ -67,6 +67,16 @@ h1{font-family:var(--f-display);font-weight:400;font-size:28px;margin:0;text-wra
     <button data-pet="bunny" aria-pressed="true">兔子</button>
     <button data-pet="cow" aria-pressed="false">乳牛</button>
     <button data-pet="puppy" aria-pressed="false">小狗</button>
+    <button data-pet="mammoth" aria-pressed="false">溜溜象</button>
+    <button data-pet="leopard" aria-pressed="false">石虎</button>
+    <button data-pet="owl" aria-pressed="false">鴞博士</button>
+    <button data-pet="turtle" aria-pressed="false">神龜</button>
+    <button data-pet="pangolin" aria-pressed="false">小穿</button>
+    <button data-pet="penguin" aria-pressed="false">船長</button>
+    <button data-pet="bear" aria-pressed="false">月牙</button>
+    <button data-pet="sparky" aria-pressed="false">Sparky</button>
+    <button data-pet="magpie" aria-pressed="false">長尾</button>
+    <button data-pet="dragon" aria-pressed="false">小赤龍</button>
   </div>
 
   <div class="stage" id="stage">
@@ -148,6 +158,128 @@ const PETS = {
     ear:{x0:0.54, x1:0.60, y0:1.0, y1:1.75, px:0.56, py:1.50, L:0.35},
     tail:{yaw:true, p:[0,0.35,-0.30], z0:0.30, z1:0.38, y0:-1, y1:0.68, L:0.3},
     tear:[0.257,0.99,0.55], binkySpin:false, sig:'chase', sigName:'追尾巴', tailGain:1.5, earClamp:[-0.06,0.7]
+  },
+  // 溜溜象（傳說第一位，2026-10-21）：大耳朵前後搧（yaw）、鼻子左右擺、往上捲（trunk）、小尾巴
+  mammoth: {
+    label:'溜溜象', file:'mammoth_model.json', size:'約 1.5 MB',
+    eye:[0.28,1.09], eyeR:[0.092,0.102], eyeOut:1.4, eyeZ:0.1, cover:[0.62,0.42,0.25], coverIn:null, split:0,
+    mouth:[0,0.692], mouthR:[0.085,0.04], mouthZ:9.0,   // 嘴巴就用模型上的微笑，不用程式畫（畫的嘴會疊到鼻子下面、破圖）
+    mouthCover:[0.62,0.42,0.25], noseExclude:false,
+    frown:[0,0.688,0.055,0.022], open:[0,0.70], openR:[0.055,0.042], openRL:[0.04,0.03], cheek:[0.36,0.955,0.065,0.045],
+    headN:[0,1.0,-0.1], HC:[0,1.08,-0.06], HR:0.56, petDir:[0.1,0.8,0.6],
+    ear:{x0:0.54, x1:0.62, y0:0.7, y1:1.48, px:0.56, py:1.1, pz:-0.05, L:0.4, yaw:true},
+    tail:{yaw:true, p:[0,0.26,-0.6], z0:0.6, z1:0.66, y0:-1, y1:0.42, L:0.22},
+    trunk:{p:[0,1.1,0.42], z0:0.42, z1:0.5, y0:0.74, y1:1.32, x:0.15, L:0.3},
+    tear:[0.28,1.0,0.25], binkySpin:false, sig:'slide', sigName:'咻～溜冰', tailGain:1.4, noMip:true, earClamp:[-0.35,0.5]
+  },
+  // 夜巡石虎（傳說第二位，2026-10-21）：豎起的貓耳往兩側抖、長尾巴左右甩
+  leopard: {
+    label:'石虎', file:'leopard_model.json', size:'約 1.4 MB',
+    eye:[0.205,1.106], eyeR:[0.122,0.138], eyeOut:1.5, eyeZ:0.42, eyeFill:[0.8,0.62,0.33], cover:[0.62,0.42,0.12], coverIn:null, split:0,
+    mouth:[0,0.937], mouthR:[0.07,0.032], mouthZ:0.6, mouthCover:[0.86,0.78,0.6], noseExclude:true,
+    frown:[0,0.93,0.05,0.02], open:[0,0.935], openR:[0.045,0.04], openRL:[0.035,0.03], cheek:[0.33,0.9,0.06,0.04],
+    headN:[0,1.1,0.05], HC:[0,1.15,0.05], HR:0.52,
+    ear:{x0:0.28, x1:0.34, y0:1.36, y1:1.9, px:0.36, py:1.4, L:0.25},
+    tail:{yaw:true, p:[0,0.35,-0.36], z0:0.36, z1:0.44, y0:-1, y1:0.6, L:0.55},
+    tear:[0.2,1.02,0.62], binkySpin:false, sig:'pounce', sigName:'撲螢火蟲', tailGain:1.3, noMip:true, earClamp:[-0.3,0.45]
+  },
+  // 領角鴞博士（傳說第三位，2026-10-21）：抱著筆記本坐著；眼睛在粗框眼鏡裡、嘴巴用模型上的喙（不畫程式嘴），頭上兩顆小圓耳羽、短尾巴
+  owl: {
+    label:'鴞博士', file:'owl_model.json', size:'約 1.4 MB',
+    eye:[0.238,1.15], eyeR:[0.1,0.11], eyeOut:1.35, eyeZ:0.12, eyeFill:[0.98,0.92,0.78], cover:[0.98,0.92,0.78], coverIn:null, split:0,
+    mouth:[0,0.95], mouthR:[0.06,0.03], mouthZ:9.0, mouthCover:[0.98,0.92,0.78], noseExclude:false,
+    frown:[0,0.95,0.04,0.02], open:[0,0.95], openR:[0.04,0.03], openRL:[0.03,0.02], cheek:[0.375,0.975,0.0001,0.0001],   // 模型本來就有腮紅，不再疊一層
+    headN:[0,1.0,0.0], HC:[0,1.15,-0.35], HR:0.62, petDir:[0.1,0.85,0.5],
+    ear:{x0:0.28, x1:0.33, y0:1.45, y1:1.7, px:0.38, py:1.5, L:0.12},
+    tail:{yaw:true, p:[0,0.3,-1.02], z0:1.02, z1:1.08, y0:-1, y1:0.6, L:0.18},
+    foodY:0.95, foodS:1.6, tear:[0.24,1.05,0.25], binkySpin:false, sig:'note', sigName:'博士筆記', tailGain:1.0, noMip:true, earClamp:[-0.2,0.3]
+  },
+  // 鋼鐵神龜（傳說第四位、第二章大結局，2026-10-21，第 2 版：站姿、手放下、參考圖的水藍色）：背上銀色鋼片甲殼；沒有耳朵（耳朵遮罩放在模型外面＝不動）、小尾巴
+  turtle: {
+    label:'神龜', file:'turtle_model.json', size:'約 1.4 MB',
+    eye:[0.252,1.228], eyeR:[0.1,0.11], eyeOut:1.55, eyeZ:0.35, eyeFill:[0.5,0.65,0.62], cover:[0.5,0.65,0.62], coverIn:null, split:0,
+    mouth:[0,1.05], mouthR:[0.14,0.03], mouthZ:9.0, mouthCover:[0.537,0.64,0.615], noseExclude:false,   // 嘴巴用模型上的微笑，不用程式畫（嘴在凸出的口鼻上）
+    frown:[0,1.05,0.05,0.02], open:[0,1.05], openR:[0.05,0.04], openRL:[0.04,0.03], cheek:[0.387,1.1,0.0001,0.0001],   // 模型本來就有腮紅
+    headN:[0,1.2,0.0], HC:[0,1.25,0.0], HR:0.5, petDir:[0.1,0.85,0.5],
+    ear:{x0:0.3, x1:0.36, y0:0.35, y1:0.98, px:0.3, py:0.98, pz:0.05, L:0.5, yaw:true, z0:0.0, z1:0.08},   // 「耳朵」遮罩拿來動兩隻前手（往前擺）
+    tail:{yaw:true, p:[0,0.2,-0.78], z0:0.78, z1:0.83, y0:-1, y1:0.45, L:0.12},
+    tear:[0.27,1.1,0.45], binkySpin:false, sig:'castle', sigName:'慢慢堆沙堡', tailGain:1.0, noMip:true, earClamp:[-0.1,0.5]
+  },
+  // 鐵甲小穿（傳說第五位、第三章，2026-10-21）：站姿手放下，銅色鐵甲鱗片；「耳朵」遮罩拿來動兩隻手（只動身體前面），尾巴捲在身旁不動
+  pangolin: {
+    label:'小穿', file:'pangolin_model.json', size:'約 1.5 MB',
+    eye:[0.268,1.148], eyeR:[0.095,0.1], eyeOut:1.5, eyeZ:0.2, eyeFill:[0.82,0.625,0.53], cover:[0.82,0.625,0.53], coverIn:null, split:0,
+    mouth:[0,0.9], mouthR:[0.1,0.03], mouthZ:9.0, mouthCover:[0.835,0.637,0.543], noseExclude:false,   // 嘴巴用模型上的微笑（在口鼻下面）
+    frown:[0,0.9,0.05,0.02], open:[0,0.9], openR:[0.05,0.04], openRL:[0.04,0.03], cheek:[0.34,1.05,0.0001,0.0001],   // 模型本來就有腮紅
+    headN:[0,1.15,0.0], HC:[0,1.2,-0.05], HR:0.5, petDir:[0.1,0.85,0.5],
+    ear:{x0:5, x1:5.1, y0:9, y1:9.1, px:5, py:9, L:0.1, cap:[0.38,0.78,0.08, 0.44,0.36,0.16, 0.1], inK:0.55, fwd:1.0, skin:[0.83,0.64,0.54], skinTol:0.14, smooth:8},   // 手：膠囊範圍（肩膀→手），uEar 正＝往胸口收＋往前
+    tail:{yaw:true, p:[0,0.3,-5], z0:5, z1:5.1, y0:-1, y1:0.5, L:0.1},
+    tear:[0.27,1.06,0.32], binkySpin:false, sig:'ball', sigName:'縮成球滾滾', tailGain:1.0, noMip:true, mrMap:'pangolin_mr.jpg', earClamp:[-0.15,0.52]
+  },
+  // 企鵝船長（傳說第六位、第四章，2026-10-21）：站姿、翅膀往外張開（和身體有空隙）、船長帽和頭一體；翅膀用 cap 做（負的＝往上拍）。招牌「小船划划」（使用者 2026-10-21 選定，取代滑水衝浪）：翅膀握著船槳
+  penguin: {
+    label:'船長', file:'penguin_model.json', size:'約 1.3 MB',
+    eye:[0.232,1.0], eyeR:[0.068,0.074], eyeOut:1.4, eyeZ:0.2, eyeFill:[0.98,0.97,0.94], cover:[0.98,0.97,0.94], coverIn:null, split:0,
+    mouth:[0,0.89], mouthR:[0.1,0.03], mouthZ:9.0, mouthCover:[0.98,0.97,0.94], noseExclude:false,   // 嘴巴用模型喙上的微笑
+    frown:[0,0.89,0.05,0.02], open:[0,0.89], openR:[0.05,0.04], openRL:[0.04,0.03], cheek:[0.3,0.9,0.0001,0.0001],
+    headN:[0,1.0,0.0], HC:[0,1.0,-0.05], HR:0.5, petDir:[0.1,0.85,0.5],
+    ear:{x0:5, x1:5.1, y0:9, y1:9.1, px:5, py:9, L:0.1, cap:[0.42,0.62,-0.1, 0.72,0.34,-0.1, 0.13], inK:1.0, fwd:0.0, noColor:true, smooth:6},
+    tail:{yaw:true, p:[0,0.3,-0.55], z0:0.55, z1:0.6, y0:-1, y1:0.45, L:0.12},
+    tear:[0.23,0.92,0.3], binkySpin:false, sig:'row', sigName:'小船划划', tailGain:1.0, noMip:true, earClamp:[-0.52,0.2]
+  },
+  // 黑熊月牙（傳說第七位、第四章，2026-10-21）：站姿、兩手往外張開（和身體有空隙）、胸口白色月牙；黑色毛上的表情線改用奶油色（ink）；手用 cap 做（負的＝往上舉）。
+  //   招牌「月夜守護」（使用者 2026-10-21 選定）：跳上大石頭、張開雙手，胸口的月牙發光照亮夜晚的公園（glow：月牙範圍會發光）
+  bear: {
+    label:'月牙', file:'bear_model.json', size:'約 1.6 MB',
+    eye:[0.232,1.124], eyeR:[0.07,0.076], eyeOut:1.45, eyeZ:0.25, eyeFill:[0.084,0.082,0.102], cover:[0.084,0.082,0.102], coverIn:null, split:0,
+    mouth:[0,0.93], mouthR:[0.1,0.03], mouthZ:9.0, mouthCover:[0.96,0.87,0.77], noseExclude:false,   // 嘴巴用模型口鼻上的微笑
+    frown:[0,0.93,0.05,0.02], open:[0,0.93], openR:[0.05,0.04], openRL:[0.04,0.03], cheek:[0.3,1.0,0.0001,0.0001],   // 模型本來就有腮紅
+    headN:[0,1.1,0.0], HC:[0,1.15,-0.02], HR:0.5, petDir:[0.1,0.85,0.5],
+    ear:{x0:5, x1:5.1, y0:9, y1:9.1, px:5, py:9, L:0.1, cap:[0.38,0.7,-0.05, 0.645,0.385,-0.035, 0.125], inK:1.0, fwd:0.0, noColor:true, smooth:6},
+    tail:{yaw:true, p:[0,0.38,-0.5], z0:0.5, z1:0.56, y0:-1, y1:0.5, L:0.12},
+    ink:[0.93,0.87,0.76], glow:{y0:0.55, y1:0.81, x:0.25, z0:0.12, z1:0.42},
+    tear:[0.23,1.05,0.4], binkySpin:false, sig:'moon', sigName:'月夜守護', tailGain:1.0, noMip:true, earClamp:[-0.52,0.2]
+  },
+  // 獨角獸 Sparky（傳說第八位，2026-10-21）：兩腳站立、前腳往外張開（和身體有空隙）、光滑金色短角（角尖不做火花，火花用程式畫）；口鼻凸出，嘴巴用模型的（比照溜溜象）。
+  //   招牌「火花指路」（使用者 2026-10-21 選定）：角尖亮起火花 → 火花跳到地上畫出發光小路 → Sparky 跟著跑 → 路的盡頭冒出新公園小旗子 → 歡呼 → 跑回來
+  sparky: {
+    label:'Sparky', file:'sparky_model.json', size:'約 1.3 MB',
+    eye:[0.23,1.117], eyeR:[0.056,0.064], eyeOut:1.45, eyeZ:0.22, eyeFill:[0.93,0.865,0.755], cover:[0.93,0.865,0.755], coverIn:null, split:0,
+    mouth:[0,0.95], mouthR:[0.1,0.03], mouthZ:9.0, mouthCover:[0.96,0.87,0.77], noseExclude:false,   // 口鼻凸出：不畫程式嘴，用模型上的微笑
+    frown:[0,0.95,0.05,0.02], open:[0,0.95], openR:[0.05,0.04], openRL:[0.04,0.03], cheek:[0.3,1.0,0.0001,0.0001],   // 模型本來就有腮紅
+    headN:[0,1.1,0.0], HC:[0,1.12,-0.02], HR:0.5, petDir:[0.1,0.85,0.5],
+    ear:{x0:5, x1:5.1, y0:9, y1:9.1, px:5, py:9, L:0.1, cap:[0.335,0.645,-0.01, 0.49,0.43,-0.01, 0.095], inK:1.0, fwd:0.0, noColor:true, smooth:6},
+    tail:{yaw:true, p:[0,0.38,-0.36], z0:0.37, z1:0.43, y0:0.1, y1:0.64, L:0.15},
+    horn:[0,1.6,0.34],
+    tear:[0.25,1.06,0.38], binkySpin:false, sig:'spark', sigName:'火花指路', tailGain:1.0, noMip:true, earClamp:[-0.52,0.2]
+  },
+  // 台灣藍鵲 長尾（傳說第九位，2026-10-21）：站姿、翅膀往外張開（和身體有空隙）、黑頭罩、紅色圓嘴、長長的粗尾巴貼在地上（末端黑帶＋白尖）。
+  //   黑頭上的表情線用奶油色（ink，比照月牙）；嘴是凸出的喙，不畫程式嘴；翅膀用 cap（負＝往上拍）。
+  //   招牌「繞圈飛飛」（使用者 2026-10-21 選定）：拍翅膀起飛 → 在空中繞三圈、長尾巴在後面飄、灑下小羽毛 → 降落、張開翅膀鞠躬
+  magpie: {
+    label:'長尾', file:'magpie_model.json', size:'約 1.2 MB',
+    eye:[0.27,1.27], eyeR:[0.07,0.08], eyeOut:1.4, eyeZ:0.3, eyeFill:[0.03,0.03,0.035], cover:[0.03,0.03,0.035], coverIn:null, split:0,
+    mouth:[0,1.0], mouthR:[0.1,0.03], mouthZ:9.0, mouthCover:[0.03,0.03,0.035], noseExclude:false,   // 嘴巴是凸出的紅色喙：不畫程式嘴
+    frown:[0,1.0,0.05,0.02], open:[0,1.0], openR:[0.05,0.04], openRL:[0.04,0.03], cheek:[0.35,1.13,0.0001,0.0001],   // 模型本來就有腮紅
+    headN:[0,1.2,0.1], HC:[0,1.2,0.1], HR:0.5, petDir:[0.1,0.85,0.5],
+    ear:{x0:5, x1:5.1, y0:9, y1:9.1, px:5, py:9, L:0.1, cap:[0.5,0.95,0.18, 0.75,0.45,0.18, 0.12], capX:[0.49,0.58,0.3,1.05], inK:1.0, fwd:0.0, noColor:true, smooth:6, rigid:true}, wingMax:0.85,
+    tail:{yaw:true, p:[0,0.5,-0.32], z0:0.34, z1:0.44, y0:-1, y1:0.66, L:0.5},
+    ink:[0.93,0.87,0.76],
+    tear:[0.3,1.16,0.62], binkySpin:false, sig:'fly', sigName:'繞圈飛飛', tailGain:1.0, noMip:true, earClamp:[-0.52,0.2]
+  },
+  // 火山小赤龍（傳說第十位、最後一位，2026-10-22）：兩腳站、手往外張開（和身體有空隙）、往後捲的羊角、葉形耳鰭、頭頂火焰毛一路連成背上的火焰鬃毛、大翅膀、尾巴尖是火焰。
+  //   口鼻凸出，嘴巴用模型的；手用 capX＋rigid（比照長尾翅膀，整隻手一起轉）。
+  //   招牌「暖暖小火焰」（使用者 2026-10-22 選定）：深呼吸、鼓起胸口 → 噗！噴出一朵愛心形的暖暖小火 → 小火一盞一盞點亮公園的小燈籠 → 飛上天變成小愛心 → 開心轉一圈、舉手歡呼
+  dragon: {
+    label:'小赤龍', file:'dragon_model.json', size:'約 1.8 MB',
+    eye:[0.2,1.06], eyeR:[0.066,0.072], eyeOut:1.45, eyeZ:0.4, eyeFill:[0.70,0.28,0.16], cover:[0.70,0.28,0.16], coverIn:null, split:0,
+    mouth:[0,0.88], mouthR:[0.1,0.03], mouthZ:9.0, mouthCover:[0.753,0.314,0.184], noseExclude:false,   // 口鼻凸出：不畫程式嘴，用模型上的微笑
+    frown:[0,0.88,0.05,0.02], open:[0,0.88], openR:[0.05,0.04], openRL:[0.04,0.03], cheek:[0.3,1.0,0.0001,0.0001],   // 模型本來就有腮紅
+    headN:[0,1.05,0.1], HC:[0,1.05,0.1], HR:0.5, petDir:[0.1,0.85,0.5],
+    ear:{x0:5, x1:5.1, y0:9, y1:9.1, px:5, py:9, L:0.1, cap:[0.38,0.73,0.3, 0.6,0.5,0.3, 0.12], capX:[0.39,0.47,0.4,0.82], inK:1.0, fwd:0.0, noColor:true, smooth:6, rigid:true},
+    tail:{yaw:true, p:[0,0.3,-0.4], z0:0.4, z1:0.5, y0:-1, y1:0.55, L:0.6},
+    snout:[0,0.93,0.86],
+    tear:[0.24,1.0,0.62], binkySpin:false, sig:'flame', sigName:'暖暖小火焰', tailGain:1.0, noMip:true, earClamp:[-0.52,0.2]
   }
 };
 
@@ -189,17 +321,173 @@ QRc(shadow, 'x', -Math.PI/2); shadow.position.y = 0.002; shadow.renderOrder = -1
 const rig = new THREE.Group(); scene.add(rig);        // whole-body motion (rotates around a pivot height)
 const off = new THREE.Group(); rig.add(off);          // shifts the model so the pivot sits at the rig origin
 const squash = new THREE.Group(); off.add(squash);    // squash & stretch around the feet
-const flatEU = {value:0}, flatMU = {value:0}, earU = {value:0}, tailU = {value:0}, dizzyU = {value:0}, lidU = {value:0}, cryU = {value:0}, happyU = {value:0}, loveU = {value:0}, dbgU = {value: DEBUG ? 1 : 0};
+const flatEU = {value:0}, flatMU = {value:0}, earU = {value:0}, tailU = {value:0}, trunkU = {value:0}, trunkUpU = {value:0}, dizzyU = {value:0}, lidU = {value:0}, cryU = {value:0}, happyU = {value:0}, loveU = {value:0}, glowU = {value:0}, dbgU = {value: DEBUG ? 1 : 0};
 
 // ---------- the pebble the pet trips over ----------
 const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.11, 0), new THREE.MeshStandardMaterial({color:0x9aa39a, roughness:0.95, flatShading:true}));
 rock.scale.set(1.2, 0.7, 1.0); rock.position.set(0.2, 0.06, 0.5); QR(rock, 0.3, 0.6, 0.1); rock.visible = false; scene.add(rock);
+// 石虎招牌「撲螢火蟲」的螢火蟲：一顆會發光的小點
+const fireflyTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  gr.addColorStop(0, 'rgba(255,255,220,1)'); gr.addColorStop(0.18, 'rgba(255,240,120,1)'); gr.addColorStop(0.45, 'rgba(220,255,90,0.45)'); gr.addColorStop(1, 'rgba(200,255,80,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+const firefly = new THREE.Sprite(new THREE.SpriteMaterial({map: fireflyTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending}));
+firefly.scale.setScalar(0.22); firefly.renderOrder = 6; firefly.visible = false; scene.add(firefly);
+// 鴞博士招牌「博士筆記」：程式做的小筆記本（會打開、翻頁、合起來）、問號、燈泡
+const canvasTex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
+const pageTex = (k) => canvasTex(256, 320, (g, w, h) => { g.fillStyle = '#fffaf0'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#d9cbb0'; g.lineWidth = 4; for (let y = 70; y < h - 20; y += 34){ g.beginPath(); g.moveTo(24, y); g.lineTo(w - 24, y); g.stroke(); }
+  g.lineWidth = 7; g.lineCap = 'round'; g.lineJoin = 'round'; const col = ['#e8584a', '#4aa3df', '#7cc45a', '#f5a524'][k % 4]; g.strokeStyle = col;
+  if (k % 4 === 0){ g.beginPath(); g.moveTo(60, 230); g.lineTo(60, 110); g.lineTo(100, 110); g.lineTo(190, 240); g.stroke(); }                   // 溜滑梯
+  else if (k % 4 === 1){ g.beginPath(); g.moveTo(50, 250); g.lineTo(90, 90); g.lineTo(170, 90); g.lineTo(210, 250); g.moveTo(110, 90); g.lineTo(110, 200); g.moveTo(150, 90); g.lineTo(150, 200); g.stroke(); g.fillStyle = col; g.fillRect(95, 196, 70, 14); }   // 鞦韆
+  else if (k % 4 === 2){ g.beginPath(); g.arc(128, 150, 60, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.moveTo(128, 210); g.lineTo(128, 270); g.stroke(); }   // 大樹
+  else { g.fillStyle = col; g.beginPath(); for (let i = 0; i < 10; i++){ const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 30 : 70; g.lineTo(128 + r * Math.cos(a), 160 + r * Math.sin(a)); } g.fill(); } });   // 星星
+const NB = new THREE.Group(); NB.visible = false; scene.add(NB);
+const nbCover = new THREE.MeshStandardMaterial({color:0x8a5a3a, roughness:0.85}), nbEdge = new THREE.MeshStandardMaterial({color:0xfff3dc, roughness:0.9});
+const pageMats = [0, 1, 2, 3, 4].map(k => new THREE.MeshStandardMaterial({map: pageTex(k), roughness:0.9}));
+const nbHalf = (sx) => { const h = new THREE.Group(); NB.add(h);
+  const cv = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.46, 0.02), nbCover); cv.position.set(sx * 0.18, 0, -0.012); h.add(cv);
+  const pg = new THREE.Mesh(new THREE.BoxGeometry(0.33, 0.43, 0.022), [nbEdge, nbEdge, nbEdge, nbEdge, pageMats[sx < 0 ? 0 : 1], nbEdge]); pg.position.set(sx * 0.17, 0, 0.012); h.add(pg); h.userData.pg = pg; return h; };
+const nbL = nbHalf(-1), nbR = nbHalf(1);
+const nbFlip = new THREE.Group(); NB.add(nbFlip);
+const nbFlipPg = new THREE.Mesh(new THREE.BoxGeometry(0.33, 0.43, 0.006), [nbEdge, nbEdge, nbEdge, nbEdge, pageMats[1], pageMats[2]]); nbFlipPg.position.set(0.17, 0, 0.026); nbFlip.add(nbFlipPg);
+const qTex = canvasTex(128, 128, (g) => { g.fillStyle = '#ffffff'; g.beginPath(); g.arc(64, 64, 58, 0, Math.PI * 2); g.fill(); g.strokeStyle = '#4aa3df'; g.lineWidth = 8; g.stroke();
+  g.fillStyle = '#2f6f9a'; g.font = 'bold 84px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('?', 64, 70); });
+const bulbTex = canvasTex(128, 160, (g) => { const gr = g.createRadialGradient(64, 60, 0, 64, 60, 64); gr.addColorStop(0, 'rgba(255,250,200,0.95)'); gr.addColorStop(1, 'rgba(255,220,80,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  g.fillStyle = '#ffd84a'; g.beginPath(); g.arc(64, 58, 32, 0, Math.PI * 2); g.fill(); g.fillRect(48, 80, 32, 22); g.fillStyle = '#9aa3a8'; g.fillRect(46, 102, 36, 10); g.fillRect(50, 114, 28, 9); g.fillStyle = 'rgba(255,255,255,0.8)'; g.beginPath(); g.arc(52, 46, 9, 0, Math.PI * 2); g.fill(); });
+const qMark = new THREE.Sprite(new THREE.SpriteMaterial({map: qTex, transparent: true, depthWrite: false})); qMark.scale.setScalar(0.3); qMark.visible = false; qMark.renderOrder = 6; scene.add(qMark);
+const bulb = new THREE.Sprite(new THREE.SpriteMaterial({map: bulbTex, transparent: true, depthWrite: false})); bulb.scale.set(0.36, 0.45, 1); bulb.visible = false; bulb.renderOrder = 6; scene.add(bulb);
+// 神龜招牌「慢慢堆沙堡」：程式做的沙堡（一層一層長高）和小旗子
+const CASTLE = new THREE.Group(); CASTLE.visible = false; scene.add(CASTLE);
+const sandM = new THREE.MeshStandardMaterial({color:0xe6c98f, roughness:0.95}), sandD = new THREE.MeshStandardMaterial({color:0xd4b273, roughness:0.95});
+const tiers = [[0.26, 0.15], [0.19, 0.13], [0.13, 0.12]].map(([r, h], i) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.92, r, h, 24), i % 2 ? sandD : sandM); CASTLE.add(m);
+  for (let k = 0; k < 8; k++){ const a = k / 8 * Math.PI * 2, b = new THREE.Mesh(new THREE.BoxGeometry(r * 0.28, h * 0.35, r * 0.2), i % 2 ? sandD : sandM); b.position.set(Math.cos(a) * r * 0.88, h * 0.55, Math.sin(a) * r * 0.88); b.rotation.y = -a; m.add(b); }
+  m.userData.h = h; return m; });
+const castleTop = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.14, 20), sandM); CASTLE.add(castleTop);
+const flag = new THREE.Group(); CASTLE.add(flag);
+{ const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.26, 8), new THREE.MeshStandardMaterial({color:0x8a6240})); pole.position.y = 0.13; flag.add(pole); }
+const flagCloth = new THREE.Mesh(new THREE.PlaneGeometry(0.13, 0.08, 6, 1), new THREE.MeshStandardMaterial({color:0xe8584a, side:THREE.DoubleSide, roughness:0.8})); flagCloth.position.set(0.068, 0.215, 0); flag.add(flagCloth);
+const flagPos = flagCloth.geometry.attributes.position.array.slice();
+// 小穿招牌「縮成球滾滾」：程式做的銅色鐵甲球（縮起來的時候換成這顆球滾一圈）
+const ballTex = canvasTex(512, 256, (g, w, h) => { g.fillStyle = '#9a5a2a'; g.fillRect(0, 0, w, h);
+  for (let r = 0; r < 7; r++) for (let c = 0; c < 12; c++){ const x = (c + (r % 2) * 0.5) * w / 12, y = r * h / 6.2 - 6, gr = g.createRadialGradient(x - 8, y + 6, 4, x, y + 14, 34);
+    gr.addColorStop(0, '#f2b27a'); gr.addColorStop(0.55, '#c8763c'); gr.addColorStop(1, '#8a4a20'); g.fillStyle = gr; g.beginPath(); g.ellipse(x, y + 16, 22, 26, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = 'rgba(90,45,15,0.6)'; g.lineWidth = 3; g.stroke(); } });
+const BALL = new THREE.Mesh(new THREE.SphereGeometry(0.5, 40, 28), new THREE.MeshStandardMaterial({map: ballTex, metalness: 0.45, roughness: 0.42})); BALL.visible = false; scene.add(BALL);
+let ballStarsDone = false, ballPatOn = false;
+// 船長招牌「小船划划」：水花
+const dropTex = makeTex(g => { const gr = g.createRadialGradient(54, 54, 4, 64, 64, 56); gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.35, '#bfe8ff'); gr.addColorStop(1, 'rgba(90,170,230,0)'); g.fillStyle = gr; g.beginPath(); g.arc(64, 64, 56, 0, Math.PI * 2); g.fill(); });
+
+// 船長招牌「小船划划」：程式做的小木船（兩支船槳握在翅膀上）、水面漣漪、水花
+const BOAT = new THREE.Group(); BOAT.visible = false; BOAT.rotation.order = 'YXZ'; scene.add(BOAT);
+const BO = {HL: 1.25, HB: 1.05, RIM: 0.30, SHEER: 0.14, KEEL: 0.03, FLOOR: 0.06};   // 半長、半寬、舷高、船頭船尾翹起、龍骨高、甲板（企鵝站的高度）
+const boatB = x => BO.HB * (1 - Math.pow(Math.min(1, Math.abs(x) / BO.HL), 2)), boatRim = x => BO.RIM + BO.SHEER * Math.pow(Math.min(1, Math.abs(x) / BO.HL), 2);
+{ const NX = 56, NT = 24, pos = [], col = [], idx = [], cWood = [new THREE.Color(0xc07b3f), new THREE.Color(0xb06d36)], cBand = new THREE.Color(0x1f4f8a);
+  for (let i = 0; i <= NX; i++){ const x = -BO.HL + 2 * BO.HL * i / NX, b = boatB(x), rim = boatRim(x);
+    for (let j = 0; j <= NT; j++){ const th = Math.PI * j / NT; pos.push(x, rim - (rim - BO.KEEL) * Math.sin(th), -b * Math.cos(th));
+      const c = (j <= 2 || j >= NT - 2) ? cBand : cWood[Math.floor(j / 2) % 2]; col.push(c.r, c.g, c.b); } }
+  for (let i = 0; i < NX; i++) for (let j = 0; j < NT; j++){ const a = i * (NT + 1) + j, b2 = a + 1, c2 = a + NT + 1, d2 = c2 + 1; idx.push(a, b2, c2, b2, d2, c2); }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+  const mid = (NX / 2) * (NT + 1) + NT / 2; if (geo.attributes.normal.getY(mid) > 0){ for (let k = 0; k < idx.length; k += 3){ const t = idx[k + 1]; idx[k + 1] = idx[k + 2]; idx[k + 2] = t; } geo.setIndex(idx); geo.computeVertexNormals(); }   // 外面朝外
+  BOAT.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({vertexColors: true, roughness: 0.85, side: THREE.FrontSide})));
+  BOAT.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({color: 0xe3b77d, roughness: 0.9, side: THREE.BackSide})));   // 船裡面：淺木色
+  const rimPts = []; for (let i = 0; i <= 40; i++){ const x = -BO.HL + 2 * BO.HL * i / 40; rimPts.push(new THREE.Vector3(x, boatRim(x), boatB(x))); }
+  for (let i = 39; i >= 1; i--){ const x = -BO.HL + 2 * BO.HL * i / 40; rimPts.push(new THREE.Vector3(x, boatRim(x), -boatB(x))); }
+  BOAT.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rimPts, true, 'centripetal'), 200, 0.034, 8, true), new THREE.MeshStandardMaterial({color: 0xf3e7cf, roughness: 0.7})));   // 船舷圓邊
+  const wood = new THREE.MeshStandardMaterial({color: 0xd9a566, roughness: 0.9});
+  const fl = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.03, 0.56), wood); fl.position.set(0, BO.FLOOR - 0.015, 0); BOAT.add(fl);   // 甲板
+  for (const sx of [-0.84, 0.84]){ const bn = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.04, 0.84), wood); bn.position.set(sx, 0.17, 0); BOAT.add(bn); }   // 前後座板
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.5, 8), new THREE.MeshStandardMaterial({color: 0x8a6240})); pole.position.set(BO.HL - 0.1, boatRim(BO.HL - 0.1) + 0.22, 0); BOAT.add(pole);   // 船頭小旗
+  const pen = new THREE.Mesh(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(-0.26, 0.07, 0), new THREE.Vector3(0, 0.14, 0)]), new THREE.MeshStandardMaterial({color: 0xe8584a, side: THREE.DoubleSide})); pen.geometry.computeVertexNormals(); pen.position.set(BO.HL - 0.1, boatRim(BO.HL - 0.1) + 0.34, 0); BOAT.add(pen);
+  for (const sz of [-1, 1]){ const lk = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.12, 10), new THREE.MeshStandardMaterial({color: 0x6b4a2a})); lk.position.set(0.12, BO.RIM + 0.02, sz * 1.03); BOAT.add(lk); } }
+const LOCK = {x: 0.12, y: 0.33, z: 1.03}, OAR_OUT = 0.85, OAR_GRIP = 0.12, HAND0 = [0.72, 0.36, -0.12], ARM_A = [0.42, 0.62, -0.1];   // 船槳鎖的位置（船的座標）、槳外段長度、翅膀尖端（量自模型）和肩膀
+const oarMat = new THREE.MeshStandardMaterial({color: 0xe9d3a6, roughness: 0.8}), bladeMat = new THREE.MeshStandardMaterial({color: 0xf3f0e6, roughness: 0.7}), gripMat = new THREE.MeshStandardMaterial({color: 0x4a3524, roughness: 0.8});
+const oars = [0, 1].map(() => { const o = new THREE.Group(); o.visible = false; scene.add(o);
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 1, 10), oarMat); shaft.position.y = 0.5; o.add(shaft);
+  const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.16, 10), gripMat); grip.position.y = 0.08; o.add(grip);
+  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.44, 0.2), bladeMat); o.add(blade); o.userData = {shaft, blade}; return o; });
+const ringTex = makeTex(g => { g.strokeStyle = 'rgba(255,255,255,0.95)'; g.lineWidth = 7; g.beginPath(); g.arc(64, 64, 52, 0, Math.PI * 2); g.stroke(); g.strokeStyle = 'rgba(255,255,255,0.45)'; g.lineWidth = 4; g.beginPath(); g.arc(64, 64, 38, 0, Math.PI * 2); g.stroke(); });
+const ripples = Array.from({length: 16}, () => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({map: ringTex, transparent: true, depthWrite: false, opacity: 0})); m.rotation.x = -Math.PI / 2; m.position.y = 0.012; m.renderOrder = 1; m.visible = false; scene.add(m); m.userData = {age: 9, life: 1, s0: 0.1, s1: 0.8}; return m; });
+let rippleI = 0;
+function addRipple(x, z, s1 = 0.9, life = 1.2, col = 0xffffff){ const m = ripples[rippleI++ % ripples.length]; m.material.color.set(col); m.position.x = x; m.position.z = z; m.userData = {age: 0, life, s0: 0.12, s1}; m.visible = true; }
+function updateRipples(dt){ for (const m of ripples){ const u = m.userData; if (!m.visible) continue; u.age += dt; if (u.age > u.life){ m.visible = false; continue; } const a = u.age / u.life, s = u.s0 + (u.s1 - u.s0) * a; m.scale.set(s, s * 0.8, 1); m.material.opacity = 0.7 * (1 - a) * Math.min(1, u.age / 0.08); } }
+function clearRipples(){ for (const m of ripples) m.visible = false; }
+const DOCK_X = 1.9; let rowSplashDone = -1, rowAcc = 0, rowWake = 0, rowBlade = [null, null], rowLand = -1;
 const WALK_T = 7.2;
+// 月牙招牌「月夜守護」：程式做的大石頭（頂面平的，站得上去）、胸口的光暈、照亮四周的暖光
+const ROCK_X = 0.95, ROCK_H = 0.34;
+const ROCK = (() => { const g = new THREE.CylinderGeometry(0.56, 0.7, ROCK_H, 11, 2), pa = g.attributes.position;
+  for (let i = 0; i < pa.count; i++){ const x = pa.getX(i), y = pa.getY(i), z = pa.getZ(i), a = Math.atan2(z, x), k = 1 + 0.07 * Math.sin(a * 3 + 1) + 0.04 * Math.sin(a * 7), ky = y > ROCK_H / 2 - 0.001 ? 1 : k * (1 + 0.04 * (0.5 - y / ROCK_H)); pa.setX(i, x * ky); pa.setZ(i, z * ky); }
+  g.translate(0, ROCK_H / 2, 0); g.computeVertexNormals();
+  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({color: 0x8e9893, roughness: 0.95, flatShading: true})); m.position.set(ROCK_X, 0, 0); m.visible = false; scene.add(m);
+  const moss = new THREE.Mesh(new THREE.CircleGeometry(0.5, 24), new THREE.MeshStandardMaterial({color: 0x5f8a5a, roughness: 1})); moss.rotation.x = -Math.PI / 2; moss.position.y = ROCK_H + 0.003; moss.scale.set(1, 0.85, 1); m.add(moss);
+  return m; })();
+const haloTex = makeTex(g => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,250,220,1)'); gr.addColorStop(0.25, 'rgba(255,236,170,0.8)'); gr.addColorStop(0.6, 'rgba(255,214,120,0.25)'); gr.addColorStop(1, 'rgba(255,200,100,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); });
+const moonTex = makeTex(g => { g.fillStyle = '#fff3c4'; g.beginPath(); g.arc(64, 64, 46, 0, Math.PI * 2); g.fill(); g.globalCompositeOperation = 'destination-out'; g.beginPath(); g.arc(84, 52, 40, 0, Math.PI * 2); g.fill(); });
+const halo = new THREE.Sprite(new THREE.SpriteMaterial({map: haloTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending})); halo.renderOrder = 6; halo.visible = false; scene.add(halo);
+const moonLight = new THREE.PointLight(0xffe0a0, 0, 5, 1.5); scene.add(moonLight);   // 一直在場景裡（亮度 0），切換時不用重新編譯材質
+let moonAcc = 0, moonRing = 0;
+// Sparky 招牌「火花指路」：角尖的火花（四角星＋光暈）、地上的發光小路（一顆一顆光點）、路盡頭的新公園小旗子
+const SPK = { Q0: [0.3, 0.6], C1: [1.8, 1.3], C2: [2.5, -1.3], Q3: [-0.5, -2.4], STOP: 0.72 };   // 第 2 版：小路約 5 公尺，往右前方繞到後面（手機直式畫面看得到深度），Sparky 跟著跑約 3.6 公尺，旗子在 Sparky 左後方約 2 公尺（不會被擋住）
+const spkBez = u => { const v = 1 - u, a = v*v*v, b = 3*v*v*u, c = 3*v*u*u, d = u*u*u; return [a*SPK.Q0[0] + b*SPK.C1[0] + c*SPK.C2[0] + d*SPK.Q3[0], a*SPK.Q0[1] + b*SPK.C1[1] + c*SPK.C2[1] + d*SPK.Q3[1]]; };
+const sparkTex = makeTex(g => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,235,1)'); gr.addColorStop(0.22, 'rgba(255,226,130,0.85)'); gr.addColorStop(0.55, 'rgba(255,200,90,0.22)'); gr.addColorStop(1, 'rgba(255,190,80,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  g.translate(64, 64); g.beginPath(); for (let i = 0; i < 8; i++){ const r = i % 2 ? 9 : 52, a = -Math.PI / 2 + i * Math.PI / 4; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.fillStyle = '#fff6cf'; g.fill(); });   // 四角火花（不是五角星）
+const dotTex = makeTex(g => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,250,215,1)'); gr.addColorStop(0.3, 'rgba(255,214,110,0.8)'); gr.addColorStop(1, 'rgba(255,190,80,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); });
+const sparkSp = new THREE.Sprite(new THREE.SpriteMaterial({map: sparkTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending})); sparkSp.renderOrder = 7; sparkSp.visible = false; scene.add(sparkSp);
+const spkDots = []; for (let i = 0; i < 34; i++){ const d = new THREE.Sprite(new THREE.SpriteMaterial({map: dotTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending})); d.renderOrder = 6; d.visible = false; const [x, z] = spkBez((i + 0.5) / 34); d.position.set(x, 0.05, z); d.userData.u = (i + 0.5) / 34; scene.add(d); spkDots.push(d); }
+const SPFLAG = (() => { const g = new THREE.Group(); g.visible = false; scene.add(g);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.02, 0.8, 8), new THREE.MeshStandardMaterial({color: 0xfaf6ee, roughness: 0.6})); pole.position.y = 0.4; g.add(pole);
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 8), new THREE.MeshStandardMaterial({color: 0xf5c24a, roughness: 0.4, metalness: 0.2})); knob.position.y = 0.81; g.add(knob);
+  const txt = (() => { const c = document.createElement('canvas'); c.width = 512; c.height = 288; const x = c.getContext('2d');
+    x.fillStyle = '#b48cc4'; x.fillRect(0, 0, 512, 288); x.fillStyle = '#9b74b0'; x.fillRect(0, 0, 512, 18); x.fillRect(0, 270, 512, 18);
+    x.fillStyle = '#ffffff'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = '900 104px "Arial Rounded MT Bold", "Nunito", "Helvetica Neue", Arial, sans-serif';
+    x.fillText('NEW', 256, 92); x.fillText('PARK', 256, 200);
+    x.fillStyle = '#ffe28a'; x.beginPath(); for (let i = 0; i < 8; i++){ const r = i % 2 ? 7 : 26, a = -Math.PI / 2 + i * Math.PI / 4; x.lineTo(452 + Math.cos(a) * r, 46 + Math.sin(a) * r); } x.fill();   // 小小四角火花
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; })();
+  const cloth = new THREE.Group(); cloth.position.set(0.016, 0.62, 0); g.add(cloth); g.userData.cloth = cloth;   // 旗面以旗桿為軸飄動
+  const fm = new THREE.MeshStandardMaterial({map: txt, roughness: 0.85}), geo = new THREE.PlaneGeometry(0.5, 0.28); geo.translate(0.25, 0, 0);
+  const front = new THREE.Mesh(geo, fm); front.position.z = 0.002; cloth.add(front);
+  const back = new THREE.Mesh(geo.clone(), fm); back.rotation.y = Math.PI; back.position.set(0.5, 0, -0.002); cloth.add(back);   // 背面字也是正的
+  const mound = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({color: 0x7cc45a, roughness: 1})); mound.scale.y = 0.4; g.add(mound);
+  [[0.15, 0.06, 0xff8fb1], [-0.13, 0.08, 0xffffff], [0.02, -0.16, 0xf6c445], [-0.06, 0.15, 0xb9a2f0]].forEach(([x, z, c]) => { const f = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 6), new THREE.MeshStandardMaterial({color: c, roughness: 0.7})); f.position.set(x, 0.045, z); g.add(f); });   // 小花：新公園
+  g.position.set(SPK.Q3[0], 0, SPK.Q3[1]); g.rotation.y = 0.14; return g; })();
+const hornTip = new THREE.Object3D(); off.add(hornTip);   // 角尖（放在 off 底下：換角色時 squash 會被清空）
+let spkAcc = 0, spkBoom = false, spkCheer = 0;
+// 長尾「繞圈飛飛」：飛的時候灑下的小藍羽毛
+const featherTex = makeTex(g => { g.translate(64, 64); g.rotate(0.5); g.beginPath(); g.ellipse(0, 0, 18, 50, 0, 0, Math.PI * 2); g.fillStyle = '#3f7fd0'; g.fill(); g.lineWidth = 5; g.strokeStyle = '#ffffff'; g.stroke();
+  g.beginPath(); g.moveTo(0, -46); g.lineTo(0, 56); g.lineWidth = 4; g.strokeStyle = '#dce9f5'; g.stroke(); g.beginPath(); g.ellipse(0, 38, 14, 12, 0, 0, Math.PI * 2); g.fillStyle = '#ffffff'; g.fill(); });
+let flyAcc = 0;
+// 小赤龍「暖暖小火焰」：愛心形的小火、5 盞公園小燈籠（右前方排成弧形，被小火經過就亮起來）
+const heartFlameTex = makeTex(g => { const gr = g.createRadialGradient(64, 70, 0, 64, 70, 64); gr.addColorStop(0, 'rgba(255,240,170,0.9)'); gr.addColorStop(0.5, 'rgba(255,170,60,0.35)'); gr.addColorStop(1, 'rgba(255,120,40,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  g.translate(64, 70); g.beginPath(); g.moveTo(0, 30); g.bezierCurveTo(-48, -2, -30, -42, 0, -18); g.bezierCurveTo(30, -42, 48, -2, 0, 30); g.closePath();
+  const hg = g.createLinearGradient(0, -36, 0, 30); hg.addColorStop(0, '#ffe680'); hg.addColorStop(0.55, '#ff9a3c'); hg.addColorStop(1, '#ff5a3a'); g.fillStyle = hg; g.fill(); g.lineWidth = 5; g.strokeStyle = 'rgba(255,255,230,0.9)'; g.stroke(); });
+const flameSp = new THREE.Sprite(new THREE.SpriteMaterial({map: heartFlameTex, transparent: true, depthWrite: false})); flameSp.renderOrder = 7; flameSp.visible = false; scene.add(flameSp);
+const lanternGlowTex = makeTex(g => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,230,160,0.95)'); gr.addColorStop(0.35, 'rgba(255,180,90,0.5)'); gr.addColorStop(1, 'rgba(255,150,60,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); });
+const AVE = { S: [1.3, 0.4], D: [0, -1], N: [1, 0] };   // 林蔭步道：從小赤龍右前方往遠方直直延伸，盡頭是公園（和 parkscenes 的『燈籠小徑』同一條線）
+const LANTERNS = [0, 1, 2, 3, 4].map(i => { const t = 1.0 + 1.7 * i, sd = (i % 2 ? -1 : 1) * 0.7, g = new THREE.Group(); g.position.set(AVE.S[0] + AVE.D[0] * t + AVE.N[0] * sd, 0, AVE.S[1] + AVE.D[1] * t + AVE.N[1] * sd); g.visible = false; scene.add(g);   // 步道兩側左右交錯，間距 1.7 公尺
+  const iron = new THREE.MeshStandardMaterial({color: 0x34424a, roughness: 0.55, metalness: 0.35});   // 和公園背景裡的路燈同色
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.085, 0.08, 14), iron); base.position.y = 0.04; g.add(base);
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.05, 12), iron); ring.position.y = 0.105; g.add(ring);
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.028, 0.86, 10), iron); post.position.y = 0.55; g.add(post);
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.03, 0.04, 12), iron); neck.position.y = 0.99; g.add(neck);
+  const paper = new THREE.MeshStandardMaterial({color: 0xf3ead2, roughness: 0.35, transparent: true, opacity: 0.92, emissive: 0xffb860, emissiveIntensity: 0});   // 燈罩（沒亮時是霧面米白玻璃）
+  const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.06, 0.16, 16), paper); glass.position.y = 1.09; g.add(glass);
+  const cap = new THREE.Mesh(new THREE.ConeGeometry(0.105, 0.09, 16), iron); cap.position.y = 1.21; g.add(cap);
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.022, 10, 8), iron); knob.position.y = 1.27; g.add(knob);
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({map: lanternGlowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0})); glow.position.y = 1.09; glow.scale.setScalar(0.6); glow.renderOrder = 6; g.add(glow);
+  const pool = new THREE.Mesh(new THREE.CircleGeometry(0.42, 24), new THREE.MeshBasicMaterial({color: 0xffc070, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending})); pool.rotation.x = -Math.PI / 2; pool.position.y = 0.006; g.add(pool);   // 亮了以後地上一圈暖光
+  g.userData = {paper, glow, pool, lit: 0, top: new THREE.Vector3()}; return g; });
+const ARCHL = (() => { const g = new THREE.Group(); g.position.set(1.3, 0, -8.8 + 0.14); g.visible = false; scene.add(g); const W = 1.2, list = [];
+  const pts = []; for (let k = 0; k < 6; k++) pts.push([-W, 0.35 + k * 0.34]); for (let k = 0; k <= 12; k++){ const a = Math.PI - k / 12 * Math.PI; pts.push([Math.cos(a) * W, 2.2 + Math.sin(a) * W]); } for (let k = 5; k >= 0; k--) pts.push([W, 0.35 + k * 0.34]);
+  pts.forEach(([x, y], k) => { const m = new THREE.MeshStandardMaterial({color: 0xfff3d6, roughness: 0.4, emissive: 0xffc860, emissiveIntensity: 0}); const b = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), m); b.position.set(x, y, 0); g.add(b);
+    const gl = new THREE.Sprite(new THREE.SpriteMaterial({map: lanternGlowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0})); gl.position.set(x, y, 0.02); gl.scale.setScalar(0.3); gl.renderOrder = 6; g.add(gl);
+    list.push({m, gl, u: k / (pts.length - 1)}); });
+  g.userData = {list, top: new THREE.Vector3(0, 3.4, 0)}; return g; })();
+const snoutTip = new THREE.Object3D(); off.add(snoutTip);   // 口鼻前端（放在 off 底下，換角色時不會被清掉）
+let flameAcc = 0, flameBoom = false, flameHearts = false;
 
 // ---------- 餵食（2026-10-18 第 3 批）：食物從上面掉到嘴巴前面 → 咬三口變小 → 開心；最愛點心再轉一圈＋星星；餵錯搖頭不吃 ----------
 // 食物 3D 是 Meshy 做的（食物建模\3D），每個約 1 MB。每位只吃自己的；搖頭不吃用別人的日常食物示範。
-const FOOD = { bunny: ['hay', 'carrot_cake'], cow: ['corn', 'apple_pie'], puppy: ['bone', 'cheese_cake'], rex: ['meatball', 'spark'] };
-const WRONG = { bunny: 'bone', cow: 'meatball', puppy: 'corn', rex: 'hay' };
+const FOOD = { bunny: ['hay', 'carrot_cake'], cow: ['corn', 'apple_pie'], puppy: ['bone', 'cheese_cake'], rex: ['meatball', 'spark'], mammoth: ['watermelon', 'mango_ice'], leopard: ['fish', 'sushi'], owl: ['gummy', 'pancake'], turtle: ['cucumber', 'pudding'], pangolin: ['antstick', 'eggtart'], penguin: ['sardine', 'soda'], bear: ['acorn', 'berryjelly'], sparky: ['cloudmallow', 'macaron'], magpie: ['papaya', 'pineapplecake'], dragon: ['sweetpotato', 'bubbletea'] };
+const WRONG = { bunny: 'bone', cow: 'meatball', puppy: 'corn', rex: 'hay', mammoth: 'chili', leopard: 'onion', owl: 'bittermelon', turtle: 'coffee', pangolin: 'chili', penguin: 'onion', bear: 'bittermelon', sparky: 'coffee', magpie: 'chili', dragon: 'onion' };
 const foodCache = {}, food = new THREE.Group(); scene.add(food); food.visible = false;
 let foodFor = null;
 function loadFood(name){
@@ -248,9 +536,9 @@ const EAT_T = 5.4, SNACK_T = 6.4, REFUSE_T = 4.4;
 function foodPose(name, t){
   const mouthY = cfg.mouth[1], z0 = faceFront + 0.2;
   const P = name === 'refuse' ? REFUSE_T : name === 'snack' ? SNACK_T : EAT_T, T = t % P;
-  let x = 0, y = mouthY - 0.17, z = z0 + 0.06, s = 1, a = 1, spin = T * 0.8, bite = -1;
+  let x = 0, y = cfg.foodY ?? mouthY - 0.17, z = z0 + 0.06, s = cfg.foodS || 1, a = 1, spin = T * 0.8, bite = -1;   // foodY／foodS：嘴巴下方有東西（鴞博士的筆記本）時另外指定高度、大小
   // 從右上方飛進來（不經過臉前面），停在嘴巴下方，嘴巴和表情不會被擋住
-  if (T < 0.6){ const u = ease(T / 0.6); x = 0.9 * (1 - u); y += 0.22 * (1 - u) + 0.1 * Math.sin(Math.PI * u); s = 0.5 + 0.5 * u; spin = 0; }
+  if (T < 0.6){ const u = ease(T / 0.6); x = 0.9 * (1 - u); y += 0.22 * (1 - u) + 0.1 * Math.sin(Math.PI * u); s *= 0.5 + 0.5 * u; spin = 0; }
   if (name === 'refuse'){
     if (T > 2.8){ const u = clamp01((T - 2.8) / 0.9); z = z0 + 0.6 * Math.sqrt(u); y += 0.15 * Math.sin(Math.PI * u); a = 1 - u; spin = 0.8 * 2.9 + u * 4; }
     if (T > 3.7) a = 0;
@@ -438,18 +726,19 @@ function prepFace(mesh, F){
   const colOf = i => { const u = UV.getX(i), v = UV.getY(i);
     const x = Math.min(W - 1, Math.max(0, Math.floor(((u % 1) + 1) % 1 * W))), y = Math.min(H - 1, Math.max(0, Math.floor(((v % 1) + 1) % 1 * H)));
     const k = (y * W + x) * 4; return [lin(px[k]), lin(px[k + 1]), lin(px[k + 2])]; };
+  const EO = F.eyeOut || 1.25;   // 眼睛遮蓋的外半徑（眼睛外圈有白邊、凸起的角色加大）
   const re = new Float32Array(n), rm = new Float32Array(n), cols = new Array(n);
   for (let i = 0; i < n; i++){
     const x = P.getX(i), y = P.getY(i), z = P.getZ(i), s = x < 0 ? -1 : 1;
     re[i] = z > F.eyeZ ? Math.hypot((x - F.eye[0] * s) / F.eyeR[0], (y - F.eye[1]) / F.eyeR[1]) : 99;
     rm[i] = z > F.mouthZ ? Math.hypot((x - F.mouth[0]) / F.mouthR[0], (y - F.mouth[1]) / F.mouthR[1]) : 99;
-    if (re[i] < 2 || rm[i] < 2.1) cols[i] = colOf(i);
+    if (re[i] < EO + 0.75 || rm[i] < 2.1) cols[i] = colOf(i);
   }
   const lum = c => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
   const ringE = [], ringM = [];
   for (let i = 0; i < n; i++){
-    if (re[i] > 1.2 && re[i] < 1.9 && lum(cols[i]) > 0.15) ringE.push(i);
-    else if (rm[i] > 1.25 && rm[i] < 2.0 && re[i] > 1.35 && lum(cols[i]) > 0.15) ringM.push(i);
+    if (re[i] > EO - 0.05 && re[i] < EO + 0.65 && lum(cols[i]) > 0.15) ringE.push(i);
+    else if (rm[i] > 1.25 && rm[i] < 2.0 && re[i] > EO + 0.1 && lum(cols[i]) > 0.15) ringM.push(i);
   }
   // centre of the head from the skin ring around the eyes (least-squares sphere)
   const M = Array.from({length: 4}, () => [0, 0, 0, 0, 0]);
@@ -459,13 +748,14 @@ function prepFace(mesh, F){
     for (let r = 0; r < 4; r++){ if (r === a) continue; const f = M[r][a] / M[a][a]; for (let c = a; c < 5; c++) M[r][c] -= f * M[a][c]; } }
   const C = [M[0][4] / M[0][0], M[1][4] / M[1][1], M[2][4] / M[2][2]];
   // eyes are filled with the dominant skin colour around each eye (keeps a clean, even patch)
-  const domE = [-1, 1].map(sd => { const sel = ringE.filter(j => (P.getX(j) < 0 ? -1 : 1) === sd && P.getY(j) > F.eye[1] && re[j] < 1.6);   // upper half: forehead fur, away from snout and blush
+  const domE = [-1, 1].map(sd => { const sel = ringE.filter(j => (P.getX(j) < 0 ? -1 : 1) === sd && P.getY(j) > F.eye[1] && re[j] < EO + 0.35);   // upper half: forehead fur, away from snout and blush
+    if (F.eyeFill) return F.eyeFill.map(v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));   // 眼睛周圍有白圈、白點的角色：閉眼直接用指定的毛色
     return [0, 1, 2].map(k => { const v = sel.map(j => cols[j][k]).sort((a, b) => a - b); return v.length ? v[v.length >> 1] : 0.8; }); });
   const aSkin = new Float32Array(n * 4), aFlat = new Float32Array(n * 4), aFlatN = new Float32Array(n * 3);
   for (let i = 0; i < n; i++){
     aFlatN[i*3] = N.getX(i); aFlatN[i*3+1] = N.getY(i); aFlatN[i*3+2] = N.getZ(i);
     const own = cols[i]; if (own){ aSkin[i*4] = own[0]; aSkin[i*4+1] = own[1]; aSkin[i*4+2] = own[2]; }
-    const isE = re[i] < 1.35, isM = !isE && rm[i] < 1.4;
+    const isE = re[i] < EO + 0.1, isM = !isE && rm[i] < 1.4;
     if (!isE && !isM) continue;
     const ring = isE ? ringE : ringM, r = isE ? re[i] : rm[i];
     const x = P.getX(i), y = P.getY(i), z = P.getZ(i);
@@ -486,16 +776,41 @@ function prepFace(mesh, F){
       rad += w * Math.hypot(P.getX(j) - C[0], P.getY(j) - C[1], P.getZ(j) - C[2]); nx += w * N.getX(j); ny += w * N.getY(j); nz += w * N.getZ(j); }
     rad /= wsum; const nl = Math.hypot(nx, ny, nz) || 1;
     const dx = x - C[0], dy = y - C[1], dz = z - C[2], dl = Math.hypot(dx, dy, dz) || 1;
-    const fade = 1 - Math.min(1, Math.max(0, (r - 1.05) / 0.3));
-    aSkin[i*4] = med[0]; aSkin[i*4+1] = med[1]; aSkin[i*4+2] = med[2]; aSkin[i*4+3] = fade;
-    aFlat[i*4] = C[0] + dx / dl * rad - x; aFlat[i*4+1] = C[1] + dy / dl * rad - y; aFlat[i*4+2] = C[2] + dz / dl * rad - z; aFlat[i*4+3] = isE ? 1 : 2;
+    const fade = isE && F.eyeOut ? 1 - (u => u * u * (3 - 2 * u))(Math.min(1, Math.max(0, (r - 1.2) / (EO - 1.1)))) : 1 - Math.min(1, Math.max(0, (r - 1.05) / 0.3));   // 外圈凸起的角色：壓平從中間慢慢收到外緣，不留折線
+    aSkin[i*4] = med[0]; aSkin[i*4+1] = med[1]; aSkin[i*4+2] = med[2]; aSkin[i*4+3] = isE && F.noFlat ? 0 : fade * (isE && F.flatK ? F.flatK : 1);   // noFlat：眼睛不凸的角色不用壓平（壓平反而在口鼻旁邊壓出暗影）
+    if (isE && F.flatLocal){   // flatLocal：壓到附近一圈皮膚（距離加權）的平面上，不壓到整顆頭的球面（口鼻凸出的角色不會壓出凹痕）
+      let px = 0, py = 0, pz = 0, ws = 0; for (const [d, j] of near.slice(0, 12)){ const w = 1 / (d + 0.01); ws += w; px += w * P.getX(j); py += w * P.getY(j); pz += w * P.getZ(j); }
+      px /= ws; py /= ws; pz /= ws; const ux = nx / nl, uy = ny / nl, uz = nz / nl, dd = (x - px) * ux + (y - py) * uy + (z - pz) * uz;
+      aFlat[i*4] = -dd * ux; aFlat[i*4+1] = -dd * uy; aFlat[i*4+2] = -dd * uz; aFlat[i*4+3] = 1;
+    } else { aFlat[i*4] = C[0] + dx / dl * rad - x; aFlat[i*4+1] = C[1] + dy / dl * rad - y; aFlat[i*4+2] = C[2] + dz / dl * rad - z; aFlat[i*4+3] = isE ? 1 : 2; }
     aFlatN[i*3] = nx / nl; aFlatN[i*3+1] = ny / nl; aFlatN[i*3+2] = nz / nl;
   }
   g.setAttribute('aSkin', new THREE.BufferAttribute(aSkin, 4));
   g.setAttribute('aFlat', new THREE.BufferAttribute(aFlat, 4));
   g.setAttribute('aFlatN', new THREE.BufferAttribute(aFlatN, 3));
+  // 手臂權重（cap）：膠囊範圍 × 顏色像皮膚（甲殼、鱗片的顏色不算），每個頂點先算好，shader 直接用
+  const aArm = new Float32Array(n);
+  if (F.ear && F.ear.cap){ const [ax, ay, az, bx, by, bz, r] = F.ear.cap, sk = (F.ear.skin || [0.8, 0.6, 0.5]).map(v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+    const abx = bx - ax, aby = by - ay, abz = bz - az, ab2 = abx*abx + aby*aby + abz*abz, sm = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+    for (let i = 0; i < n; i++){ const x = Math.abs(P.getX(i)), y = P.getY(i), z = P.getZ(i);
+      const h = Math.min(1, Math.max(0, ((x - ax)*abx + (y - ay)*aby + (z - az)*abz) / ab2)), dx = x - ax - abx*h, dy = y - ay - aby*h, dz = z - az - abz*h, dc = Math.hypot(dx, dy, dz);
+      let w = F.ear.capX ? sm(F.ear.capX[0], F.ear.capX[1], x) * sm(F.ear.capX[2] - 0.03, F.ear.capX[2] + 0.03, y) * (1 - sm(F.ear.capX[3] - 0.03, F.ear.capX[3] + 0.03, y)) : sm(r + 0.035, r - 0.01, dc) * sm(-0.05, 0.25, h); if (w < 0.001) continue;   // capX：翅膀用「身體外側（|x| 漸變）＋高度範圍」抓，整片翅膀都抓得到（長尾）
+      const c = colOf(i);
+      if (F.ear.noGrey) w *= sm(-0.01, 0.03, c[2] - c[0]);   // 神龜：手是藍綠色（藍＞紅），甲殼是暖灰色（紅≧藍）→ 甲殼不動
+      else if (!F.ear.noColor){ const d = Math.hypot(c[0] - sk[0], c[1] - sk[1], c[2] - sk[2]); w *= sm(F.ear.skinTol || 0.12, (F.ear.skinTol || 0.12) * 0.5, d); }
+      aArm[i] = w; } }
+  if (F.ear && F.ear.cap && g.index){   // 權重沿著網格抹平幾次（先把貼圖接縫的重複頂點合併），手臂和身體的交界才不會被拉出尖尖的破圖
+    const key = new Map(), wid = new Int32Array(n); let m = 0;
+    for (let i = 0; i < n; i++){ const k = Math.round(P.getX(i) * 2e3) + ',' + Math.round(P.getY(i) * 2e3) + ',' + Math.round(P.getZ(i) * 2e3); let id = key.get(k); if (id === undefined){ id = m++; key.set(k, id); } wid[i] = id; }
+    let w = new Float32Array(m); for (let i = 0; i < n; i++) w[wid[i]] = Math.max(w[wid[i]], aArm[i]);
+    const I = g.index.array, nb = Array.from({length: m}, () => []);
+    for (let t = 0; t < I.length; t += 3){ const a = wid[I[t]], b = wid[I[t+1]], c = wid[I[t+2]]; nb[a].push(b, c); nb[b].push(a, c); nb[c].push(a, b); }
+    for (let it = 0; it < (F.ear.smooth || 6); it++){ const w2 = new Float32Array(m); for (let v = 0; v < m; v++){ let sum = w[v], k = 1; for (const u of nb[v]){ sum += w[u]; k++; } w2[v] = sum / k; } w = w2; }
+    for (let i = 0; i < n; i++) aArm[i] = w[wid[i]];
+  }
+  g.setAttribute('aArm', new THREE.BufferAttribute(aArm, 1));
 }
-const FLAT_VS_HEAD = 'attribute vec4 aSkin;\nattribute vec4 aFlat;\nattribute vec3 aFlatN;\nuniform float uFlatE;\nuniform float uFlatM;\nvarying vec4 vSkin;\nvarying float vFlatW;\n';
+const FLAT_VS_HEAD = 'attribute vec4 aSkin;\nattribute float aArm;\nattribute vec4 aFlat;\nattribute vec3 aFlatN;\nuniform float uFlatE;\nuniform float uFlatM;\nvarying vec4 vSkin;\nvarying float vFlatW;\n';
 const FLAT_VS_NORMAL = `#include <beginnormal_vertex>
   float flatW = (aFlat.w > 0.5 && aFlat.w < 1.5 ? uFlatE : (aFlat.w > 1.5 ? uFlatM : 0.0)) * aSkin.a;
   objectNormal = normalize(mix(objectNormal, aFlatN, flatW));
@@ -506,20 +821,22 @@ const f = x => Number(x).toFixed(4);
 const v2 = a => `vec2(${f(a[0])}, ${f(a[1])})`;
 const v3 = a => `vec3(${f(a[0])}, ${f(a[1])}, ${f(a[2])})`;
 function fragCode(c){
+  c = Object.assign({eyeOut: 1.25}, c);
   const EYE = (s) => `vec2(${f(c.eye[0])} * ${s}, ${f(c.eye[1])})`;
   const cover = c.coverIn ? `(abs(vObj.x) < ${f(c.split)} ? ${v3(c.coverIn)} : ${v3(c.cover)})` : v3(c.cover);
   const noseOK = c.noseExclude
     ? `float nosePink = step(0.12, diffuseColor.r - diffuseColor.b) * step(0.45, dot(diffuseColor.rgb, vec3(0.333)));`
     : `float nosePink = 0.0;`;
   return `#include <map_fragment>
-  vec3 coverCol = vSkin.rgb;
+  ${c.eyeOut ? 'if (!gl_FrontFacing && vFlatW > 0.05) discard;   // 眼睛壓平時凸起外緣會折進去，折到背面的三角形不畫，才不會留一圈暗線' : ''}
+  vec3 coverCol = ${c.eyeFill ? v3(c.eyeFill.map(v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4))) : 'vSkin.rgb'};   // 指定毛色的角色直接用固定顏色，邊緣三角形不會混到別的顏色
   float lidMask = 0.0;
   if (uLid > 0.01 && vObj.z > ${f(c.eyeZ)}) {
     float side = vObj.x < 0.0 ? -1.0 : 1.0;
     vec2 e = (vObj.xy - ${EYE('side')}) / ${v2(c.eyeR)};
     float r = length(e);
-    if (r < 1.25 && e.y > 1.0 - 2.0 * uLid) {
-      lidMask = smoothstep(1.25, 1.0, r);
+    if (r < ${f(c.eyeOut)} && e.y > ${f(c.eyeOut)} * (1.0 - 2.0 * uLid)) {
+      lidMask = smoothstep(${f(c.eyeOut)}, ${f(c.eyeOut - 0.25)}, r);
       diffuseColor.rgb = mix(diffuseColor.rgb, coverCol, lidMask);
       if (uLid > 0.9 && abs(e.x) < 0.7) {
         float yc = -0.1 - 0.35 * (1.0 - (e.x * e.x) / 0.49);
@@ -531,8 +848,8 @@ function fragCode(c){
     float side = vObj.x < 0.0 ? -1.0 : 1.0;
     vec2 e = (vObj.xy - ${EYE('side')}) / ${v2(c.eyeR)};
     float r = length(e);
-    if (r < 1.25) {
-      float mk = smoothstep(1.25, 1.0, r) * uCry;
+    if (r < ${f(c.eyeOut)}) {
+      float mk = smoothstep(${f(c.eyeOut)}, ${f(c.eyeOut - 0.25)}, r) * uCry;
       diffuseColor.rgb = mix(diffuseColor.rgb, coverCol, mk);
       lidMask = max(lidMask, mk);
       if (uCry > 0.9) {
@@ -562,8 +879,8 @@ function fragCode(c){
     float side = vObj.x < 0.0 ? -1.0 : 1.0;
     vec2 e = (vObj.xy - ${EYE('side')}) / ${v2(c.eyeR)};
     float r = length(e);
-    if (r < 1.25) {
-      float mk = smoothstep(1.25, 1.0, r) * hl;
+    if (r < ${f(c.eyeOut)}) {
+      float mk = smoothstep(${f(c.eyeOut)}, ${f(c.eyeOut - 0.25)}, r) * hl;
       diffuseColor.rgb = mix(diffuseColor.rgb, coverCol, mk);
       lidMask = max(lidMask, mk);
       if (uHappy > 0.9) {
@@ -607,6 +924,17 @@ function fragCode(c){
   }
   if (uDbg > 0.5) diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.1, 0.1), vMask.x * 0.7) + vec3(0.0, 0.0, 0.8) * vMask.y;`;
 }
+function fragCodeX(c){   // ink：黑色毛的角色，表情線（閉眼、^ ^、哭、蚊香眼）改用淺色；glow：胸口月牙發光
+  let s = fragCode(c);
+  if (c.ink) s = s.split('diffuseColor.rgb = vec3(0.09, 0.08, 0.08);').join(`{ diffuseColor.rgb = ${v3(c.ink)}; totalEmissiveRadiance += ${v3(c.ink)} * 0.45; }`);   /* 夜裡（睡覺）也看得到淺色線 */
+  if (c.glow){ const G = c.glow; s += `
+  if (uGlow > 0.001 && vObj.y > ${f(G.y0)} && vObj.y < ${f(G.y1)} && abs(vObj.x) < ${f(G.x)} && vObj.z > ${f(G.z0)} && vObj.z < ${f(G.z1)}) {
+    float gm = smoothstep(0.35, 0.6, dot(diffuseColor.rgb, vec3(0.333))) * uGlow;
+    diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.97, 0.84), gm);
+    totalEmissiveRadiance += vec3(1.0, 0.86, 0.5) * gm * 1.4;
+  }`; }
+  return s;
+}
 function vertCode(c){
   const E = c.ear;
   const k = E.vertical ? `clamp((${f(E.py)} - position.y) / ${f(E.L)}, 0.0, 1.0)` : `clamp(length(position.xy - piv) / ${f(E.L)}, 0.0, 1.0)`;
@@ -615,14 +943,44 @@ function vertCode(c){
   vObj = position;
   vHeadN = normalize(normalMatrix * normalize(position - ${v3(c.headN)}));
   float side = position.x < 0.0 ? -1.0 : 1.0;
-  float m = smoothstep(${f(E.x0)}, ${f(E.x1)}, abs(position.x)) * step(${f(E.y0)}, position.y) * step(position.y, ${f(E.y1)});
+  float m = smoothstep(${f(E.x0)}, ${f(E.x1)}, abs(position.x)) * step(${f(E.y0)}, position.y) * step(position.y, ${f(E.y1)})${E.z0 !== undefined ? ` * smoothstep(${f(E.z0)}, ${f(E.z1)}, position.z)` : ''};   // z0/z1：只動前面（神龜的手，不動背後的甲殼）
   vec2 piv = vec2(${f(E.px)} * side, ${f(E.py)});
   float k = ${k};
   float ang = uEar * side * m * k;
-  vec2 d = transformed.xy - piv;
   float c = cos(ang), s = sin(ang);
-  transformed.xy = mix(transformed.xy, piv + vec2(c*d.x - s*d.y, s*d.x + c*d.y), m);
+  ${E.yaw ? `vec2 pz = vec2(${f(E.px)} * side, ${f(E.pz || 0)}); vec2 d = transformed.xz - pz;
+  transformed.xz = mix(transformed.xz, pz + vec2(c*d.x - s*d.y, s*d.x + c*d.y), m);` : `vec2 d = transformed.xy - piv;
+  transformed.xy = mix(transformed.xy, piv + vec2(c*d.x - s*d.y, s*d.x + c*d.y), m);`}
   vMask = vec2(m, 0.0);`;
+  if (E.cap){   // cap：手臂用「肩膀 A → 手 B」的膠囊範圍抓（只抓到手、不會抓到身體側邊或臉頰），手從肩膀往身體中間收（xy），可以再加一點往前（fwd，yz）
+    const [ax, ay, az, bx, by, bz, r] = E.cap;
+    s += `
+  {
+    vec3 pp = vec3(abs(position.x), position.y, position.z), A = vec3(${f(ax)}, ${f(ay)}, ${f(az)}), B = vec3(${f(bx)}, ${f(by)}, ${f(bz)});
+    vec3 ab = B - A; float h = clamp(dot(pp - A, ab) / dot(ab, ab), 0.0, 1.0); float dc = length(pp - A - ab * h);
+    float mc = aArm;   // JS 算好的手臂權重（膠囊 × 皮膚色）
+    float bend = ${E.rigid ? '1.0' : '0.3 + 1.7 * h'};   // 肩膀到手慢慢彎：肩膀、手肘各一節（每節 ≤ 30 度），手的總角度可到約 2 倍；rigid（長尾的翅膀）＝整片一起轉，不在中間折
+    float a1 = -uEar * side * mc * ${f(E.inK ?? 1)} * bend, a2 = -uEar * mc * ${f(E.fwd || 0)} * bend;
+    vec3 pv = vec3(A.x * side, A.y, A.z), d = transformed - pv;
+    float c1 = cos(a1), s1 = sin(a1); d.xy = vec2(c1*d.x - s1*d.y, s1*d.x + c1*d.y);
+    float c2 = cos(a2), s2 = sin(a2); d.yz = vec2(c2*d.y - s2*d.z, s2*d.y + c2*d.z);
+    transformed = mix(transformed, pv + d, step(0.0001, mc));
+    vMask = vec2(mc, 0.0);
+  }`;
+  }
+  if (c.trunk){   // 鼻子：從鼻根往前、越前面擺越多；uTrunk 左右擺（繞 y），uTrunkUp 往上捲（繞 x）
+    const R = c.trunk;
+    s += `
+  float km = smoothstep(${f(R.z0)}, ${f(R.z1)}, position.z) * smoothstep(${f(R.y0)}, ${f(R.y0 + 0.06)}, position.y) * step(position.y, ${f(R.y1)}) * (1.0 - smoothstep(${f(R.x * 0.75)}, ${f(R.x)}, abs(position.x)));
+  vec3 kp = ${v3(R.p)};
+  float kk = clamp(length(position - kp) / ${f(R.L)}, 0.0, 1.0);
+  vec3 kd = transformed - kp;
+  float ya = uTrunk * km * kk, yc = cos(ya), ys = sin(ya);
+  kd = vec3(yc*kd.x + ys*kd.z, kd.y, -ys*kd.x + yc*kd.z);
+  float pa = -uTrunkUp * km * kk, pc2 = cos(pa), ps = sin(pa);
+  kd = vec3(kd.x, pc2*kd.y - ps*kd.z, ps*kd.y + pc2*kd.z);
+  transformed = mix(transformed, kp + kd, km);`;
+  }
   if (c.tail){
     const T = c.tail;
     s += `
@@ -662,19 +1020,21 @@ async function loadPet(key){
     if (!o.isMesh) return;
     o.frustumCulled = false;
     prepFace(o, c);
+    if (c.mrMap && o.material.map){ const m = o.material; new THREE.TextureLoader().load(c.mrMap, tx => { tx.flipY = m.map.flipY; tx.generateMipmaps = false; tx.minFilter = THREE.LinearFilter; m.metalnessMap = tx; m.roughnessMap = tx; m.metalness = 1; m.roughness = 1; m.needsUpdate = true; }); }   // mrMap：金屬鱗片亮一點（G＝粗糙度、B＝金屬度）
+    if (c.noMip && o.material.map){ const t = o.material.map; t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; t.needsUpdate = true; }   // Meshy 貼圖拼塊很碎，縮小時不用 mipmap，避免拼塊邊緣混出淺色細紋
     const pos = o.geometry.attributes.position;
     for (let i = 0; i < pos.count; i += 2) pts.push(pos.getX(i), pos.getY(i), pos.getZ(i));
     const mats = Array.isArray(o.material) ? o.material : [o.material];
     mats.forEach(m => {
       m.onBeforeCompile = (sh) => {
-        Object.assign(sh.uniforms, {uFlatE:flatEU, uFlatM:flatMU, uDizzy:dizzyU, uEar:earU, uTail:tailU, uLid:lidU, uCry:cryU, uHappy:happyU, uLove:loveU, uDbg:dbgU});
-        sh.fragmentShader = 'uniform float uDizzy;\nuniform float uLid;\nuniform float uCry;\nuniform float uHappy;\nuniform float uLove;\nuniform float uDbg;\nvarying vec3 vObj;\nvarying vec3 vHeadN;\nvarying vec2 vMask;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader
-          .replace('#include <map_fragment>', fragCode(c))
+        Object.assign(sh.uniforms, {uFlatE:flatEU, uFlatM:flatMU, uDizzy:dizzyU, uEar:earU, uTail:tailU, uTrunk:trunkU, uTrunkUp:trunkUpU, uLid:lidU, uCry:cryU, uHappy:happyU, uLove:loveU, uGlow:glowU, uDbg:dbgU});
+        sh.fragmentShader = 'uniform float uGlow;\nuniform float uDizzy;\nuniform float uLid;\nuniform float uCry;\nuniform float uHappy;\nuniform float uLove;\nuniform float uDbg;\nvarying vec3 vObj;\nvarying vec3 vHeadN;\nvarying vec2 vMask;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader
+          .replace('#include <map_fragment>', fragCodeX(c))
           .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
           roughnessFactor = mix(roughnessFactor, 0.85, max(lidMask, vFlatW));`).replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
           metalnessFactor = mix(metalnessFactor, 0.0, max(lidMask, vFlatW));`).replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
           normal = normalize(mix(normal, nonPerturbedNormal, max(lidMask, vFlatW)));`);
-        sh.vertexShader = FLAT_VS_HEAD + 'uniform float uEar;\nuniform float uTail;\nvarying vec3 vObj;\nvarying vec3 vHeadN;\nvarying vec2 vMask;\n' + sh.vertexShader.replace('#include <beginnormal_vertex>', FLAT_VS_NORMAL).replace('#include <begin_vertex>', vertCode(c));
+        sh.vertexShader = FLAT_VS_HEAD + 'uniform float uEar;\nuniform float uTail;\nuniform float uTrunk;\nuniform float uTrunkUp;\nvarying vec3 vObj;\nvarying vec3 vHeadN;\nvarying vec2 vMask;\n' + sh.vertexShader.replace('#include <beginnormal_vertex>', FLAT_VS_NORMAL).replace('#include <begin_vertex>', vertCode(c));
       };
       m.customProgramCacheKey = () => 'pet-' + key;
       m.needsUpdate = true;
@@ -715,11 +1075,12 @@ const baseNames = {idle:'待機', walk:'走路', binky:'開心跳', pet:'摸摸'
 let move = 'idle', t0 = performance.now()/1000;
 const TAU = Math.PI * 2;
 const ease = x => x<0.5 ? 2*x*x : 1 - Math.pow(-2*x+2, 2)/2;
+const lerpN = (a, b, u) => a + (b - a) * u;
 const clamp01 = x => Math.max(0, Math.min(1, x));
-const ROLL_T = 6.0, CHASE_T = 5.2;
+const ROLL_T = 6.0, CHASE_T = 5.2, SLIDE_T = 7.0, POUNCE_T = 9.0, NOTE_T = 7.6, CASTLE_T = 9.0, BALL_T = 8.4, ROW_T = 13.0, MOON_T = 11.0, SPARK_T = 12.4, FLY_T = 10.4, FLAME_T = 10.6;
 
 function pose(name, t){
-  const p = {x:0, y:0, z:0, rx:0, ry:0, rz:0, sy:1, pc:0, ear:0, tail:0, lid:0, cry:0, happy:0, love:0, dz:0, tears:false, oof:false, notes:false, dizzy:false, yum:false};
+  const p = {x:0, y:0, z:0, rx:0, ry:0, rz:0, sy:1, pc:0, ear:0, tail:0, trunk:0, trunkUp:0, lid:0, cry:0, happy:0, love:0, dz:0, tears:false, oof:false, notes:false, dizzy:false, yum:false};
   const dog = petKey === 'puppy', cow = petKey === 'cow';
   if (name === 'idle'){
     p.sy = 1 + 0.025*Math.sin(TAU*t/2.4);
@@ -851,13 +1212,183 @@ function pose(name, t){
       const a = (T - 4.4) / 0.8; p.ry = 3*TAU; p.happy = 1; p.tail = 0.85*Math.sin(TAU*T*5.5);
       p.y = 0.08*Math.abs(Math.sin(Math.PI*a*2)); p.sy = 1 - 0.04*Math.abs(Math.sin(Math.PI*a*2));
     }
+  } else if (name === 'sig' && cfg.sig === 'slide'){
+    // 溜溜象：想起冰河 → 蹲低、鼻子往上捲 → 「咻～」繞著溜冰場滑一大圈（右 → 後 → 左 → 回到前面），身體往彎的方向傾、腳下噴冰屑 → 轉回正面開心甩鼻子
+    const T = t % SLIDE_T, R = 1.6, D = 1.4;   // 一圈：左右各 1.6 公尺、往後 1.4 公尺（相機會跟著平移）
+    p.tail = 0.3*Math.sin(TAU*T*2);
+    if (T < 0.9){ const a = ease(T / 0.9); p.sy = 1 - 0.1*a; p.rx = 0.12*a; p.trunkUp = 0.5*a; p.ear = 0.25*a; p.happy = T > 0.4 ? 1 : 0; }
+    else if (T < 1.3){ const a = ease((T - 0.9) / 0.4); p.ry = Math.PI / 2 * a; p.sy = 0.9 + 0.04*a; p.rx = 0.12; p.trunkUp = 0.5; p.ear = 0.3; p.happy = 1; }
+    else if (T < 5.3){ const u = (T - 1.3) / 4.0, th = TAU * ease(u);
+      p.x = R*Math.sin(th); p.z = -D*(1 - Math.cos(th))/2; p.ry = Math.PI / 2 + th;
+      p.rx = 0.1; p.rz = 0.16*Math.sin(Math.PI*u); p.sy = 0.94 + 0.02*Math.sin(TAU*T*2);
+      p.trunkUp = 0.5; p.trunk = 0.25*Math.sin(TAU*T*1.5); p.ear = 0.45 + 0.1*Math.sin(TAU*T*2); p.happy = 1; p.notes = true; p.slide = 1; }
+    else if (T < 5.8){ const a = ease((T - 5.3) / 0.5); p.ry = TAU + Math.PI / 2 * (1 - a); p.happy = 1; p.trunkUp = 0.4; p.ear = 0.3; }
+    else { const a = (T - 5.8) / (SLIDE_T - 5.8);
+      p.ry = TAU; p.happy = 1; p.y = 0.1*Math.abs(Math.sin(Math.PI*a*2)); p.sy = 1 + 0.04*Math.sin(Math.PI*a*4);
+      p.trunk = 0.45*Math.sin(TAU*a*2.5)*(1 - a); p.trunkUp = 0.35*(1 - a); p.ear = 0.3*Math.sin(TAU*a*2.5); }
+  }
+  if (name === 'sig' && cfg.sig === 'pounce'){
+    // 石虎（第 2 版）：發現螢火蟲 → 左邊壓低、屁股搖搖 → 往左撲！撲空 → 螢火蟲跑到右邊 → 往右撲！又撲空、轉圈找
+    //   → 螢火蟲慢慢飛下來停在鼻子上，開心瞇眼 → 螢火蟲飛走，跳兩下走回原位。螢火蟲一律在身體前面、旁邊飛，不穿過身體
+    const T = t % POUNCE_T, J = 0.5, JZ = 0.28;
+    const crouch = (a, dir) => { p.ry = 0.55*dir; p.sy = 1 - 0.1*a; p.rx = 0.16*a; p.ear = 0.35; p.rz = 0.07*Math.sin(TAU*T*5)*a; p.tail = 0.6*Math.sin(TAU*T*3); };
+    const leap = (a, x0, x1, dir) => { const e = ease(a); p.ry = 0.55*dir*(1 - 0.4*e); p.x = x0 + (x1 - x0)*e; p.z = x0 === 0 ? JZ*e : JZ;
+      p.y = 0.3*Math.sin(Math.PI*a); p.rx = -0.25*Math.sin(Math.PI*a); p.sy = 1.05; p.ear = 0.45; p.tail = 0.4*Math.sin(TAU*T*2); };
+    const look = (a, x) => { p.x = x; p.z = JZ; p.ry = -0.3 + 0.6*Math.sin(TAU*a); p.rx = -0.14; p.ear = 0.2 + 0.2*Math.sin(TAU*a*2); p.sy = a < 0.15 ? 1 - 0.08*Math.sin(Math.PI*a/0.15) : 1; };
+    p.tail = 0.25*Math.sin(TAU*T*1.2);
+    if (T < 0.8){ const a = ease(T / 0.8); p.ry = -0.55*a; p.ear = 0.25*a; p.rx = -0.05*a; }                    // 左前方有螢火蟲！
+    else if (T < 1.8) crouch(ease(Math.min(1, (T - 0.8) / 0.3)), -1);                                            // 壓低、屁股搖搖
+    else if (T < 2.4) leap((T - 1.8) / 0.6, 0, -J, -1);                                                          // 往左撲！
+    else if (T < 3.0) look((T - 2.4) / 0.6, -J);                                                                 // 撲空，找一找
+    else if (T < 3.4){ const a = ease((T - 3.0) / 0.4); p.x = -J; p.z = JZ; p.ry = 0.55*a; p.rx = -0.05; p.ear = 0.3; }   // 在右邊！
+    else if (T < 4.0){ p.x = -J; p.z = JZ; crouch(ease(Math.min(1, (T - 3.4) / 0.2)), 1); }
+    else if (T < 4.7) leap((T - 4.0) / 0.7, -J, J, 1);                                                           // 往右撲！（跳比較遠）
+    else if (T < 5.5){ const a = (T - 4.7) / 0.8; p.x = J; p.z = JZ; p.ry = 0.33*(1 - a) + TAU*ease(a); p.rx = -0.12; p.ear = 0.3*Math.sin(TAU*a*2); p.y = 0.05*Math.sin(Math.PI*a); }   // 又撲空，轉一圈找
+    else if (T < 6.1){ const a = ease((T - 5.5) / 0.6); p.x = J*(1 - a); p.z = JZ; p.ry = 0; p.rx = -0.16*a; p.y = 0.12*Math.sin(Math.PI*a); }   // 跳回中間，抬頭看
+    else if (T < 7.3){ const a = (T - 6.1) / 1.2; p.z = JZ; p.rx = -0.16*(1 - ease(Math.min(1, a*2))) - 0.03; p.happy = T > 6.6 ? 1 : 0; p.ear = 0.15*Math.sin(TAU*T*4); p.tail = 0.5*Math.sin(TAU*T*2.5); }   // 停在鼻子上
+    else if (T < 8.3){ const a = (T - 7.3) / 1.0; p.z = JZ; p.happy = 1; p.y = 0.14*Math.abs(Math.sin(Math.PI*a*2)); p.sy = 1 + 0.04*Math.sin(Math.PI*a*4); p.rx = -0.12*a; p.tail = 0.7*Math.sin(TAU*T*3); p.notes = true; }   // 飛走了，開心跳兩下
+    else { const a = ease((T - 8.3) / (POUNCE_T - 8.3)); p.z = JZ*(1 - a); p.rx = -0.12*(1 - a); p.happy = 1; p.tail = 0.4*Math.sin(TAU*T*2); }
+  }
+  if (name === 'sig' && cfg.sig === 'note'){
+    // 鴞博士：看看手上的筆記本 → 旁邊變出一本打開的小筆記本 → 歪頭讀、翻三頁 → 想一想（問號）→ 燈泡亮了「找到了！」開心跳 → 筆記本合起來收回胸前 → 點點頭
+    const T = t % NOTE_T;
+    p.ear = 0.1*Math.sin(TAU*T*0.8); p.tail = 0.15*Math.sin(TAU*T*1.1);
+    if (T < 0.7){ const a = ease(T / 0.7); p.rx = 0.1*a; p.ear = 0.2*a; }
+    else if (T < 1.5){ const a = ease((T - 0.7) / 0.8); p.ry = 0.38*a; p.rx = 0.1*(1 - a) + 0.04*a; p.y = 0.05*Math.sin(Math.PI*a); }
+    else if (T < 3.9){ const u = T - 1.5, fl = [0.3, 1.1, 1.9].map(f => Math.max(0, 1 - Math.abs(u - f - 0.25) / 0.25));
+      p.ry = 0.38 + 0.06*Math.sin(TAU*u*0.7); p.rx = 0.06 + 0.04*Math.max(...fl); p.rz = -0.05*Math.max(...fl); p.lid = u > 1.45 && u < 1.6 ? 1 : 0; p.ear = 0.15*Math.max(...fl); }
+    else if (T < 4.7){ const a = ease((T - 3.9) / 0.4); p.ry = 0.38 - 0.28*a; p.rz = 0.15*a; p.rx = -0.05*a; p.ear = 0.25*Math.sin(TAU*T*3)*a; }
+    else if (T < 5.1){ const a = (T - 4.7) / 0.4; p.ry = 0.1; p.rz = 0.15*(1 - a); p.y = 0.16*Math.sin(Math.PI*a); p.sy = 1 + 0.06*Math.sin(Math.PI*a); p.happy = 1; p.ear = 0.3; }
+    else if (T < 6.3){ const a = (T - 5.1) / 1.2; p.ry = 0.1*(1 - a); p.happy = 1; p.y = 0.08*Math.abs(Math.sin(Math.PI*a*2)); p.sy = 1 + 0.03*Math.sin(Math.PI*a*4); p.notes = true; p.ear = 0.2*Math.sin(TAU*T*2.5); p.tail = 0.3*Math.sin(TAU*T*2.5); }
+    else { const a = (T - 6.3) / (NOTE_T - 6.3); p.happy = 1; p.rx = 0.14*Math.max(0, Math.sin(TAU*a*2)) * (1 - a); p.ear = 0.1*Math.sin(TAU*a*2); }
+  }
+  if (name === 'sig' && cfg.sig === 'castle'){
+    // 神龜：低頭看右前方的沙子 → 拍拍拍，沙堡一層一層長高（三層＋尖頂）→ 插上小旗子 → 往後靠、歪頭欣賞 → 開心跳兩下 → 點點頭，沙堡慢慢沉回沙裡
+    const CY = 0.85, T = t % CASTLE_T, pat = (u) => Math.max(0, Math.sin(TAU * u * 2.5));   // 一層拍兩下多
+    p.tail = 0.15*Math.sin(TAU*T*1.2);
+    if (T < 0.8){ const a = ease(T / 0.8); p.ry = CY*a; p.rx = 0.14*a; }
+    else if (T < 5.6){ const u = (T - 0.8) % 1.2, k = pat(u / 1.2); p.ry = CY + 0.03*Math.sin(TAU*T*0.5); p.rx = 0.16 + 0.1*k; p.sy = 1 - 0.05*k; p.y = -0.01*k; p.ear = 0.2 + 0.3*k; /* 兩手往前拍 */ p.lid = u > 0.9 && u < 1.0 ? 1 : 0; }
+    else if (T < 6.4){ const a = ease((T - 5.6) / 0.8); p.ry = CY; p.rx = 0.14 - 0.06*a; p.sy = 1 + 0.03*Math.sin(Math.PI*a); p.ear = 0.45*Math.sin(Math.PI*a); }
+    else if (T < 7.4){ const a = ease((T - 6.4) / 0.5); p.ry = CY - 0.25*a; p.rx = 0.08 - 0.16*a; p.rz = 0.12*a; p.happy = T > 6.8 ? 1 : 0; }
+    else if (T < 8.2){ const a = (T - 7.4) / 0.8; p.ry = 0.3*(1 - a); p.rz = 0.12*(1 - a); p.happy = 1; p.y = 0.1*Math.abs(Math.sin(Math.PI*a*2)); p.sy = 1 + 0.04*Math.sin(Math.PI*a*4); p.notes = true; p.tail = 0.35*Math.sin(TAU*T*3); p.ear = 0.25 + 0.2*Math.sin(TAU*a*2); }
+    else { const a = (T - 8.2) / (CASTLE_T - 8.2); p.happy = 1; p.rx = 0.12*Math.max(0, Math.sin(TAU*a*2))*(1 - a); }
+  }
+  if (name === 'sig' && cfg.sig === 'ball'){
+    // 小穿：抱頭縮起來 → 變成一顆鐵甲球 → 咕嚕咕嚕繞一大圈（右 → 後 → 左 → 回來）→「啵！」彈開 → 暈頭轉向 → 開心拍拍胸口
+    const T = t % BALL_T, R = 1.3, D = 1.1;
+    if (T < 0.8){ const a = ease(T / 0.8); p.sy = 1 - 0.1*a; p.rx = 0.2*a; p.ear = 0.45*a; p.lid = a > 0.6 ? 1 : 0; }
+    else if (T < 1.2){ const a = ease((T - 0.8) / 0.4); p.sy = 0.9 - 0.3*a; p.rx = 0.2 + 0.3*a; p.ear = 0.45; p.lid = 1; }
+    else if (T < 5.2){ const u = (T - 1.2) / 4.0, th = TAU * ease(u); p.x = R*Math.sin(th); p.z = -D*(1 - Math.cos(th))/2; p.sy = 0.6; p.rx = 0.5; p.lid = 1; }
+    else if (T < 5.7){ const a = (T - 5.2) / 0.5; p.y = 0.18*Math.sin(Math.PI*a); p.sy = 1 + 0.1*Math.sin(Math.PI*a); p.ear = 0.1*(1 - a); p.happy = a < 0.5 ? 1 : 0; }
+    else if (T < 7.0){ const a = (T - 5.7) / 1.3; p.dz = 1; p.rz = 0.16*Math.sin(TAU*a*2.2)*(1 - a*0.5); p.ry = 0.25*Math.sin(TAU*a*1.6); p.sy = 1 + 0.02*Math.sin(TAU*a*4); }
+    else { const a = (T - 7.0) / (BALL_T - 7.0), pat = Math.pow(Math.max(0, Math.sin(TAU*a*3.5)), 0.6); p.happy = 1; p.notes = true; p.ear = 0.08 + 0.44*pat; p.sy = 1 - 0.04*pat; p.rx = 0.06*pat; p.y = 0.03*pat; p.chestPat = pat > 0.95; }   // 拍胸口：兩手往胸口收、身體跟著縮一下，每拍一下冒小星星
+  }
+  if (name === 'sig' && cfg.sig === 'row'){
+    // 船長「小船划划」（側面看）：轉向右邊跟你打招呼 → 小木船「噗」地出現在岸邊 → 小跳一下跳上船 → 握住船槳划出去（身體前傾、翅膀往上壓＝槳入水，往後收＝槳出水）→ 船掉頭 → 划回岸邊 → 放下槳、跳回岸上 → 轉身面對你敬禮「報告船長！」，小船自己掉頭划走
+    const T = t % ROW_T, R = Math.PI / 2, DOCK = DOCK_X, FL = BO.FLOOR, XS = 0.1, XL = -0.3, DXO = 0.5, XR = DOCK + 3 * DXO, STR = 1.2, HOP = 0.8;
+    const sS = u => { const f = v => v - Math.sin(TAU * (v + 0.15)) / TAU; return (f(u) - f(0)) / (f(1) - f(0)); };   // 一槳的前進量：划的時候最快、中間滑行
+    const lerp = (a, b, k) => a + (b - a) * k, cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+    const bob = 0.018 * Math.sin(TAU * T / 1.4);
+    p.bvis = T > 0.3 && T < 12.95; p.bsc = T < 0.3 ? 0 : T < 0.8 ? 1 + 2.70158 * Math.pow((T - 0.3) / 0.5 - 1, 3) + 1.70158 * Math.pow((T - 0.3) / 0.5 - 1, 2) : 1; /* 小船「噗」地彈出來 */ p.bx = DOCK; p.by = bob; p.byaw = 0; p.grip = 0; p.ph = -1; p.boarded = false; p.dir = 1;
+    const stroke = (tau, dir, dx, x0) => {   // 一槳 1.2 秒：入水 → 前傾壓槳（船加速）→ 出水 → 後仰（滑行）
+      const n = Math.floor(tau / STR), u = (tau % STR) / STR; p.ph = u; p.dir = dir; p.bx = x0 + dir * dx * (n + sS(u));
+      p.rx = u < 0.5 ? lerp(-0.2, 0.28, ease(u / 0.5)) : lerp(0.28, -0.2, ease((u - 0.5) / 0.5));
+      p.ear = u < 0.08 ? lerp(0.1, -0.12, ease(u / 0.08)) : u < 0.5 ? -0.12 : u < 0.6 ? lerp(-0.12, 0.1, ease((u - 0.5) / 0.1)) : 0.1; };
+    if (T < 0.6){ const a = ease(T / 0.6); p.ry = R * a; p.x = XS * a; p.ear = -0.34 * a; p.happy = a > 0.5 ? 1 : 0; }
+    else if (T < 1.7){ const a = (T - 0.6) / 1.1; p.ry = R; p.x = XS; p.ear = -0.3 + 0.12 * Math.sin(TAU * a * 2.5); p.happy = 1;
+ }
+    else if (T < 2.0){ const a = ease((T - 1.7) / 0.3); p.ry = R; p.x = XS; p.sy = 1 - 0.12 * a; p.rx = 0.12 * a; p.ear = 0.1 * a; }
+    else if (T < 2.8){ const u = (T - 2.0) / 0.8; p.ry = R; p.x = lerp(XS, DOCK, u); p.y = FL * u + HOP * 4 * u * (1 - u); p.sy = 1 + 0.1 * Math.sin(Math.PI * u); p.rx = 0.08 * Math.sin(Math.PI * u); p.ear = -0.4 * Math.sin(Math.PI * u); p.happy = 1; }
+    else if (T < 3.5){ const a = (T - 2.8) / 0.7; p.ry = R; p.x = DOCK; p.boarded = true; p.sy = 1 - 0.14 * Math.sin(Math.PI * cl(a * 2.2)) * (1 - 0.5 * a); p.by = bob - 0.07 * Math.sin(Math.PI * cl(a * 1.5)) * (1 - 0.5 * a); p.happy = a < 0.5 ? 1 : 0; p.grip = ease(cl((T - 3.0) / 0.5)); p.ear = 0.1 * a; }
+    else if (T < 7.1){ p.ry = R; p.boarded = true; p.grip = 1; stroke(T - 3.5, 1, DXO, DOCK); p.x = p.bx; }
+    else if (T < 8.0){ const a = ease((T - 7.1) / 0.9); p.ry = R - Math.PI * a; p.byaw = -Math.PI * a; p.bx = XR; p.x = XR; p.boarded = true; p.grip = 1; p.ear = -0.06; p.rx = 0.04; p.by = bob; }
+    else if (T < 10.4){ p.ry = -R; p.byaw = -Math.PI; p.boarded = true; p.grip = 1; stroke(T - 8.0, -1, 0.75, XR); p.x = p.bx; }
+    else if (T < 10.9){ const a = ease((T - 10.4) / 0.5); p.ry = -R; p.byaw = -Math.PI; p.bx = DOCK; p.x = DOCK; p.boarded = true; p.grip = 1 - a; p.ear = lerp(0.1, 0, a); p.rx = lerp(-0.2, 0, a); p.happy = a > 0.5 ? 1 : 0; }
+    else if (T < 11.7){ const u = (T - 10.9) / 0.8; p.ry = -R; p.byaw = -Math.PI; p.bx = DOCK; p.x = lerp(DOCK, XL, u); p.y = FL * (1 - u) + HOP * 4 * u * (1 - u); p.sy = 1 + 0.1 * Math.sin(Math.PI * u); p.rx = 0.08 * Math.sin(Math.PI * u); p.ear = -0.4 * Math.sin(Math.PI * u); p.happy = 1; p.by = bob + 0.05 * Math.sin(Math.PI * cl(u * 1.6)); }
+    else { const a = (T - 11.7) / (ROW_T - 11.7); p.ry = -R * (1 - ease(cl(a * 1.4))); p.byaw = -Math.PI - Math.PI * ease(cl((T - 11.8) / 0.8)); p.bx = DOCK + 3.4 * ease(cl((T - 12.2) / 0.8)); p.x = XL * (1 - ease(a)); p.ear = -0.52 * ease(cl(a * 2.2)); p.happy = 1; p.notes = true; p.sy = 1 + 0.03 * Math.sin(TAU * a * 2); }
+    if (p.boarded) p.y = FL + p.by;
+  }
+  if (name === 'sig' && cfg.sig === 'moon'){
+    // 月牙：抬頭看月亮 → 轉向右邊的大石頭、蹲低 → 跳上石頭 → 轉回來面向你 → 張開雙手 → 胸口的月牙亮起來，光一圈一圈照亮公園、小星星往上飄
+    //   → 月光慢慢收回、雙手放下、點頭 → 轉向左邊跳下石頭 → 回到原位開心跳
+    const T = t % MOON_T, X = ROCK_X, H = ROCK_H, TR = 1.25, lerp = (a, b, u) => a + (b - a) * u, cl = clamp01;
+    p.glow = 0; p.onRock = false; p.tail = 0.12 * Math.sin(TAU * T * 1.1);
+    if (T < 0.7){ const a = ease(T / 0.7); p.rx = -0.14 * a; p.ear = -0.08 * a; }
+    else if (T < 1.2){ const a = ease((T - 0.7) / 0.5); p.ry = TR * a; p.rx = -0.14 * (1 - a) + 0.1 * a; p.sy = 1 - 0.08 * a; p.ear = -0.08 + 0.12 * a; }
+    else if (T < 1.75){ const u = (T - 1.2) / 0.55; p.ry = TR; p.x = X * ease(u); p.y = H * u + 0.38 * 4 * u * (1 - u); p.sy = 1.06 - 0.06 * u; p.rx = 0.1 - 0.2 * Math.sin(Math.PI * u); p.ear = -0.35 * Math.sin(Math.PI * u); }
+    else if (T < 2.3){ const a = (T - 1.75) / 0.55, e = ease(a); p.x = X; p.y = H; p.onRock = true; p.ry = TR * (1 - e); p.sy = 1 - 0.08 * Math.sin(Math.PI * cl(a * 2)); }
+    else if (T < 3.0){ const a = ease((T - 2.3) / 0.7); p.x = X; p.y = H; p.onRock = true; p.rx = -0.16 * a; }
+    else if (T < 3.7){ const a = ease((T - 3.0) / 0.7); p.x = X; p.y = H; p.onRock = true; p.rx = -0.16 + 0.08 * a; p.ear = -0.52 * a; p.sy = 1 + 0.04 * a; p.lid = a > 0.8 ? 1 : 0; }
+    else if (T < 6.9){ const u = T - 3.7; p.x = X; p.y = H; p.onRock = true; p.rx = -0.08 + 0.02 * Math.sin(TAU * u * 0.5); p.rz = 0.05 * Math.sin(TAU * u * 0.4); p.ear = -0.5 + 0.03 * Math.sin(TAU * u * 0.8); p.sy = 1.04 + 0.015 * Math.sin(TAU * u * 0.8);
+      p.glow = ease(cl(u / 0.6)); p.happy = u > 0.3 ? 1 : 0; }
+    else if (T < 7.7){ const a = ease((T - 6.9) / 0.8); p.x = X; p.y = H; p.onRock = true; p.ear = lerp(-0.5, 0.05, a); p.sy = 1.04 - 0.04 * a; p.glow = 1 - a; p.rx = 0.22 * Math.sin(Math.PI * a); p.happy = a < 0.6 ? 1 : 0; }
+    else if (T < 8.1){ const a = ease((T - 7.7) / 0.4); p.x = X; p.y = H; p.onRock = true; p.ry = -TR * a; p.sy = 1 - 0.08 * a; }
+    else if (T < 8.65){ const u = (T - 8.1) / 0.55; p.ry = -TR; p.x = X * (1 - ease(u)); p.y = H * (1 - u) + 0.4 * 4 * u * (1 - u); p.sy = 1.06 - 0.06 * u; p.rx = 0.1 - 0.2 * Math.sin(Math.PI * u); p.ear = -0.3 * Math.sin(Math.PI * u); }
+    else if (T < 9.2){ const a = (T - 8.65) / 0.55; p.ry = -TR * (1 - ease(a)); p.sy = 1 - 0.08 * Math.sin(Math.PI * cl(a * 2)); }
+    else { const a = (T - 9.2) / (MOON_T - 9.2); p.happy = 1; p.notes = true; p.y = 0.12 * Math.abs(Math.sin(Math.PI * a * 2)); p.sy = 1 + 0.04 * Math.sin(Math.PI * a * 4); p.ear = -0.3 * Math.abs(Math.sin(Math.PI * a * 2)); }
+  }
+  if (name === 'sig' && cfg.sig === 'flame'){
+    // 小赤龍「暖暖小火焰」：深呼吸、胸口鼓起來 → 轉向右前方的燈籠 → 往前一點頭「噗」！噴出愛心小火 → 頭跟著小火一盞一盞轉過去（燈籠一盞一盞亮）
+    //   → 小火飛上天、變成小愛心 → 轉回正面、開心轉一圈 → 舉手歡呼
+    const T = t % FLAME_T, cl = clamp01, lerp = (a, b, u) => a + (b - a) * u, A0 = 0.55, A1 = 2.3;   /* 第 3 版：路燈往遠方延伸，頭轉到右後方看小火 */
+    p.tail = 0.12 * Math.sin(TAU * T * 1.2);
+    if (T < 0.5){ const a = ease(T / 0.5); p.ry = 0.5 * a; }
+    else if (T < 1.5){ const a = (T - 0.5) / 1.0, b = Math.sin(Math.PI * a); p.ry = 0.5; p.sy = 1 + 0.07 * b; p.rx = -0.12 * b; p.ear = -0.15 * b; p.lid = a > 0.2 && a < 0.9 ? 1 : 0; }   // 深呼吸：胸口鼓起、往後仰、閉眼
+    else if (T < 1.9){ const a = (T - 1.5) / 0.4; p.ry = 0.5; p.rx = 0.18 * Math.sin(Math.PI * a); p.z = 0.06 * Math.sin(Math.PI * a); p.sy = 1 - 0.05 * Math.sin(Math.PI * a); p.happy = 1; }   // 噗！
+    else if (T < 5.9){ const u = (T - 1.9) / 4.0; p.ry = lerp(0.5, A1 - 0.1, ease(u)); p.happy = 1; p.tail = 0.3 * Math.sin(TAU * T * 1.5); p.sy = 1 + 0.02 * Math.sin(TAU * T * 2); }   // 頭跟著小火轉過去
+    else if (T < 6.6){ const a = ease((T - 5.9) / 0.7); p.ry = A1 - 0.1; p.rx = -0.18 * a; p.happy = 1; }   // 抬頭看小火飛上天
+    else if (T < 7.4){ const a = ease((T - 6.6) / 0.8); p.ry = (A1 - 0.1) * (1 - a); p.rx = -0.18 * (1 - a); p.happy = 1; }
+    else if (T < 8.6){ const a = (T - 7.4) / 1.2; p.ry = -TAU * ease(a); p.y = 0.25 * Math.sin(Math.PI * a); p.sy = 1 + 0.05 * Math.sin(Math.PI * a); p.happy = 1; p.ear = -0.25 * Math.sin(Math.PI * a); }   // 開心轉一圈
+    else { const a = (T - 8.6) / (FLAME_T - 8.6), hop = Math.abs(Math.sin(Math.PI * a * 2)); p.y = 0.1 * hop; p.ear = -0.45 * Math.min(1, a * 5) * (a > 0.85 ? (1 - a) / 0.15 : 1); p.happy = 1; p.notes = true; }   // 舉手歡呼
+  }
+  if (name === 'sig' && cfg.sig === 'fly'){
+    // 長尾「繞圈飛飛」：蹲低、翅膀小拍 → 用力拍翅膀起飛，往前上方飛到圈上 → 在你頭上繞三圈（身體往前傾、往圈內側斜，長尾巴跟在後面）→ 飛回原位、轉回正面降落 → 張開翅膀鞠躬
+    //   旋轉用「先轉向、再前後傾／左右斜」（yxz），前傾、側斜都是照身體的方向
+    const T = t % FLY_T, cl = clamp01, lerp = (a, b, u) => a + (b - a) * u, R = 1.35, CZ = -1.7, H = 1.3, L0 = 1.7, L1 = 7.7, LAPS = 3;
+    const flap = (k, a) => { p.ear = -0.82 * a * (0.5 + 0.5 * Math.sin(TAU * k)) + 0.05; };   // 翅膀上下拍（負＝往上）
+    p.tail = 0.1 * Math.sin(TAU * T * 1.1); p.flying = false;
+    if (T < 0.8){ const a = ease(T / 0.8); p.sy = 1 - 0.1 * a; p.rx = -0.12 * a; p.ear = -0.12 * Math.abs(Math.sin(TAU * T * 2)); }
+    else if (T < L0){ const u = (T - 0.8) / (L0 - 0.8), e = ease(u); p.flying = true; p.y = H * e + 0.12 * Math.sin(Math.PI * u); p.z = (CZ + R) * e; p.ry = Math.PI / 2 * e; p.rx = lerp(-0.12, 0.22, cl(u * 2)); p.sy = lerp(0.9, 1.04, cl(u * 3)); flap(T * 4.2, 1); p.happy = 1; }
+    else if (T < L1){ const u = (T - L0) / (L1 - L0), th = u * LAPS * TAU; p.flying = true;
+      p.x = R * Math.sin(th); p.z = CZ + R * Math.cos(th); p.y = H + 0.12 * Math.sin(TAU * u * LAPS * 2); p.ry = Math.PI / 2 + th - LAPS * TAU; p.rx = 0.22; p.rz = 0.3 * cl(u * 8) * cl((1 - u) * 8); flap(T * 3.6, 0.85); p.happy = 1; p.tail = 0.25 * Math.sin(TAU * T * 1.8); }
+    else if (T < 8.7){ const u = (T - L1) / 1.0, e = ease(u); p.flying = u < 0.9; p.y = H * (1 - e) + 0.15 * Math.sin(Math.PI * u); p.z = (CZ + R) * (1 - e); p.ry = Math.PI / 2 * (1 - e); p.rx = lerp(0.22, -0.05, e); flap(T * 4.5, 1 - 0.5 * e); p.happy = 1;
+      if (u > 0.85) p.sy = 1 - 0.1 * Math.sin(Math.PI * (u - 0.85) / 0.15); }
+    else if (T < 9.4){ const a = ease((T - 8.7) / 0.7); p.ear = -0.45 * a; p.sy = 1 + 0.03 * a; p.happy = 1; }   // 張開翅膀
+    else { const a = (T - 9.4) / (FLY_T - 9.4); p.ear = -0.45 * (1 - ease(cl((a - 0.6) / 0.4))); p.rx = 0.38 * Math.sin(Math.PI * cl(a * 1.4)); p.happy = 1; p.notes = a > 0.5; }   // 鞠躬
+  }
+  if (name === 'sig' && cfg.sig === 'spark'){
+    // Sparky「火花指路」（第 2 版，12.4 秒，小路約 4 公尺）：抬頭、角尖亮起火花 → 火花跳到右前方地上，一路畫出發光小路 → Sparky 小跑步跟著走
+    //   → 路的盡頭「噗」地冒出 NEW PARK 旗子 → 轉回來面向你、跳兩下歡呼（前腳往上張開）→ 小跑步回到原位 → 點點頭
+    const T = t % SPARK_T, cl = clamp01, lerp = (a, b, u) => a + (b - a) * u;
+    const S = spkBez(SPK.STOP), route = v => v < 0.17 ? [SPK.Q0[0] * v / 0.17, SPK.Q0[1] * v / 0.17] : spkBez(SPK.STOP * (v - 0.17) / 0.83);
+    const face = (dx, dz) => Math.atan2(dx, dz), HOME = face(-S[0], -S[1]), trot = (k, n) => { const ph = Math.abs(Math.sin(Math.PI * k * n)); p.y = 0.07 * ph; p.sy = 1 + 0.05 * ph - 0.04; p.ear = -0.08 - 0.06 * ph; p.tail = 0.25 * Math.sin(TAU * k * n * 0.5); };
+    p.spk = 0; p.tail = 0.12 * Math.sin(TAU * T * 1.1);
+    if (T < 0.9){ const a = ease(T / 0.9); p.rx = -0.16 * a; p.ear = -0.15 * a; p.spk = a; }
+    else if (T < 1.6){ const a = ease((T - 0.9) / 0.7); p.rx = lerp(-0.16, 0.08, a); p.ry = 0.45 * a; p.ear = -0.15 * (1 - a); p.happy = 1; }
+    else if (T < 1.9){ const a = ease((T - 1.6) / 0.3); p.rx = 0.08 * (1 - a); p.ry = lerp(0.45, face(SPK.Q0[0], SPK.Q0[1]), a); p.sy = 1 - 0.06 * a; }
+    else if (T < 6.4){ const k = (T - 1.9) / 4.5, [x, z] = route(k), [x2, z2] = route(Math.min(1, k + 0.02)); p.x = x; p.z = z; p.ry = face(x2 - x, z2 - z); trot(k, 12); p.happy = 1; }
+    else if (T < 7.0){ const a = ease((T - 6.4) / 0.6), [x2, z2] = spkBez(SPK.STOP + 0.02); p.x = S[0]; p.z = S[1]; p.ry = lerp(face(x2 - S[0], z2 - S[1]), -0.3, a); p.happy = 1; p.sy = 1 - 0.04 * Math.sin(Math.PI * a); }
+    else if (T < 8.4){ const a = (T - 7.0) / 1.4, hop = Math.abs(Math.sin(Math.PI * a * 2)); p.x = S[0]; p.z = S[1]; p.ry = -0.3; p.y = 0.2 * hop; p.sy = 1 + 0.06 * hop - 0.03; p.ear = -0.3 * Math.min(1, a * 4) * (a > 0.88 ? (1 - a) / 0.12 : 1); p.happy = 1; p.notes = true; p.cheer = true; }   // 前腳張開 0.3（0.5 會把腋下拉破）
+    else if (T < 8.7){ const a = ease((T - 8.4) / 0.3); p.x = S[0]; p.z = S[1]; p.ry = lerp(-0.3, HOME, a); }
+    else if (T < 11.0){ const k = (T - 8.7) / 2.3, e = ease(k); p.x = S[0] * (1 - e); p.z = S[1] * (1 - e); p.ry = HOME; trot(k, 7); }
+    else if (T < 11.6){ const a = ease((T - 11.0) / 0.6); p.ry = HOME * (1 - a); }
+    else { const a = (T - 11.6) / (SPARK_T - 11.6); p.happy = 1; p.rx = 0.12 * Math.sin(Math.PI * cl(a * 2)); p.sy = 1 + 0.03 * Math.sin(TAU * a); }
+  }
+  if (cfg.trunk && !p.trunkSet){   // 鼻子在其他動作也跟著動：待機慢慢擺、開心往上捲、難過垂下、睡覺放鬆
+    if (name === 'idle') { p.trunk = 0.18*Math.sin(TAU*t/3.1); p.trunkUp = 0.08 + 0.06*Math.sin(TAU*t/2.4); }
+    else if (name === 'sleep') { p.trunk = 0.04*Math.sin(TAU*t/4); p.trunkUp = -0.05; }
+    else if (name !== 'sig'){
+      if (p.happy || p.love) { p.trunkUp = Math.max(p.trunkUp, 0.45); p.trunk = 0.2*Math.sin(TAU*t*1.6); }
+      else if (p.cry) { p.trunkUp = -0.12; p.trunk = name === 'refuse' ? 0.3*Math.sin(TAU*t*2.1) : 0.05*Math.sin(TAU*t*3); }
+      else { p.trunk = 0.12*Math.sin(TAU*t/2.2); p.trunkUp = 0.1; }
+    }
   }
   return p;
 }
 
 // ear spring: lags behind vertical motion so the ears flop
 let earAng = 0, earVel = 0, lastY = 0;
-const cur = {x:0, y:0, z:0, rx:0, ry:0, rz:0, sy:1, pc:0, tail:0};
+const cur = {x:0, y:0, z:0, rx:0, ry:0, rz:0, sy:1, pc:0, tail:0, trunk:0, trunkUp:0};
 
 function setMove(name){
   if (foodWait(name)) return;   // 食物載好才開始
@@ -888,7 +1419,9 @@ renderer.domElement.addEventListener('pointerup', e => {
 const _q = new THREE.Quaternion(), _m = new THREE.Matrix4(), _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion();
 function groundLift(){
   if (!pts) return 0;
-  _m.makeRotationFromQuaternion(_q1.setFromAxisAngle(new THREE.Vector3(1, 0, 0), cur.rx).multiply(_q2.setFromAxisAngle(new THREE.Vector3(0, 1, 0), cur.ry)).multiply(_q3.setFromAxisAngle(new THREE.Vector3(0, 0, 1), cur.rz)));   // spec 2.1: quaternions
+  const yxz = move === 'sig' && (cfg.sig === 'row' || cfg.sig === 'fly');   // 船長划船用「先轉向、再前後傾」的順序（前傾是往面向的方向），量地面也要用同一個順序
+  _q1.setFromAxisAngle(new THREE.Vector3(1, 0, 0), cur.rx); _q2.setFromAxisAngle(new THREE.Vector3(0, 1, 0), cur.ry); _q3.setFromAxisAngle(new THREE.Vector3(0, 0, 1), cur.rz);
+  _m.makeRotationFromQuaternion(yxz ? _q2.clone().multiply(_q1).multiply(_q3) : _q1.multiply(_q2).multiply(_q3));   // spec 2.1: quaternions
   const el = _m.elements, r0 = el[1], r1 = el[5], r2 = el[9];   // second row of the rotation
   const sq = 1 / Math.sqrt(cur.sy), sy = cur.sy, pc = cur.pc;
   let mn = Infinity;
@@ -899,7 +1432,7 @@ function groundLift(){
   return -mn - pc;   // how far the pivot must rise so the lowest point touches y=0 (relative to standing)
 }
 
-let last = performance.now()/1000, running = false, frozen = null;
+let last = performance.now()/1000, running = false, frozen = null, slideT = 0, camPan = 0, camDolly = 0; const _cv = new THREE.Vector3();
 function loop(){
   const now = performance.now()/1000, dt = Math.max(0, Math.min(now-last, 0.05)); last = now;
   const t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
@@ -907,16 +1440,157 @@ function loop(){
   const k = 1 - Math.pow(0.0005, dt);           // smooth blend between moves
   if (Math.abs(p.z - cur.z) > 0.6) cur.z = p.z;   // walk loop restarts at the far end
   const snapSpin = (move === 'binky' && cfg.binkySpin) || move === 'sig';
-  for (const key of ['x','y','z','rx','ry','rz','sy','pc','tail']){
-    const direct = snapSpin && (key === 'ry' || (move === 'sig' && (key === 'rz' || key === 'x' || key === 'pc')));
+  for (const key of ['x','y','z','rx','ry','rz','sy','pc','tail','trunk','trunkUp']){
+    const direct = (snapSpin && (key === 'ry' || (move === 'sig' && (key === 'rz' || key === 'x' || key === 'pc')))) || (move === 'sig' && (cfg.sig === 'row' || cfg.sig === 'moon' || cfg.sig === 'spark' || cfg.sig === 'fly' || cfg.sig === 'flame'));   // 船長划船、月牙跳石頭：全部直接照時間走（手握槳、腳踩船，不能慢半拍）
     cur[key] += (p[key]-cur[key]) * (direct ? 1 : k);
   }
   off.position.y = -cur.pc;
   QR(rig, cur.rx, cur.ry, cur.rz);
+  if (move === 'sig' && (cfg.sig === 'row' || cfg.sig === 'fly')){ __qb.setFromAxisAngle(__QY, cur.ry); __qa.setFromAxisAngle(__QX, cur.rx); __qc.setFromAxisAngle(__QZ, cur.rz); rig.quaternion.copy(__qb).multiply(__qa).multiply(__qc); }   // 船長划船：先轉向、再往面向的方向前後傾（不是往鏡頭倒）
   const lift = groundLift();
   rig.position.set(cur.x, cur.y + cur.pc + lift, cur.z);
   shadow.position.x = cur.x; shadow.position.z = cur.z + Math.sin(cur.rx) * 0.45;
   rock.visible = move === 'walk';
+  { const on = move === 'sig' && cfg.sig === 'note', T = t % NOTE_T; NB.visible = on; qMark.visible = on && T > 3.95 && T < 4.75; bulb.visible = on && T > 4.7 && T < 7.2;
+    if (on){ const hy = rig.position.y - cur.pc;
+      // 筆記本：右前方浮出來（不擋臉），打開 → 翻三頁 → 合起來 → 飛回胸前縮小
+      const pop = ease(clamp01((T - 0.7) / 0.5)), open = ease(clamp01((T - 1.0) / 0.5)) * (1 - ease(clamp01((T - 5.6) / 0.4))), back = ease(clamp01((T - 6.0) / 0.4));
+      const P0 = [cur.x + 0.68, hy + 1.02, cur.z + 0.72], P1 = [cur.x, hy + 0.7, cur.z + 0.55];
+      NB.position.set(P0[0] + (P1[0] - P0[0])*back, P0[1] + (P1[1] - P0[1])*back + 0.03*Math.sin(TAU*T*0.9)*(1 - back), P0[2] + (P1[2] - P0[2])*back);
+      NB.rotation.set(-0.15, -0.55*(1 - back), 0); NB.scale.setScalar(Math.max(0.001, pop * (1 - back) * 0.9));
+      nbL.rotation.y = Math.PI * 0.96 * (1 - open); nbR.rotation.y = 0;
+      const u = T - 1.5, k = [0.3, 1.1, 1.9].findIndex(f => u >= f && u < f + 0.5);
+      const done = [0.3, 1.1, 1.9].filter(f => u >= f + 0.5).length, PM = i => pageMats[i % 5];   // 翻過幾頁：左頁、右頁換成下一張圖
+      nbFlip.visible = k >= 0 && open > 0.99; if (nbFlip.visible){ nbFlip.rotation.y = -Math.PI * ease((u - [0.3, 1.1, 1.9][k]) / 0.5); nbFlipPg.material[4] = PM(2*k + 1); nbFlipPg.material[5] = PM(2*k + 2); }
+      nbL.userData.pg.material[4] = PM(2*done); nbR.userData.pg.material[4] = PM(2*done + 1 + (nbFlip.visible ? 2 : 0));
+      qMark.position.set(cur.x - 0.3, hy + 1.95 + 0.04*Math.sin(TAU*T*2), cur.z + 0.2); qMark.material.opacity = clamp01((T - 3.95) / 0.15) * clamp01((4.75 - T) / 0.1);
+      const bs = ease(clamp01((T - 4.7) / 0.25)); bulb.position.set(cur.x, hy + 2.0 + 0.05*Math.sin(TAU*T*1.5), cur.z + 0.1); bulb.scale.set(0.38*bs, 0.48*bs, 1); bulb.material.opacity = clamp01((7.2 - T) / 0.5) * (0.85 + 0.15*Math.sin(TAU*T*3)); } }
+  { const on = move === 'sig' && cfg.sig === 'castle', T = t % CASTLE_T; CASTLE.visible = on;
+    if (on){ CASTLE.position.set(cur.x + Math.sin(0.85) * 0.82, 0, cur.z + Math.cos(0.85) * 0.82);   // 神龜轉身面向的正前方（轉 0.85），距離 0.82：拍得到又碰不到身體
+      const sink = 1 - ease(clamp01((T - 8.3) / 0.6)); let y = 0;
+      tiers.forEach((m, i) => { const t0 = 0.8 + i * 1.2, g = T < t0 ? 0 : Math.min(1, ease(clamp01((T - t0) / 0.6)) * (1 + 0.15*Math.sin(Math.PI*clamp01((T - t0) / 0.6)))); const h = m.userData.h;
+        m.visible = g > 0.001; m.scale.set(Math.max(0.001, g), Math.max(0.001, g * sink), Math.max(0.001, g)); m.position.y = y + h * g * sink / 2; y += h * g * sink; });
+      const tg = ease(clamp01((T - 4.4) / 0.6)) * sink; castleTop.visible = tg > 0.001; castleTop.scale.setScalar(Math.max(0.001, tg)); castleTop.position.y = y + 0.07 * tg; y += 0.12 * tg;
+      const fg = ease(clamp01((T - 5.6) / 0.4)) * sink; flag.visible = fg > 0.001; flag.scale.setScalar(Math.max(0.001, fg)); flag.position.y = y - 0.02;
+      const pa = flagCloth.geometry.attributes.position; for (let i = 0; i < pa.count; i++){ const x0 = flagPos[i*3]; pa.array[i*3+2] = 0.015 * (x0 + 0.065) / 0.13 * Math.sin(TAU*T*2 - x0 * 30); } pa.needsUpdate = true; } }
+  { const on = move === 'sig' && cfg.sig === 'ball', T = t % BALL_T;
+    const grow = on ? ease(clamp01((T - 0.95) / 0.3)) * (1 - ease(clamp01((T - 5.2) / 0.25))) : 0;
+    BALL.visible = grow > 0.06; squash.visible = !(on && grow > 0.85);
+    if (BALL.visible){ const u = clamp01((T - 1.2) / 4.0), th = TAU * ease(u), sp = TAU * 1.3 * ease(u) / 0.5 * 0.5;
+      BALL.scale.setScalar(Math.max(0.01, grow)); BALL.position.set(cur.x, 0.5 * grow + 0.03 * Math.abs(Math.sin(TAU * T * 3)) * (u > 0 && u < 1 ? 1 : 0), cur.z);
+      BALL.rotation.set(sp * 3.2, Math.PI / 2 + th, 0, 'YXZ'); }
+    if (on && T > 5.75 && !ballStarsDone){ ballStarsDone = true; dizzyStars(); }
+    if (on && p.chestPat && !ballPatOn && !reduceMotion){ for (let i = 0; i < 4; i++){ const a = Math.random() * TAU; spawn(starTex, new THREE.Vector3(cur.x + 0.25*Math.cos(a), rig.position.y + 0.75 + 0.15*Math.sin(a), cur.z + 0.45), new THREE.Vector3(0.5*Math.cos(a), 0.4 + 0.3*Math.random(), 0.2), 0.45, 0.07); } }
+    ballPatOn = on && p.chestPat;
+    if (!on || T < 5.0) ballStarsDone = false; }
+  { const on = move === 'sig' && cfg.sig === 'row', T = t % ROW_T, show = on && p.bvis;
+    BOAT.visible = show; for (const o of oars) o.visible = show && p.bsc > 0.999;
+    if (show){
+      BOAT.scale.setScalar(Math.max(0.01, p.bsc)); BOAT.position.set(p.bx, p.by, 0); BOAT.rotation.set(0, p.byaw, 0.015 * Math.sin(T * 2.3) + (p.ph >= 0 ? 0.02 * Math.sin(TAU * p.ph) : 0));   // YXZ：先船頭上下一點，再轉向
+      rig.updateMatrixWorld(true); BOAT.updateMatrixWorld(true);
+      const ea = -2 * earU.value, ec = Math.cos(ea), es = Math.sin(ea), hdx = HAND0[0] - ARM_A[0], hdy = HAND0[1] - ARM_A[1];
+      for (let si = 0; si < 2; si++){ const side = si ? -1 : 1;
+        const hw = squash.localToWorld(new THREE.Vector3(side * (ARM_A[0] + ec * hdx - es * hdy), ARM_A[1] + es * hdx + ec * hdy, HAND0[2]));   // 翅膀尖端（和 shader 同一個公式）
+        const sg = BOAT.worldToLocal(hw.clone()).z >= 0 ? 1 : -1;
+        const H = BOAT.localToWorld(new THREE.Vector3(0, 0.26, sg * 0.5)).lerp(hw, p.grip), L = BOAT.localToWorld(new THREE.Vector3(LOCK.x, LOCK.y, sg * LOCK.z));
+        const d = L.clone().sub(H).normalize(), Bt = L.clone().addScaledVector(d, OAR_OUT), G = H.clone().addScaledVector(d, -OAR_GRIP);
+        const nx = new THREE.Vector3(1, 0, 0); nx.addScaledVector(d, -nx.dot(d)); if (nx.lengthSq() < 1e-4) nx.set(0, 0, 1); nx.normalize();
+        const o = oars[si], Ls = G.distanceTo(Bt);
+        o.position.copy(G); o.quaternion.setFromRotationMatrix(_m.makeBasis(nx, d, new THREE.Vector3().crossVectors(nx, d)));
+        o.userData.shaft.scale.y = Ls; o.userData.shaft.position.y = Ls / 2; o.userData.blade.position.y = Ls - 0.2;
+        rowBlade[si] = Bt;
+        if (on && !reduceMotion && p.grip > 0.9 && p.ph >= 0.08 && p.ph < 0.6 && Bt.y < 0.12 && Math.random() < dt * 14){   // 槳入水：槳葉旁邊濺起小水花
+          spawn(dropTex, new THREE.Vector3(Bt.x + (Math.random() - 0.5) * 0.3, 0.04, Bt.z + (Math.random() - 0.5) * 0.2), new THREE.Vector3(-p.dir * (0.2 + Math.random() * 0.5), 0.7 + Math.random() * 0.6, (Math.random() - 0.5) * 0.5), 0.55, 0.05 + Math.random() * 0.03); fx[fx.length - 1].gravity = -4; } }
+      if (on && !reduceMotion){
+        rowAcc += dt; if (p.grip > 0.9 && p.ph >= 0.08 && p.ph < 0.62 && rowAcc > 0.22){ rowAcc = 0; for (const b of rowBlade) if (b && b.y < 0.12) addRipple(b.x, b.z, 0.7, 1.0); }   // 槳葉旁邊的水波
+        rowWake += dt; if (rowWake > 0.35 && (p.ph >= 0.05 || T > 12.2)){ rowWake = 0; addRipple(p.bx - Math.cos(p.byaw) * 1.0, Math.sin(p.byaw) * 1.0, 1.5, 1.6); }   // 船尾拖出的水波
+        if (T > 2.8 && rowLand < 0){ rowLand = 1; for (let i = 0; i < 22; i++){ const a = Math.random() * TAU; spawn(dropTex, new THREE.Vector3(p.bx + Math.cos(a) * 1.0, 0.1, Math.sin(a) * 0.8), new THREE.Vector3(Math.cos(a) * 0.9, 1.0 + Math.random() * 1.0, Math.sin(a) * 0.9), 0.9, 0.08 + Math.random() * 0.05); fx[fx.length - 1].gravity = -4; } addRipple(p.bx, 0, 2.6, 1.6); addRipple(p.bx, 0, 1.8, 1.3); }   // 跳上船：水花四濺
+        if (T > 0.4 && rowSplashDone < 0){ rowSplashDone = 1; addRipple(DOCK_X, 0, 2.4, 1.5); for (let i = 0; i < 14; i++){ const a = Math.random() * TAU; spawn(dropTex, new THREE.Vector3(DOCK_X + Math.cos(a) * 0.9, 0.1, Math.sin(a) * 0.7), new THREE.Vector3(Math.cos(a) * 0.7, 0.9 + Math.random() * 0.8, Math.sin(a) * 0.6), 0.8, 0.07 + Math.random() * 0.04); fx[fx.length - 1].gravity = -4; } }   // 小船「噗」地出現
+      } }
+    if (!on || T < 0.3){ rowSplashDone = -1; rowLand = -1; }
+    if (!on) clearRipples();
+    updateRipples(dt); }
+  { const on = move === 'sig' && cfg.sig === 'moon', T = t % MOON_T, g = on ? (p.glow || 0) : 0;
+    ROCK.visible = on; glowU.value = g; halo.visible = g > 0.01;
+    const hy = rig.position.y - cur.pc, cx = cur.x, cy = hy + 0.66, cz = cur.z + 0.42;
+    moonLight.intensity = 2.2 * g; moonLight.position.set(cx, cy - 0.3, cz + 0.9);   /* 光源放在胸口前下方，不把口鼻照到發白 */
+    if (halo.visible){ const pu = 1 + 0.08 * Math.sin(TAU * T * 1.3); halo.position.set(cx, cy, cz); halo.scale.setScalar(0.85 * g * pu); halo.material.opacity = 0.6 * g; }
+    if (on && g > 0.5 && !reduceMotion){
+      moonRing += dt; if (moonRing > 0.75){ moonRing = 0; addRipple(cx, cur.z, 4.2, 2.0, 0xffe7a8); }   // 光一圈一圈往外照
+      moonAcc += dt; if (moonAcc > 0.16){ moonAcc = 0; const a = Math.random() * TAU, r = 0.35 + Math.random() * 0.5;   // 小星星、小月亮往上飄
+        spawn(Math.random() < 0.3 ? moonTex : starTex, new THREE.Vector3(cx + Math.cos(a) * r, cy + Math.random() * 0.4, cur.z + 0.2 + Math.sin(a) * 0.35), new THREE.Vector3(Math.cos(a) * 0.15, 0.5 + Math.random() * 0.4, 0.08), 1.6, 0.1 + Math.random() * 0.06); } }
+    if (!on){ moonRing = 0; moonAcc = 0; }
+    if (on){ const top = Math.abs(cur.x - ROCK_X) < 0.45 && cur.y > ROCK_H - 0.02 ? ROCK_H : 0; shadow.position.y = top + 0.004; } else shadow.position.y = 0.002; }
+  { const on = move === 'sig' && cfg.sig === 'spark', T = t % SPARK_T;   // Sparky「火花指路」（第 2 版時間：小路 1.5–5.5 秒、旗子 5.5 秒冒出、11.3 秒收回）
+    const F0 = 5.5, OUT = 11.5;
+    sparkSp.visible = on && T < OUT; SPFLAG.visible = on && T > F0 && T < 12.0;
+    let su = -1;   // 火花在小路上走到哪裡（0～1）
+    if (on){
+      rig.updateMatrixWorld(true); hornTip.position.set(...cfg.horn); const H = hornTip.getWorldPosition(new THREE.Vector3());
+      const tw = 1 + 0.15 * Math.sin(TAU * T * 3.2);
+      if (T < 0.9){ sparkSp.position.copy(H).add(new THREE.Vector3(0, 0.05, 0)); sparkSp.scale.setScalar(0.34 * ease(T / 0.9) * tw + 0.001); }
+      else if (T < 1.5){ const u = ease((T - 0.9) / 0.6), v = 1 - u, Q = new THREE.Vector3(SPK.Q0[0], 0.09, SPK.Q0[1]), C = new THREE.Vector3(H.x + 0.75, H.y + 0.45, H.z + 0.1);   /* 先往右上跳、再落到地上：不經過臉前面 */ sparkSp.position.set(v*v*H.x + 2*v*u*C.x + u*u*Q.x, v*v*H.y + 2*v*u*C.y + u*u*Q.y, v*v*H.z + 2*v*u*C.z + u*u*Q.z); sparkSp.scale.setScalar(lerpN(0.34, 0.24, u) * tw); }
+      else if (T < F0){ su = ease((T - 1.5) / (F0 - 1.5)); const [x, z] = spkBez(su); sparkSp.position.set(x, 0.09 + 0.06 * Math.abs(Math.sin(TAU * T * 1.6)), z); sparkSp.scale.setScalar(0.24 * tw); }
+      else { su = 1; const u = ease(clamp01((T - F0) / 0.45)), top = 0.86 * Math.min(1.25, SPFLAG.scale.y); sparkSp.position.set(SPK.Q3[0], 0.09 + (top - 0.09) * u + 0.12 * Math.sin(Math.PI * u), SPK.Q3[1]); sparkSp.scale.setScalar((0.24 + 0.08 * u) * tw * (T > OUT - 0.4 ? Math.max(0.001, (OUT - T) / 0.4) : 1)); }   // 火花跳到旗桿頂端，變成新公園的星星
+      if (T > F0){ const a = clamp01((T - F0) / 0.5), pop = a < 1 ? 1 + 2.70158 * Math.pow(a - 1, 3) + 1.70158 * Math.pow(a - 1, 2) : 1, sink = 1 - ease(clamp01((T - 11.3) / 0.6)); SPFLAG.scale.setScalar(Math.max(0.001, 1.25 * pop * sink)); SPFLAG.userData.cloth.rotation.y = 0.22 * Math.sin(TAU * T * 1.2); }
+      if (T > F0 && !spkBoom && !reduceMotion){ spkBoom = true; addRipple(SPK.Q3[0], SPK.Q3[1], 1.8, 1.4, 0xffe7a8);
+        for (let i = 0; i < 10; i++){ const a = i / 10 * TAU; spawn(starTex, new THREE.Vector3(SPK.Q3[0] + 0.15 * Math.cos(a), 0.7, SPK.Q3[1] + 0.15 * Math.sin(a)), new THREE.Vector3(0.7 * Math.cos(a), 0.7 + 0.3 * Math.random(), 0.7 * Math.sin(a)), 1.0, 0.12); } }
+      if (T < F0) spkBoom = false;
+      if (su >= 0 && su < 1 && !reduceMotion){ spkAcc += dt; if (spkAcc > 0.09){ spkAcc = 0; spawn(dotTex, sparkSp.position.clone(), new THREE.Vector3((Math.random() - 0.5) * 0.3, 0.35 + Math.random() * 0.3, (Math.random() - 0.5) * 0.3), 0.6, 0.07); } }   // 火花走過時冒小光點
+      if (p.cheer && !reduceMotion){ spkCheer += dt; if (spkCheer > 0.14){ spkCheer = 0; spawn(Math.random() < 0.5 ? starTex : sparkTex, H.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.3, 0.05, 0)), new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.8 + Math.random() * 0.4, 0.2), 1.0, 0.1 + Math.random() * 0.05); } }   // 歡呼時角尖冒火花和星星
+    }
+    const fade = on ? 1 - clamp01((T - 10.6) / 1.0) : 0;
+    for (const d of spkDots){ const lit = on && (su >= d.userData.u || T >= F0) && T < 11.6; d.visible = lit;
+      if (lit){ d.material.opacity = fade * (0.6 + 0.3 * Math.sin(TAU * (T * 1.3 + d.userData.u * 3))); d.scale.setScalar(0.17 + 0.03 * Math.sin(TAU * (T + d.userData.u * 5))); } }
+    if (!on){ spkAcc = 0; spkBoom = false; spkCheer = 0; } }
+  { const on = move === 'sig' && cfg.sig === 'flame', T = t % FLAME_T, F0 = 1.75, F1 = 5.75;   // 小赤龍「暖暖小火焰」
+    for (const L of LANTERNS) L.visible = on; ARCHL.visible = on;
+    flameSp.visible = on && T > F0 && T < 6.5;
+    if (on){
+      rig.updateMatrixWorld(true); snoutTip.position.set(...cfg.snout); const M = snoutTip.getWorldPosition(new THREE.Vector3());
+      const tops = LANTERNS.map(L => L.localToWorld(L.userData.top.set(0, 1.09, 0)).clone()), tw = 1 + 0.12 * Math.sin(TAU * T * 4);
+      let fp = null;
+      if (T > F0 && T < F1){ const u = (T - F0) / (F1 - F0) * 5, i = Math.min(4, Math.floor(u)), k = u - i, A = i === 0 ? M : tops[i - 1], B = tops[i];   // 每 0.8 秒飛到下一盞燈籠
+        fp = A.clone().lerp(B, ease(k)); fp.y += 0.22 * Math.sin(Math.PI * k) + 0.1; flameSp.scale.setScalar((i === 0 ? lerpN(0.12, 0.3, Math.min(1, k * 2)) : 0.3) * tw); }
+      else if (T >= F1 && T < 6.5){ const a = ease((T - F1) / 0.75), AT = ARCHL.localToWorld(ARCHL.userData.top.clone()); fp = tops[4].clone().lerp(AT, a); fp.y += 0.6 * Math.sin(Math.PI * a); flameSp.scale.setScalar(0.3 * tw * (1 - 0.4 * a)); }   // 最後飛到公園拱門頂端
+      if (fp) flameSp.position.copy(fp);
+      LANTERNS.forEach((L, i) => { const tOn = F0 + (i + 1) * 0.8 - 0.05, d = L.userData, fade = 1 - clamp01((T - 10.0) / 0.5);
+        d.lit = T > tOn ? Math.min(1, (T - tOn) / 0.25) * fade : 0;
+        d.paper.emissiveIntensity = 1.6 * d.lit; d.glow.material.opacity = 0.9 * d.lit * (0.9 + 0.1 * Math.sin(TAU * T * 2 + i)); d.glow.scale.setScalar(0.55 + 0.15 * d.lit); d.pool.material.opacity = 0.2 * d.lit;
+        if (!d.popped && T > tOn && !reduceMotion){ d.popped = true; for (let j = 0; j < 4; j++){ const a = Math.random() * TAU; spawn(starTex, tops[i].clone(), new THREE.Vector3(0.5 * Math.cos(a), 0.5 + 0.3 * Math.random(), 0.5 * Math.sin(a)), 0.7, 0.07); } }
+        if (T < tOn) d.popped = false; });
+      if (T > 1.5 && T < 1.75 && !flameBoom && !reduceMotion){ flameBoom = true; for (let j = 0; j < 5; j++) spawn(dustTex, M.clone(), new THREE.Vector3((Math.random() - 0.5) * 0.4, 0.3 + 0.2 * Math.random(), 0.3), 0.5, 0.06, 0.5); }   // 噗！嘴前冒一小團煙
+      if (T < 1.5) flameBoom = false;
+      if (fp && T < F1 && !reduceMotion){ flameAcc += dt; if (flameAcc > 0.08){ flameAcc = 0; spawn(dotTex, fp.clone(), new THREE.Vector3((Math.random() - 0.5) * 0.2, 0.25, (Math.random() - 0.5) * 0.2), 0.5, 0.06); } }   // 小火後面拖著小火星
+      { const fade = 1 - clamp01((T - 10.0) / 0.5); for (const b of ARCHL.userData.list){ const l = clamp01((T - 6.45 - b.u * 0.7) / 0.12) * fade; b.m.emissiveIntensity = 1.8 * l; b.gl.material.opacity = 0.85 * l * (0.85 + 0.15 * Math.sin(TAU * T * 3 + b.u * 20)); } }   // 拱門燈從左柱底一路亮到右柱底
+      if (T < 6.45) flameHearts = false;
+      if (T >= 6.45 && !flameHearts && !reduceMotion){ flameHearts = true; for (let j = 0; j < 8; j++){ const a = j / 8 * TAU; spawn(heartTex, ARCHL.localToWorld(ARCHL.userData.top.clone()), new THREE.Vector3(0.6 * Math.cos(a), 0.3 + 0.4 * Math.sin(a), 0.2), 1.2, 0.12); } }   // 小火在天上變成小愛心
+    } else { flameAcc = 0; flameBoom = false; } }
+  if (move === 'sig' && cfg.sig === 'fly' && p.flying && !reduceMotion){ flyAcc += dt; if (flyAcc > 0.22){ flyAcc = 0;   // 飛的時候灑下小羽毛（從尾巴附近慢慢飄落）
+      const b = new THREE.Vector3(cur.x - Math.sin(cur.ry) * 0.6, rig.position.y - cur.pc + 0.5, cur.z - Math.cos(cur.ry) * 0.6);
+      spawn(featherTex, b, new THREE.Vector3((Math.random() - 0.5) * 0.3, -0.25, (Math.random() - 0.5) * 0.3), 1.6, 0.13 + Math.random() * 0.04); } }
+  if (!(move === 'sig' && cfg.sig === 'fly')) flyAcc = 0;
+  firefly.visible = move === 'sig' && cfg.sig === 'pounce';
+  if (firefly.visible){ const T = t % POUNCE_T, fl = (T * 7) % TAU, hy = rig.position.y - cur.pc;
+    const nose = [cur.x, hy + 1.04, cur.z + 0.86];   // 鼻尖再往前一點，停在臉前面
+    const L = [-0.98, 0.85, 1.0], R = [0.98, 0.85, 1.0], HL = [-0.2, 2.1, 0.95], HR = [0.3, 2.1, 0.95], AW = [1.6, 2.5, 0.6];
+    const mix3 = (A, B, a) => A.map((v, k) => v + (B[k] - v) * a), jit = (P, s) => [P[0] + s*Math.cos(fl), P[1] + s*0.8*Math.sin(fl*1.3), P[2]];
+    // 路線一律在身體外側（左右 1.2 公尺以上）或頭頂上方，換邊時從頭上繞過去
+    let fp;
+    if (T < 0.8) fp = mix3([-2.2, 1.6, 0.9], L, ease(T / 0.8));
+    else if (T < 1.8) fp = jit(L, 0.07);
+    else if (T < 2.4) fp = mix3(L, [-0.95, 1.95, 1.05], ease((T - 1.8) / 0.6));                 // 撲過來時往上逃
+    else if (T < 3.0) fp = mix3([-0.95, 1.95, 1.05], HL, ease((T - 2.4) / 0.6));
+    else if (T < 3.4) fp = mix3(HL, R, ease((T - 3.0) / 0.4));                                // 從頭上繞到右邊
+    else if (T < 4.0) fp = jit(R, 0.07);
+    else if (T < 4.7) fp = mix3(R, [0.95, 1.95, 1.05], ease((T - 4.0) / 0.7));                  // 又逃
+    else if (T < 5.5) fp = mix3([0.95, 1.95, 1.05], HR, ease((T - 4.7) / 0.8));
+    else if (T < 6.1) fp = jit(HR, 0.05);
+    else if (T < 6.6) fp = mix3(HR, nose, ease((T - 6.1) / 0.5));                             // 慢慢飛下來，停在鼻子前
+    else if (T < 7.3) fp = [nose[0] + 0.02*Math.sin(fl), nose[1] + 0.02*Math.cos(fl), nose[2]];
+    else { const a = Math.min(1, (T - 7.3) / 1.0), F1 = [nose[0] + 0.8, nose[1] + 0.05, nose[2] + 0.35];   // 先往前飛離臉，再往右上方飛走
+      fp = jit(a < 0.35 ? mix3(nose, F1, ease(a / 0.35)) : mix3(F1, AW, ease((a - 0.35) / 0.65)), 0.05); }
+    firefly.position.set(fp[0], fp[1], fp[2]); firefly.material.opacity = T > 8.2 ? Math.max(0, 1 - (T - 8.2) / 0.6) : (0.75 + 0.25*Math.sin(T*9)); }
   cryU.value = (move === 'walk' || move === 'refuse') ? p.cry : cryU.value + (p.cry - cryU.value) * (1 - Math.pow(0.0005, dt));
   happyU.value = p.happy; loveU.value = p.love; dizzyU.value = p.dz;
   flatMU.value = Math.max(cryU.value, p.happy, p.love, p.dz);
@@ -937,21 +1611,30 @@ function loop(){
   if (p.yum && !reduceMotion){ yumT -= dt; if (yumT <= 0){ yumT = move === 'snack' ? 0.22 : 0.35; const side = Math.random() < 0.5 ? -1 : 1, base = rig.position.y - cur.pc;
     spawn(heartTex, new THREE.Vector3(cur.x + side * (0.45 + Math.random() * 0.15), base + 1.3 + Math.random() * 0.2, cur.z + 0.35), new THREE.Vector3(side * 0.08, 0.45, 0), 1.2, 0.22);
     if (move === 'snack') spawn(starTex, new THREE.Vector3(cur.x - side * (0.5 + Math.random() * 0.2), base + 1.2 + Math.random() * 0.4, cur.z + 0.3), new THREE.Vector3(-side * 0.15, 0.5, 0), 1.0, 0.16); } }
+  if (p.slide && !reduceMotion){ slideT -= dt; if (slideT <= 0){ slideT = 0.06; const back = cur.x > 0.5 ? 1 : -1;   // 滑行時腳下噴出冰屑
+    spawn(dustTex, new THREE.Vector3(cur.x - 0.3 * Math.sin(cur.ry), 0.06, cur.z - 0.3 * Math.cos(cur.ry)), new THREE.Vector3(-0.4 * Math.sin(cur.ry) + 0.3 * (Math.random() - 0.5), 0.25 + Math.random() * 0.2, -0.4 * Math.cos(cur.ry) + 0.2 * (Math.random() - 0.5)), 0.5, 0.09); } }
   emit(t, dt, stroking, p); updateFx(dt);
   lidU.value += ((move==='sleep' ? 1 : p.lid) - lidU.value) * (move==='sleep' ? 1 - Math.pow(0.02, dt) : 1);
   flatEU.value = Math.max(lidU.value, cryU.value, p.happy, p.love, p.dz);
   const syc = Math.max(0.92, Math.min(1.08, cur.sy));   // 3D動畫生成規範 1.4: squash & stretch per axis 0.92 - 1.08
   squash.scale.set(Math.min(1.08, 1/Math.sqrt(syc)), syc, Math.min(1.08, 1/Math.sqrt(syc)));
   const vy = (rig.position.y - lastY) / Math.max(dt, 1e-3); lastY = rig.position.y;
-  const target = earsToggle.checked ? p.ear - Math.max(-3, Math.min(3, vy))*0.45 : 0;
-  earVel += (target - earAng) * 120 * dt; earVel *= Math.pow(0.02, dt); earAng += earVel * dt;
-  earU.value = Math.max(Math.max(-0.52, cfg.earClamp[0]), Math.min(Math.min(0.52, cfg.earClamp[1]), earAng));   // spec 3.2: ear bend <= 30 deg
+  const target = cfg.ear.cap ? p.ear : (earsToggle.checked ? p.ear - Math.max(-3, Math.min(3, vy))*0.45 : 0);   // 手臂不跟著跳動上下甩
+  if (cfg.ear.cap){ earAng += (target - earAng) * (1 - Math.pow(0.0001, dt)); earVel = 0; }   // 手臂：直接跟著動作，不要耳朵那種彈簧晃動
+  else { earVel += (target - earAng) * 120 * dt; earVel *= Math.pow(0.02, dt); earAng += earVel * dt; }
+  earU.value = Math.max(cfg.wingMax ? -cfg.wingMax : Math.max(-0.52, cfg.earClamp[0]), Math.min(Math.min(0.52, cfg.earClamp[1]), earAng));   // wingMax：長尾的翅膀整片轉，可以拍到約 49 度   // spec 3.2: ear bend <= 30 deg
   tailU.value = earsToggle.checked ? Math.max(-0.52, Math.min(0.52, cur.tail * (cfg.tailGain || 1))) : 0;   // spec 3.2: tail bend <= 30 deg
-  const s = 1 - Math.min(rig.position.y - cur.pc - lift, 0.8)*0.6; shadow.scale.set(s, s, s); shadow.material.opacity = 0.4 + 0.6*s;
+  trunkU.value = cfg.trunk ? Math.max(-0.52, Math.min(0.52, cur.trunk)) : 0; trunkUpU.value = cfg.trunk ? Math.max(-0.3, Math.min(0.52, cur.trunkUp)) : 0;   // 鼻子也 <= 30 度
+  const s = 1 - Math.min(rig.position.y - cur.pc - lift - shadow.position.y + 0.002, 0.8)*0.6; shadow.scale.set(s, s, s); shadow.material.opacity = 0.4 + 0.6*s;
+  const panT = move === 'sig' && cfg.sig === 'slide' ? cur.x * 0.7 : move === 'sig' && cfg.sig === 'pounce' ? cur.x * 0.6 : move === 'sig' && cfg.sig === 'note' ? 0.22 : move === 'sig' && cfg.sig === 'castle' ? 0.4 : move === 'sig' && cfg.sig === 'ball' ? cur.x * 0.6 : move === 'sig' && cfg.sig === 'row' ? 0.3 + 0.7 * (p.boarded ? p.bx : 1.5) : move === 'sig' && cfg.sig === 'moon' ? 0.45 : move === 'sig' && cfg.sig === 'spark' ? 0.25 + 0.5 * cur.x : move === 'sig' && cfg.sig === 'flame' ? 0.85 : 0, dp = (panT - camPan) * (1 - Math.pow(0.01, dt));   // 溜冰滑得遠：相機左右跟著平移
+  camPan += dp; camera.position.x += dp; controls.target.x += dp;
+  const dollyT = move === 'sig' && cfg.sig === 'pounce' ? 1.1 : move === 'sig' && cfg.sig === 'note' ? 0.9 : move === 'sig' && cfg.sig === 'castle' ? 0.5 : move === 'sig' && cfg.sig === 'ball' ? 0.7 : move === 'sig' && cfg.sig === 'row' ? 2.3 : move === 'sig' && cfg.sig === 'moon' ? 0.9 : move === 'sig' && cfg.sig === 'spark' ? 2.2 : move === 'sig' && cfg.sig === 'fly' ? 6.2 : move === 'sig' && cfg.sig === 'flame' ? 2.4 : 0, dd = (dollyT - camDolly) * (1 - Math.pow(0.02, dt));   // 撲螢火蟲左右跳、螢火蟲飛得高：相機往後退一點，整個看得到
+  controls.maxDistance = 7 + Math.max(0, camDolly - 2.2);   // 長尾繞圈飛退得比平常遠（camDolly 4.6）；跟著 camDolly 慢慢變回 7，切回其他動作時相機才不會被夾到 7 再往前推太近
+  if (dd){ camDolly += dd; _cv.subVectors(camera.position, controls.target).normalize(); camera.position.addScaledVector(_cv, dd); controls.target.y += dd * 0.25; camera.position.y += dd * 0.25; }
   controls.update(); renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
-window.__sparkee = {setMove, selectPet, camera, controls, food, squash, THREE, get move(){ return move; }, get cfg(){ return cfg; }, setT(x){ t0 = performance.now()/1000 - x; }, freeze(x){ frozen = x; }};
+window.__sparkee = {setMove, selectPet, camera, controls, food, squash, THREE, cur, rig, earU, get row(){ return {BOAT, oars, BO, boatB, boatRim, rowBlade, hull: BOAT.children[0].geometry}; }, get move(){ return move; }, get cfg(){ return cfg; }, setT(x){ t0 = performance.now()/1000 - x; }, freeze(x){ frozen = x; }};
 selectPet(new URLSearchParams(location.search).get('pet') || 'bunny');
 
 // sound tags
