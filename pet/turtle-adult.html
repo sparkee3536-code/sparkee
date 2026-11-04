@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>鋼鐵神龜成年才藝試作</title>
+<style>
+body.embed{margin:0;background:transparent;overflow:hidden}
+body.embed .wrap{padding:0;max-width:none;gap:0}
+body.embed .wrap>*:not(.stage){display:none!important}
+body.embed .stage{position:fixed;inset:0;aspect-ratio:auto;border-radius:0;border:0}
+body.embed .status{display:none}
+</style>
+<script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('embed-doc'),addEventListener('DOMContentLoaded',()=>document.body.classList.add('embed'));</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F4F6F1; --surface:#FFFFFF; --fg:#1B2A22; --muted:#55645B; --line:#DCE3DA;
+  --grass:#2B7A4B; --grass-ink:#FFFFFF; --spark:#F5A524; --spark-soft:#FFF1D6;
+  --sky-top:#1d2a4f; --sky-bot:#2e3f6a;
+  --f-display:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#5FBF86; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#5FBF86; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:20px 40px;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--f-display);font-weight:400;font-size:26px;margin:0;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted)}
+.stage{position:relative;width:100%;aspect-ratio:4/3.9;border-radius:24px;overflow:hidden;background:linear-gradient(var(--sky-top),var(--sky-bot));border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.status{position:absolute;left:12px;top:12px;background:var(--surface);color:var(--fg);border-radius:99px;padding:4px 12px;font-size:13px;border:1px solid var(--line)}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;pointer-events:none}
+.moves{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.moves{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.moves button{min-height:56px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:15px;font-weight:700;cursor:pointer;padding:6px;line-height:1.25}
+.moves button small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.moves button[aria-pressed="true"]{background:var(--grass);color:var(--grass-ink);border-color:var(--grass)}
+.moves button[aria-pressed="true"] small{color:var(--grass-ink)}
+.moves button.sig{border-color:var(--spark)}
+.moves button:focus-visible{outline:3px solid var(--spark);outline-offset:2px}
+.toggle{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--muted)}
+.toggle input{width:20px;height:20px;accent-color:var(--grass)}
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <h1>鋼鐵神龜成年</h1>
+    <p class="sub">三個才藝試作：慢慢來賽跑（兔子少年對手、乳牛與小狗寶寶加油）、背小朋友過河（乳牛寶寶）、步道里程碑。拖曳可以轉視角。</p>
+  </header>
+  <div class="stage" id="stage">
+    <div class="loading" id="loading">鋼鐵神龜成年載入中（約 10 MB）…</div>
+    <span class="status" id="status" hidden>待機</span>
+  </div>
+  <div class="moves" role="group" aria-label="動作">
+    <button data-move="idle" aria-pressed="true">待機</button>
+    <button data-move="race" class="sig" aria-pressed="false">慢慢來賽跑<small>12 秒</small></button>
+    <button data-move="river" class="sig" aria-pressed="false">背小朋友過河<small>12 秒</small></button>
+    <button data-move="trail" class="sig" aria-pressed="false">步道里程碑<small>12 秒</small></button>
+    <button data-move="sleep" aria-pressed="false">睡覺</button>
+    <button data-move="eat" class="feed" aria-pressed="false">開心吃<small>6 秒</small></button>
+    <button data-move="snack" class="feed" aria-pressed="false">最愛點心<small>7 秒</small></button>
+    <button data-move="refuse" class="feed" aria-pressed="false">搖頭不吃<small>5 秒</small></button>
+  </div>
+  <label class="toggle"><input type="checkbox" id="loopT"> 才藝播完自動重播</label>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+// 3D動畫生成規範 2.1: rotations are quaternions (axis-angle products), never Euler writes
+import {makeParks} from './parkscenes.js';
+import {makeEat, makeHold, phases, isEat} from './eatkit.js';
+const CAMEAT = {t:[0, 1.0, 0.3], d: 5.8, az: 0};
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+
+const TAU = Math.PI * 2;
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const AX = {x:V3(1,0,0), y:V3(0,1,0), z:V3(0,0,1)};
+const __qa = new THREE.Quaternion(), __qb = new THREE.Quaternion(), __qc = new THREE.Quaternion();
+function QYXZ(out, yaw, pitch, roll){ __qa.setFromAxisAngle(AX.y, yaw); __qb.setFromAxisAngle(AX.x, pitch); __qc.setFromAxisAngle(AX.z, roll); return out.copy(__qa).multiply(__qb).multiply(__qc); }
+
+// ---------- calibration (model space of the rigged GLB: feet at 0, height 1.65, facing +z) ----------
+const CFG = { scale: 1, cx: 0, eye:[0.1128,1.483], eyeR:[0.056,0.056], eyeZ:0.1, noPink:true, eyeFill:[0.13,0.46,0.34], mouth:[0,1.3], mouthR:[0.04,0.025], mouthZ:9 };
+
+{ const q = new URLSearchParams(location.search); if (q.get('eyeR')) CFG.eyeR = q.get('eyeR').split(',').map(Number); if (q.get('eye')) CFG.eye = q.get('eye').split(',').map(Number); }
+const stage = document.getElementById('stage');
+const statusEl = document.getElementById('status');
+const loadingEl = document.getElementById('loading');
+const loopEl = document.getElementById('loopT');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+{ const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; scene.environmentIntensity = 0.5; }
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb59a, 2.0));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3); scene.add(sun);
+const PARKS = makeParks(THREE, scene, 'adult-turtle'); PARKS.show('idle');
+const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 60);
+camera.position.set(0.6, 1.5, 6.6);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.95, 0.1); controls.enablePan = false; controls.enableDamping = true;
+controls.minDistance = 2.8; controls.maxDistance = 18; controls.maxPolarAngle = Math.PI * 0.52;
+let userCam = false; controls.addEventListener('start', () => { userCam = true; });
+
+const ground = new THREE.Mesh(new THREE.CircleGeometry(3.8, 64), new THREE.MeshLambertMaterial({color:0xcfe5c4}));
+AXQ(ground, 'x', -Math.PI/2); ground.material.depthWrite = false; ground.renderOrder = -2; scene.add(ground);
+function AXQ(o, a, ang){ o.quaternion.setFromAxisAngle(AX[a], ang); }
+const shCanvas = document.createElement('canvas'); shCanvas.width = shCanvas.height = 128;
+const sctx = shCanvas.getContext('2d'); const gr = sctx.createRadialGradient(64,64,4,64,64,62);
+gr.addColorStop(0,'rgba(30,50,35,0.45)'); gr.addColorStop(1,'rgba(30,50,35,0)'); sctx.fillStyle = gr; sctx.fillRect(0,0,128,128);
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.4,1.4), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shCanvas), transparent:true, depthWrite:false}));
+AXQ(shadow, 'x', -Math.PI/2); shadow.position.y = 0.003; shadow.renderOrder = -1; scene.add(shadow);
+
+const rig = new THREE.Group(); scene.add(rig);
+const calmU = {value:0}, flatEU = {value:0}, flatMU = {value:0}, lidU = {value:0}, happyU = {value:0}, sadU = {value:0};
+
+// ---------- floating symbols ----------
+function makeTex(draw){ const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); draw(g); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx; }
+const heartTex = makeTex(g => { g.translate(64, 66); g.beginPath(); g.moveTo(0, 40); g.bezierCurveTo(-64, -4, -36, -56, 0, -24); g.bezierCurveTo(36, -56, 64, -4, 0, 40); g.closePath(); g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ff6f8e'; g.fill(); });
+const zTex = makeTex(g => { g.font = '900 104px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.lineJoin = 'round'; g.strokeText('Z', 64, 68); g.fillStyle = '#5a6fa8'; g.fillText('Z', 64, 68); });
+const starTex = makeTex(g => { g.translate(64, 64); g.beginPath(); for (let i = 0; i < 10; i++){ const r = i % 2 ? 22 : 54, a = -Math.PI/2 + i*Math.PI/5; g.lineTo(Math.cos(a)*r, Math.sin(a)*r); } g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#f5c24a'; g.fill(); });
+const dustTex = makeTex(g => { g.beginPath(); g.arc(64, 64, 50, 0, TAU); g.fillStyle = '#e6dcc8'; g.fill(); });
+const dropTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -52); g.bezierCurveTo(22, -18, 40, 6, 40, 22); g.arc(0, 22, 40, 0, Math.PI); g.bezierCurveTo(-40, 6, -22, -18, 0, -52); g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#6fbfee'; g.fill(); });
+const noteTex = color => makeTex(g => { const shape = () => { g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.moveTo(62, 92); g.lineTo(62, 20); g.quadraticCurveTo(92, 34, 96, 62); };
+  g.lineJoin = 'round'; g.lineCap = 'round'; shape(); g.lineWidth = 20; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ffffff'; g.fill(); shape(); g.lineWidth = 9; g.strokeStyle = color; g.stroke(); g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.fillStyle = color; g.fill(); });
+const noteTexes = [noteTex('#f5a524'), noteTex('#2b7a4b')];
+const words = {};
+function wordTex(txt, col = '#e8584a'){
+  if (words[txt]) return words[txt];
+  const c = document.createElement('canvas'); c.width = 384; c.height = 160; const g = c.getContext('2d');
+  g.font = '900 96px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  let s = 96; while (g.measureText(txt).width > 340 && s > 40){ s -= 6; g.font = `900 ${s}px "Huninn","Noto Sans TC",sans-serif`; }
+  g.lineJoin = 'round'; g.lineWidth = 18; g.strokeStyle = '#ffffff'; g.strokeText(txt, 192, 84); g.fillStyle = col; g.fillText(txt, 192, 84);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return (words[txt] = tx);
+}
+const fx = [];
+function spawn(map, pos, vel, life, size, grow = 0, extra = null){
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map, transparent:true, depthWrite:false})); sp.position.copy(pos); sp.renderOrder = 5; scene.add(sp);
+  const f = Object.assign({sp, vel, life, size, grow, age:0}, extra || {}); fx.push(f); return f;
+}
+function updateFx(dt){
+  for (let i = fx.length - 1; i >= 0; i--){
+    const f = fx[i]; f.age += dt;
+    if (f.age > f.life){ scene.remove(f.sp); f.sp.material.dispose(); fx.splice(i, 1); continue; }
+    const u = f.age / f.life; if (f.gravity) f.vel.y += f.gravity * dt;
+    if (f.follow) f.sp.position.copy(f.follow(f.age)); else f.sp.position.addScaledVector(f.vel, dt);
+    const s = f.size * (Math.min(1, f.age/0.2)*0.4 + 0.6) * (1 + f.grow*u); f.sp.scale.set(s, s, s);
+    f.sp.material.opacity = Math.min(1, f.age/0.15) * (u > 0.6 ? 1 - (u-0.6)/0.4 : 1);
+  }
+}
+function clearFx(){ fx.forEach(f => { scene.remove(f.sp); f.sp.material.dispose(); }); fx.length = 0; }
+let wordSprite = null;
+function showWord(tex, pos, scale = 0.8){
+  if (wordSprite){ scene.remove(wordSprite); wordSprite.material.dispose(); }
+  wordSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: tex, transparent: true, depthWrite: false, depthTest: false}));
+  wordSprite.renderOrder = 9; wordSprite.position.copy(pos); wordSprite.userData.age = 0; wordSprite.userData.sc = scale; scene.add(wordSprite);
+}
+function updateWord(dt){
+  if (!wordSprite) return;
+  const a = (wordSprite.userData.age += dt), pop = a < 0.18 ? 0.6 + 2.6 * a : 1.07 - 0.07 * Math.min(1, (a - 0.18) / 0.15), k = wordSprite.userData.sc;
+  wordSprite.scale.set(k * pop, k * 0.5 * pop, 1); wordSprite.material.opacity = a > 1.2 ? Math.max(0, 1 - (a - 1.2) / 0.3) : 1;
+  if (a > 1.5){ scene.remove(wordSprite); wordSprite.material.dispose(); wordSprite = null; }
+}
+function resize(){ const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage); resize();
+// ---------- face prep: when an expression is drawn, the painted eye/mouth disappears into clean skin ----------
+// For each vertex on an eye or the mouth we store the skin colour of the surrounding ring, plus an offset and
+// a normal that sink the eye/mouth bump back onto the surrounding surface, so nothing looks like a closed lid.
+function prepFace(mesh, F){
+  const g = mesh.geometry, P = g.attributes.position, UV = g.attributes.uv, N = g.attributes.normal, n = P.count;
+  const img = mesh.material.map && mesh.material.map.image;
+  const W = img.width, H = img.height, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d', {willReadFrequently: true}); cx.drawImage(img, 0, 0); const px = cx.getImageData(0, 0, W, H).data;
+  const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const colOf = i => { const u = UV.getX(i), v = UV.getY(i);
+    const x = Math.min(W - 1, Math.max(0, Math.floor(((u % 1) + 1) % 1 * W))), y = Math.min(H - 1, Math.max(0, Math.floor(((v % 1) + 1) % 1 * H)));
+    const k = (y * W + x) * 4; return [lin(px[k]), lin(px[k + 1]), lin(px[k + 2])]; };
+  const re = new Float32Array(n), rm = new Float32Array(n), cols = new Array(n);
+  for (let i = 0; i < n; i++){
+    const x = P.getX(i) - (F.cx || 0), y = P.getY(i), z = P.getZ(i), s = x < 0 ? -1 : 1;
+    re[i] = z > F.eyeZ ? Math.hypot((x - F.eye[0] * s) / F.eyeR[0], (y - F.eye[1]) / F.eyeR[1]) : 99;
+    rm[i] = z > F.mouthZ ? Math.hypot((x - F.mouth[0]) / F.mouthR[0], (y - F.mouth[1]) / F.mouthR[1]) : 99;
+    if (re[i] < 2 || rm[i] < 2.1) cols[i] = colOf(i);
+  }
+  const lum = c => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  const ringE = [], ringM = [];
+  for (let i = 0; i < n; i++){
+    if (re[i] > 1.2 && re[i] < 1.9 && lum(cols[i]) > 0.15) ringE.push(i);
+    else if (rm[i] > 1.25 && rm[i] < 2.0 && re[i] > 1.35 && lum(cols[i]) > 0.15) ringM.push(i);
+  }
+  // centre of the head from the skin ring around the eyes (least-squares sphere)
+  const M = Array.from({length: 4}, () => [0, 0, 0, 0, 0]);
+  for (const i of ringE){ const x = P.getX(i), y = P.getY(i), z = P.getZ(i), r = [2*x, 2*y, 2*z, 1], b = x*x + y*y + z*z;
+    for (let a = 0; a < 4; a++){ for (let c = 0; c < 4; c++) M[a][c] += r[a] * r[c]; M[a][4] += r[a] * b; } }
+  for (let a = 0; a < 4; a++){ let p = a; for (let r = a + 1; r < 4; r++) if (Math.abs(M[r][a]) > Math.abs(M[p][a])) p = r; [M[a], M[p]] = [M[p], M[a]];
+    for (let r = 0; r < 4; r++){ if (r === a) continue; const f = M[r][a] / M[a][a]; for (let c = a; c < 5; c++) M[r][c] -= f * M[a][c]; } }
+  const C = [M[0][4] / M[0][0], M[1][4] / M[1][1], M[2][4] / M[2][2]];
+  // eyes are filled with the dominant skin colour around each eye (keeps a clean, even patch)
+  const domE = F.eyeFill ? [F.eyeFill, F.eyeFill] : [-1, 1].map(sd => { const sel = ringE.filter(j => (P.getX(j) < 0 ? -1 : 1) === sd && P.getY(j) > F.eye[1] && re[j] < 1.6);   // upper half: forehead fur, away from snout and blush
+    return [0, 1, 2].map(k => { const v = sel.map(j => cols[j][k]).sort((a, b) => a - b); return v.length ? v[v.length >> 1] : 0.8; }); });
+  const aSkin = new Float32Array(n * 4), aFlat = new Float32Array(n * 4), aFlatN = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++){
+    aFlatN[i*3] = N.getX(i); aFlatN[i*3+1] = N.getY(i); aFlatN[i*3+2] = N.getZ(i);
+    const own = cols[i]; if (own){ aSkin[i*4] = own[0]; aSkin[i*4+1] = own[1]; aSkin[i*4+2] = own[2]; }
+    const pinkV = !F.noPink && cols[i] && cols[i][0] - cols[i][2] > 0.15 && cols[i][1] > 0.3;   // snout & blush stay as they are
+    const isE = re[i] < 1.35 && !pinkV, isM = !isE && rm[i] < 1.4;
+    if (!isE && !isM) continue;
+    const ring = isE ? ringE : ringM, r = isE ? re[i] : rm[i];
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+    const near = [];
+    for (const j of ring){ const d = Math.hypot(P.getX(j) - x, P.getY(j) - y, P.getZ(j) - z); if (near.length < 18 || d < near[near.length - 1][0]){ near.push([d, j]); near.sort((a, b) => a[0] - b[0]); if (near.length > 18) near.pop(); } }
+    if (!near.length) continue;
+    // colour: take ring samples lying in the same direction from the eye/mouth centre, so the skin pattern continues across
+    const sx = x < 0 ? -1 : 1, cxE = isE ? F.eye[0] * sx : F.mouth[0], cyE = isE ? F.eye[1] : F.mouth[1], rx = isE ? F.eyeR[0] : F.mouthR[0], ry = isE ? F.eyeR[1] : F.mouthR[1];
+    const ang = Math.atan2((y - cyE) / ry, (x - cxE) / rx), dirSet = [];
+    for (const j of ring){ const jx = P.getX(j), jy = P.getY(j); if (isE && (jx < 0) !== (x < 0)) continue;
+      let da = Math.abs(Math.atan2((jy - cyE) / ry, (jx - cxE) / rx) - ang); if (da > Math.PI) da = 2 * Math.PI - da;
+      if (da < 0.4) dirSet.push([Math.hypot(jx - x, jy - y, P.getZ(j) - z), j]); }
+    dirSet.sort((a, b) => a[0] - b[0]);
+    const pick = r < 0.6 || dirSet.length < 4 ? near : dirSet.slice(0, 8);   // the very middle blends from all around
+    const med = isE ? domE[x < 0 ? 0 : 1] : [0, 1, 2].map(k => { const v = pick.map(q => cols[q[1]][k]).sort((a, b) => a - b); return v[v.length >> 1]; });
+    let wsum = 0, rad = 0, nx = 0, ny = 0, nz = 0;
+    for (const [d, j] of near.slice(0, 10)){ const w = 1 / (d + 0.01); wsum += w;
+      rad += w * Math.hypot(P.getX(j) - C[0], P.getY(j) - C[1], P.getZ(j) - C[2]); nx += w * N.getX(j); ny += w * N.getY(j); nz += w * N.getZ(j); }
+    rad /= wsum; const nl = Math.hypot(nx, ny, nz) || 1;
+    const dx = x - C[0], dy = y - C[1], dz = z - C[2], dl = Math.hypot(dx, dy, dz) || 1;
+    const fade = 1 - Math.min(1, Math.max(0, (r - 1.05) / 0.3));
+    aSkin[i*4] = med[0]; aSkin[i*4+1] = med[1]; aSkin[i*4+2] = med[2]; aSkin[i*4+3] = fade;
+    aFlat[i*4] = C[0] + dx / dl * rad - x; aFlat[i*4+1] = C[1] + dy / dl * rad - y; aFlat[i*4+2] = C[2] + dz / dl * rad - z; aFlat[i*4+3] = isE ? 1 : 2;
+    aFlatN[i*3] = nx / nl; aFlatN[i*3+1] = ny / nl; aFlatN[i*3+2] = nz / nl;
+  }
+  g.setAttribute('aSkin', new THREE.BufferAttribute(aSkin, 4));
+  g.setAttribute('aFlat', new THREE.BufferAttribute(aFlat, 4));
+  g.setAttribute('aFlatN', new THREE.BufferAttribute(aFlatN, 3));
+}
+const FLAT_VS_HEAD = 'attribute vec4 aSkin;\nattribute vec4 aFlat;\nattribute vec3 aFlatN;\nuniform float uFlatE;\nuniform float uFlatM;\nvarying vec4 vSkin;\nvarying float vFlatW;\n';
+const FLAT_VS_NORMAL = `#include <beginnormal_vertex>
+  float flatW = (aFlat.w > 0.5 && aFlat.w < 1.5 ? uFlatE : (aFlat.w > 1.5 ? uFlatM : 0.0)) * aSkin.a;
+  objectNormal = normalize(mix(objectNormal, aFlatN, flatW));
+  vSkin = aSkin; vFlatW = flatW;`;
+
+// ---------- shader: blink / closed eyes, calm closed mouth, happy eyes, ear wobble ----------
+const f = x => Number(x).toFixed(4);
+const v2 = a => `vec2(${f(a[0])}, ${f(a[1])})`;
+const v3 = a => `vec3(${f(a[0])}, ${f(a[1])}, ${f(a[2])})`;
+function patch(m){ for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap']){ const tx = m[k]; if (tx){ tx.generateMipmaps = false; tx.minFilter = THREE.LinearFilter; tx.needsUpdate = true; } }   // 模型建立規則 4.6
+  const c = CFG;
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, {uFlatE:flatEU, uFlatM:flatMU, uLid:lidU, uCalm:calmU, uHappy:happyU, uSad:sadU});
+    sh.fragmentShader = 'uniform float uLid;\nuniform float uCalm;\nuniform float uHappy;\nuniform float uSad;\nvarying vec3 vObj;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+      float coverM = 0.0;
+      float shMx = max(max(diffuseColor.r, diffuseColor.g), diffuseColor.b), shMn = min(min(diffuseColor.r, diffuseColor.g), diffuseColor.b);
+      float shellK = smoothstep(0.2, 0.1, (shMx - shMn) / max(shMx, 1e-4)) * step(0.1, shMx) * step(vObj.z, 0.02) * step(abs(vObj.x), 0.45);
+      diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.92, 0.97, 1.08) * 1.15, shellK);
+      float eyeK = max(max(uLid, uHappy), uSad);
+      if (eyeK > 0.01 && vObj.z > ${f(c.eyeZ)}) {
+        float side = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 e = (vObj.xy - vec2(${f(c.eye[0])} * side, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        float r = length(e);
+        if (r < 1.25 && (uHappy > 0.5 || uSad > 0.5 || e.y > 1.0 - 2.0 * uLid)) {
+          coverM = smoothstep(1.25, 1.0, r)${c.noPink ? '' : ' * (1.0 - step(0.15, diffuseColor.r - diffuseColor.b) * step(0.3, diffuseColor.g))'};
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, coverM);
+          if (uHappy > 0.9) {
+            vec2 tip = vec2(0.0, 0.38), a1 = vec2(-0.5, -0.22), a2 = vec2(0.5, -0.22);
+            vec2 pa = e - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = e - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.12) diffuseColor.rgb = vec3(0.09, 0.08, 0.08);
+          } else if (uSad > 0.9) {
+            // 難過：「> <」眼（2026-10-18 搖頭不吃）
+            vec2 q = vec2(-e.x * side, e.y), tip = vec2(0.42, 0.0), a1 = vec2(-0.5, 0.42), a2 = vec2(-0.5, -0.42);
+            vec2 pa = q - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = q - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.12) diffuseColor.rgb = vec3(0.09, 0.08, 0.08);
+          } else if (uLid > 0.9 && abs(e.x) < 0.7) {
+            float yc = -0.1 - 0.35 * (1.0 - (e.x * e.x) / 0.49);
+            if (abs(e.y - yc) < 0.11) diffuseColor.rgb = vec3(0.09, 0.08, 0.08);
+          }
+        }
+      }
+      float mouthK = max(uCalm, uSad);
+      if (mouthK > 0.01 && vObj.z > ${f(c.mouthZ)}) {
+        vec2 mo = (vObj.xy - ${v2(c.mouth)}) / ${v2(c.mouthR)};
+        float r = length(mo);
+        if (r < 1.2) {
+          float mm = smoothstep(1.2, 0.95, r) * mouthK;
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, mm);
+          coverM = max(coverM, mm);
+          vec2 q = (vObj.xy - vec2(0.0, ${f(c.mouth[1] + 0.01)})) / vec2(0.045, 0.02);
+          if (mouthK > 0.9 && abs(q.x) < 1.0) {
+            float yc = (uSad > 0.5 ? 0.6 : -0.6) * (1.0 - q.x * q.x);   // 難過時嘴角往下
+            if (abs(q.y - yc) < 0.38) diffuseColor.rgb = vec3(0.36, 0.2, 0.22);
+          }
+        }
+      }`).replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+          roughnessFactor = mix(mix(roughnessFactor, 0.34, shellK), 0.85, max(coverM, vFlatW));`).replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+          metalnessFactor = mix(mix(metalnessFactor, 0.62, shellK), 0.0, max(coverM, vFlatW));`).replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+      normal = normalize(mix(normal, nonPerturbedNormal, max(coverM, vFlatW)));`);
+    sh.vertexShader = FLAT_VS_HEAD + 'varying vec3 vObj;\n' + sh.vertexShader.replace('#include <beginnormal_vertex>', FLAT_VS_NORMAL).replace('#include <begin_vertex>', `#include <begin_vertex>
+      transformed += aFlat.xyz * flatW;
+      vObj = position;`);
+  };
+  m.customProgramCacheKey = () => 'turtleadult';
+  m.needsUpdate = true;
+}
+
+
+// ---------- skeleton helpers ----------
+let model = null; const bones = {}, rest = {}, restP = {};
+const _pq = new THREE.Quaternion(), _rq = new THREE.Quaternion(), _w = new THREE.Quaternion(), _l = new THREE.Quaternion();
+function resetPose(){ for (const n in bones){ bones[n].quaternion.copy(rest[n]); bones[n].position.copy(restP[n]); } }
+// rotate a bone about an axis in the character's own space (x = his left, y = up, z = forward)
+function rot(name, axis, ang){
+  const b = bones[name]; if (!b || !ang) return;
+  b.parent.updateWorldMatrix(true, false);
+  b.parent.getWorldQuaternion(_pq); model.getWorldQuaternion(_rq);
+  _pq.premultiply(_rq.invert());
+  _w.setFromAxisAngle(AX[axis], ang);
+  _l.copy(_pq).invert().multiply(_w).multiply(_pq);
+  b.quaternion.premultiply(_l).normalize();
+}
+function rotWorld(b, axis, ang){
+  b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pq);
+  _w.setFromAxisAngle(axis, ang); _l.copy(_pq).invert().multiply(_w).multiply(_pq); b.quaternion.premultiply(_l);
+}
+const FEET = ['LeftFoot','RightFoot','LeftToeBase','RightToeBase'];
+const _v = V3();
+function wpos(n, out = V3()){ return bones[n].getWorldPosition(out); }
+function feetLow(){ let mn = Infinity; model.updateMatrixWorld(true); for (const n of FEET) mn = Math.min(mn, wpos(n, _v).y); return mn; }
+let restFeet = 0, tipObj = null, endObj = null, brushQ = new THREE.Quaternion(), tipLocal = V3(), skinned = null;
+const charPt = (x, y, z) => rig.localToWorld(V3(x, y, z));
+
+async function fetchModel(file){
+  const res = await fetch(file); if (!res.ok) throw new Error('fetch ' + res.status);
+  const j = await res.json(); const raw = atob(j._bin); delete j._bin;
+  const bin = new Uint8Array(raw.length); for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
+  delete j.buffers[0].uri; j.buffers[0].byteLength = bin.length;
+  const jb = new TextEncoder().encode(JSON.stringify(j)); const jLen = Math.ceil(jb.length/4)*4, bLen = Math.ceil(bin.length/4)*4;
+  const buf = new ArrayBuffer(28 + jLen + bLen), dv = new DataView(buf), u8 = new Uint8Array(buf);
+  dv.setUint32(0, 0x46546C67, true); dv.setUint32(4, 2, true); dv.setUint32(8, buf.byteLength, true);
+  dv.setUint32(12, jLen, true); dv.setUint32(16, 0x4E4F534A, true); u8.fill(0x20, 20, 20 + jLen); u8.set(jb, 20);
+  const o = 20 + jLen; dv.setUint32(o, bLen, true); dv.setUint32(o + 4, 0x004E4942, true); u8.set(bin, o + 8);
+  return new Promise((ok, fail) => new GLTFLoader().parse(buf, './', ok, fail));
+}
+
+// base pose: arms held a little away from the body so they never touch the torso (plush style)
+function armGap(){}
+// ---------- prop helpers ----------
+const mat = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({color: c, roughness: 0.75}, o));
+const SPH = new THREE.SphereGeometry(1, 20, 14), CYL = new THREE.CylinderGeometry(1, 1, 1, 14), CONE = new THREE.ConeGeometry(1, 1, 12), BOX = new THREE.BoxGeometry(1, 1, 1);
+function mesh(p, geo, m, pos, s){ const o = new THREE.Mesh(geo, m); o.position.set(...pos); if (Array.isArray(s)) o.scale.set(...s); else o.scale.setScalar(s); p.add(o); return o; }
+function placeStick(o, A, B, r){ const d = _d1.subVectors(B, A); const L = d.length() || 1e-4; o.position.copy(A).addScaledVector(d, 0.5); o.scale.set(r, L, r); o.quaternion.setFromUnitVectors(AX.y, d.multiplyScalar(1 / L)); }
+const _d1 = V3();
+function stick(p, a, b, r, m){ const o = new THREE.Mesh(CYL, m); placeStick(o, V3(...a), V3(...b), r); p.add(o); return o; }
+const ease = x => x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const span = (t, a, b) => clamp01((t - a) / (b - a));
+const bell = x => Math.sin(Math.PI * clamp01(x));
+const backOut = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, t) => a + (b - a) * t;
+const glowTexL = makeTex(g => { const r = g.createRadialGradient(64, 64, 2, 64, 64, 62); r.addColorStop(0, 'rgba(255,246,200,1)'); r.addColorStop(0.35, 'rgba(255,230,140,0.55)'); r.addColorStop(1, 'rgba(255,210,100,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+const glowTexB = makeTex(g => { const r = g.createRadialGradient(64, 64, 2, 64, 64, 62); r.addColorStop(0, 'rgba(220,240,255,1)'); r.addColorStop(0.3, 'rgba(160,210,255,0.6)'); r.addColorStop(1, 'rgba(120,180,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+const confTex0 = [0xe8584a, 0xf6c445, 0x4aa3df, 0x5cae4f];
+const zzTex = makeTex(g => { g.font = '900 104px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.lineJoin = 'round'; g.strokeText('Z', 64, 68); g.fillStyle = '#5a6fa8'; g.fillText('Z', 64, 68); });
+const rippleTex = makeTex(g => { g.beginPath(); g.arc(64, 64, 52, 0, TAU); g.lineWidth = 10; g.strokeStyle = 'rgba(255,255,255,0.9)'; g.stroke(); });
+function standTree(g, x, z, s = 1){ mesh(g, CYL, mat(0x7a5232), [x, 0.5 * s, z], [0.13 * s, 1.0 * s, 0.13 * s]); mesh(g, SPH, mat(0x4b8f58, {roughness: 1}), [x, 1.35 * s, z], [0.7 * s, 0.6 * s, 0.7 * s]); mesh(g, SPH, mat(0x5aa564, {roughness: 1}), [x + 0.3 * s, 1.15 * s, z + 0.1], [0.45 * s, 0.4 * s, 0.45 * s]); }
+
+// =====================================================================================================
+// 1. 慢慢來賽跑: track, start line, finish arch with ribbon, a tree for the rabbit's nap
+// =====================================================================================================
+const RACE = {x0: -3.6, x1: 3.6, zT: 0.35, zR: -0.55, nap: 1.5, tFin: 10.3};
+const raceG = new THREE.Group(); scene.add(raceG); raceG.visible = false;
+const ribbon = new THREE.Mesh(BOX, mat(0xe8584a, {roughness: 0.6})); ribbon.scale.set(0.02, 0.07, 1.5); ribbon.position.set(RACE.x1, 0.95, (RACE.zT + RACE.zR) / 2); raceG.add(ribbon);
+const ribbonL = new THREE.Mesh(BOX, mat(0xe8584a, {roughness: 0.6})), ribbonR = new THREE.Mesh(BOX, mat(0xe8584a, {roughness: 0.6})); ribbonL.visible = ribbonR.visible = false; raceG.add(ribbonL); raceG.add(ribbonR);
+{ const white = mat(0xffffff, {roughness: 0.8}), dark = mat(0x7a5232);
+  // lanes
+  for (const z of [RACE.zT, RACE.zR]){ const lane = new THREE.Mesh(new THREE.PlaneGeometry(RACE.x1 - RACE.x0 + 1.2, 0.7), new THREE.MeshLambertMaterial({color: 0xe8d8b0})); AXQ(lane, 'x', -Math.PI / 2); lane.position.set((RACE.x0 + RACE.x1) / 2, 0.008, z); raceG.add(lane); }
+  // start line (checker strip) and finish posts
+  mesh(raceG, BOX, white, [RACE.x0 + 0.1, 0.011, (RACE.zT + RACE.zR) / 2], [0.1, 0.004, 1.5]);
+  for (const z of [RACE.zT + 0.5, RACE.zR - 0.5]){ mesh(raceG, CYL, dark, [RACE.x1, 0.55, z], [0.04, 1.1, 0.04]); mesh(raceG, SPH, mat(0xffd86a, {emissive: 0xffb030, emissiveIntensity: 0.4}), [RACE.x1, 1.12, z], 0.06); }
+  mesh(raceG, BOX, white, [RACE.x1 + 0.02, 0.011, (RACE.zT + RACE.zR) / 2], [0.1, 0.004, 1.5]);
+  // start flags
+  for (const z of [RACE.zT + 0.55, RACE.zR - 0.55]){ stick(raceG, [RACE.x0, 0, z], [RACE.x0, 0.9, z], 0.02, dark); mesh(raceG, BOX, mat(0xf6c445), [RACE.x0 + 0.14, 0.78, z], [0.28, 0.2, 0.01]); }
+  // the nap tree
+  standTree(raceG, RACE.nap - 0.5, RACE.zR - 0.15, 1.1); }
+// =====================================================================================================
+// 2. 背小朋友過河: a stream, stones, reeds, little fish
+// =====================================================================================================
+const RIV = {x0: -2.1, x1: 2.1, water: 0.015, D: 1.1};
+const riverG = new THREE.Group(); scene.add(riverG); riverG.visible = false;
+const waterMat = new THREE.MeshStandardMaterial({color: 0x3f9fd8, transparent: true, opacity: 0.86, roughness: 0.12, metalness: 0.0, side: THREE.DoubleSide, depthWrite: false});
+const waterTexC = document.createElement('canvas'); waterTexC.width = waterTexC.height = 256;
+{ const g = waterTexC.getContext('2d'); g.fillStyle = '#3f9fd8'; g.fillRect(0, 0, 256, 256); g.strokeStyle = 'rgba(255,255,255,0.35)'; g.lineWidth = 3; for (let i = 0; i < 26; i++){ const x = Math.random() * 256, y = Math.random() * 256; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + 14, y - 6, x + 30, y); g.stroke(); } }
+const waterTex = new THREE.CanvasTexture(waterTexC); waterTex.colorSpace = THREE.SRGBColorSpace; waterTex.wrapS = waterTex.wrapT = THREE.RepeatWrapping; waterTex.repeat.set(5, 350); waterMat.map = waterTex;
+{ const water = new THREE.Mesh(new THREE.PlaneGeometry(RIV.x1 - RIV.x0, 700), waterMat); AXQ(water, 'x', -Math.PI / 2); water.position.set(0, RIV.water, 0); water.renderOrder = 3; riverG.add(water);
+  const rim = mat(0xb9b4a6, {roughness: 0.95}); for (const sx of [-1, 1]) mesh(riverG, BOX, rim, [sx * ((RIV.x1 - RIV.x0) / 2 + 0.06), 0.025, 0], [0.14, 0.05, 700]);
+  for (const [x, z, r] of [[-2.35, -1.0, 0.18], [2.4, -0.7, 0.22], [-2.5, 1.4, 0.16], [2.35, 1.5, 0.2], [-2.4, -2.8, 0.2], [2.5, -3.2, 0.17], [-2.3, 3.2, 0.2]]) mesh(riverG, SPH, mat(0x9a9a92, {roughness: 0.95}), [x, 0.03, z], [r, r * 0.55, r]);
+  for (const [x, z] of [[-2.55, -1.8], [2.6, -1.6], [-2.5, 0.9], [2.65, 1.1], [-2.6, 2.6], [2.55, -3.0]]) for (let i = 0; i < 4; i++) stick(riverG, [x + i * 0.04, 0, z + i * 0.03], [x + i * 0.06 - 0.06, 0.55 + i * 0.05, z + i * 0.03], 0.012, mat(0x5aa564)); }
+const riverClip = new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.015);
+const fish = [];
+{ const fm = mat(0xf2893a, {roughness: 0.5}); for (let i = 0; i < 5; i++){ const f = new THREE.Group(); mesh(f, SPH, fm, [0, 0, 0], [0.07, 0.03, 0.03]); const tail = mesh(f, CONE, fm, [-0.08, 0, 0], [0.035, 0.06, 0.02]); tail.rotation.z = Math.PI / 2; f.position.set(0, 0.01, 0); riverG.add(f); fish.push(f); } }
+const rippleS = [];
+for (let i = 0; i < 5; i++){ const sp = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({map: rippleTex, transparent: true, depthWrite: false, opacity: 0})); AXQ(sp, 'x', -Math.PI / 2); sp.renderOrder = 4; sp.position.y = 0.03; scene.add(sp); rippleS.push(sp); }
+// =====================================================================================================
+// 3. 步道里程碑: milestones that grow out of the grass, a park-map board whose route lights up, an end arch
+// =====================================================================================================
+// terrain profile (x, height): flat start, slope up, stairs, plateau, slope down, stairs, plateau, slope down, flat to the arch
+const TERR = [[-5.2, 0], [-3.4, 0], [-2.3, 0.5], [-2.3, 0.5]];
+{ // stairs 1: 4 steps (rise 0.1, tread 0.3) after the first slope; stairs 2: 3 steps
+  let x = -2.3, h = 0.5; for (let i = 0; i < 4; i++){ TERR.push([x + 0.08, h + 0.12]); TERR.push([x + 0.3, h + 0.12]); x += 0.3; h += 0.12; }
+  TERR.push([x + 0.9, h]); const x2 = x + 0.9, h2 = h;   // plateau
+  TERR.push([x2 + 1.0, 0.35]); x = x2 + 1.0; h = 0.35;   // slope down
+  for (let i = 0; i < 3; i++){ TERR.push([x + 0.08, h + 0.12]); TERR.push([x + 0.3, h + 0.12]); x += 0.3; h += 0.12; }
+  TERR.push([x + 0.7, h]); x += 0.7; TERR.push([x + 1.1, 0]); x += 1.1; TERR.push([x + 1.4, 0]); }
+const terrH = x => { for (let i = 0; i < TERR.length - 1; i++){ const a = TERR[i], b = TERR[i + 1]; if (x >= a[0] && x <= b[0]){ if (b[0] - a[0] < 1e-6) return Math.max(a[1], b[1]); return a[1] + (b[1] - a[1]) * (x - a[0]) / (b[0] - a[0]); } } return x < TERR[0][0] ? TERR[0][1] : TERR[TERR.length - 1][1]; };
+// smooth version for the body (window 0.5): the stairs read as a rhythmic climb, not a hard snap
+const terrS = x => { let s = 0; for (let k = -4; k <= 4; k++) s += terrH(x + k * 0.06); return s / 9; };
+const TXE = TERR[TERR.length - 1][0];
+const TR = {x0: -4.4, x1: 4.0, ms: [-3.5, -0.05, 3.1], z: 0.2, arch: 4.4};
+{ // plateau ms positions: pick centre of plateau 1 and plateau 2 programmatically
+  const pl = []; for (let i = 0; i < TERR.length - 1; i++){ const a = TERR[i], b = TERR[i + 1]; if (Math.abs(a[1] - b[1]) < 1e-6 && b[0] - a[0] > 0.6 && a[1] > 0.3) pl.push((a[0] + b[0]) / 2); }
+  TR.ms = [-3.8, pl[0], pl[1]]; TR.arch = TXE - 0.6; TR.x1 = TR.arch - 0.5; }
+const trailG = new THREE.Group(); scene.add(trailG); trailG.visible = false;
+{ const top = mat(0xe0d3b8, {roughness: 0.95}), side = mat(0x6f9f5a, {roughness: 1});
+  const z0 = -0.45, z1 = 0.85; const pts = [], idx = [], nrm = [];
+  const verts = []; const col = [];
+  const addQuad = (a, b, c, d, color) => { const i = verts.length / 3; verts.push(...a, ...b, ...c, ...d); for (let k = 0; k < 4; k++) col.push(...color); idx.push(i, i + 1, i + 2, i, i + 2, i + 3); };
+  for (let i = 0; i < TERR.length - 1; i++){ const [xa, ha] = TERR[i], [xb, hb] = TERR[i + 1];
+    if (Math.abs(xb - xa) < 1e-6){ if (Math.abs(hb - ha) > 1e-6) addQuad([xa, ha, z1], [xa, hb, z1], [xa, hb, z0], [xa, ha, z0], [0.55, 0.48, 0.36]); continue; }   // riser (faces +x)
+    addQuad([xa, ha, z1], [xb, hb, z1], [xb, hb, z0], [xa, ha, z0], [0.76, 0.66, 0.48]);   // tread / slope top
+    addQuad([xa, 0, z1], [xb, 0, z1], [xb, hb, z1], [xa, ha, z1], [0.30, 0.50, 0.26]);       // front wall (towards the camera)
+    addQuad([xb, 0, z0], [xa, 0, z0], [xa, ha, z0], [xb, hb, z0], [0.30, 0.50, 0.26]); }   // back wall
+  for (const [x, h, dir] of [[TERR[0][0], TERR[0][1], -1], [TERR[TERR.length - 1][0], TERR[TERR.length - 1][1], 1]]) addQuad([x, 0, z0], [x, 0, z1], [x, h, z1], [x, h, z0], [0.30, 0.50, 0.26]);
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+  const terr = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({vertexColors: true, side: THREE.DoubleSide})); trailG.add(terr);
+  // railings: on BOTH sides of every raised section (slopes, stairs, plateaus), posts every 0.5 m (every 0.3 m = every tread on the stairs),
+  // two rails (upper 0.62 / lower 0.30) that follow the slope, and sturdier end posts at the start and the end of the raised path
+  const wood3 = mat(0x8a5a32, {roughness: 0.9}), rail3 = mat(0xb58a5a, {roughness: 0.85});
+  let xs0 = TERR[1][0], xs1 = TXE - 1.4;   // from where the ground starts to rise to where it is flat again
+  const px = []; for (let x = xs0; x < xs1 - 0.01; x += 0.5) px.push(x); px.push(xs1);
+  for (const [i, x] of []) {}
+  for (let x = -2.3; x < -1.0; x += 0.3) px.push(x + 0.15);   // extra posts on stairs 1
+  for (let x = 0.8; x < 1.7; x += 0.3) px.push(x + 0.15);     // extra posts on stairs 2
+  px.sort((a, b) => a - b);
+  for (const zz of [z1 - 0.04, z0 + 0.04]){
+    for (let i = 0; i < px.length; i++){ const x = px[i], hb = terrH(x), top = terrS(x) + 0.7; const end = (i === 0 || i === px.length - 1);
+      stick(trailG, [x, hb, zz], [x, top + (end ? 0.1 : 0), zz], end ? 0.03 : 0.016, wood3); if (end) mesh(trailG, SPH, wood3, [x, top + 0.12, zz], 0.045);
+      if (i < px.length - 1){ const x2 = px[i + 1]; for (const lv of [0.62, 0.30]) stick(trailG, [x, terrS(x) + lv, zz], [x2, terrS(x2) + lv, zz], 0.012, rail3); } } }
+}
+const msG = TR.ms.map((x, i) => { const g = new THREE.Group(); g.position.set(x, terrH(x), TR.z - 0.62 + 0.0); trailG.add(g);
+  const stone = mat(0xb5b0a2, {roughness: 0.9});
+  mesh(g, BOX, stone, [0, 0.07, 0], [0.5, 0.14, 0.26]);
+  mesh(g, BOX, stone, [0, 0.38, 0], [0.38, 0.5, 0.2]); mesh(g, CYL, stone, [0, 0.63, 0], [0.19, 0.2, 0.19]).rotation.x = Math.PI / 2;
+  const tx = makeTex(g2 => { g2.font = '900 52px "Huninn","Noto Sans TC",sans-serif'; g2.textAlign = 'center'; g2.textBaseline = 'middle'; g2.fillStyle = '#4a4538'; g2.fillText(String((i + 1) * 100), 64, 46); g2.font = '700 34px "Huninn","Noto Sans TC",sans-serif'; g2.fillText('公尺', 64, 90); });
+  const lab = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.34), new THREE.MeshStandardMaterial({map: tx, transparent: true, roughness: 0.9})); lab.position.set(0, 0.42, 0.105); g.add(lab);
+  for (let k = 0; k < 6; k++){ const a2 = k / 6 * TAU; mesh(g, CONE, mat(0x4b8f58), [Math.cos(a2) * 0.3, 0.06, Math.sin(a2) * 0.2], [0.04, 0.16, 0.04]); }
+  g.scale.setScalar(0.001); g.visible = false; return g; });
+const mapCanvas = document.createElement('canvas'); mapCanvas.width = 400; mapCanvas.height = 300;
+const mapTex = new THREE.CanvasTexture(mapCanvas); mapTex.colorSpace = THREE.SRGBColorSpace;
+const mapState = {seg: -2};
+const LOOP = [[70, 210], [70, 110], [150, 60], [260, 60], [340, 110], [340, 210], [260, 250], [150, 250], [70, 210]];
+function drawMap(seg){
+  const g = mapCanvas.getContext('2d'); g.fillStyle = '#f3ecd6'; g.fillRect(0, 0, 400, 300); g.fillStyle = '#2b7a4b'; g.fillRect(0, 0, 400, 44); g.font = '900 28px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#fff'; g.fillText('公園步道', 200, 24);
+  g.fillStyle = '#bfe0a4'; g.fillRect(24, 56, 352, 226); g.fillStyle = '#8ed0ec'; g.beginPath(); g.ellipse(205, 150, 62, 34, 0, 0, TAU); g.fill();
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  const seg4 = (a, b) => { g.beginPath(); for (let i = a; i <= b; i++){ const p = LOOP[i]; if (i === a) g.moveTo(p[0], p[1]); else g.lineTo(p[0], p[1]); } g.stroke(); };
+  g.lineWidth = 16; g.strokeStyle = '#e0d3b8'; seg4(0, 8);
+  g.lineWidth = 12; g.strokeStyle = '#f5a524';
+  const ends = [2, 4, 6, 8]; for (let k = 0; k <= seg && k < 4; k++) seg4(k === 0 ? 0 : ends[k - 1], ends[k]);
+  for (let k = 0; k < 3; k++){ const p = LOOP[ends[k]]; g.beginPath(); g.arc(p[0], p[1], 11, 0, TAU); g.fillStyle = seg >= k ? '#e8584a' : '#a39478'; g.fill(); g.lineWidth = 4; g.strokeStyle = '#fff'; g.stroke(); }
+  g.fillStyle = seg >= 3 ? '#2b7a4b' : '#a39478'; g.beginPath(); g.arc(LOOP[8][0], LOOP[8][1], 13, 0, TAU); g.fill(); g.lineWidth = 4; g.strokeStyle = '#fff'; g.stroke();
+  mapTex.needsUpdate = true;
+}
+drawMap(-1);
+// the park map follows the camera (top-left of the picture), so the route stays visible while the turtle walks far
+const mapHud = new THREE.Sprite(new THREE.SpriteMaterial({map: mapTex, transparent: true, depthTest: false, depthWrite: false})); mapHud.renderOrder = 10; mapHud.visible = false; mapHud.scale.set(1.15, 0.86, 1); mapHud.position.set(1.3, 1.36, -6.0); camera.add(mapHud); scene.add(camera);
+{ const wood = mat(0x8a5a32), wood2 = mat(0xb58a5a);
+  const ha = terrH(TR.arch);
+  for (const dz of [-0.45, 0.85]) mesh(trailG, BOX, wood, [TR.arch, ha + 0.65, TR.z + dz - 0.2], [0.14, 1.3, 0.14]);
+  mesh(trailG, BOX, wood2, [TR.arch, ha + 1.34, TR.z + 0.2], [0.22, 0.22, 1.5]);
+  const tx = makeTex(g2 => { g2.fillStyle = '#b58a5a'; g2.fillRect(0, 0, 128, 128); g2.font = '900 56px "Huninn","Noto Sans TC",sans-serif'; g2.textAlign = 'center'; g2.textBaseline = 'middle'; g2.fillStyle = '#fff'; g2.fillText('終點', 64, 66); });
+  const sg = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.5), new THREE.MeshStandardMaterial({map: tx, roughness: 0.8})); sg.rotation.y = -Math.PI / 2; sg.position.set(TR.arch - 0.12, ha + 1.34, TR.z + 0.2); trailG.add(sg);
+  const sg2 = sg.clone(); sg2.rotation.y = Math.PI / 2; sg2.position.x = TR.arch + 0.12; trailG.add(sg2); }
+const badgeT = new THREE.Sprite(new THREE.SpriteMaterial({map: makeTex(g => { g.fillStyle = '#2b7a4b'; g.beginPath(); g.roundRect(0, 30, 128, 70, 35); g.fill(); g.lineWidth = 6; g.strokeStyle = '#fff'; g.stroke(); g.font = '900 30px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#fff'; g.fillText('步道達人', 64, 66); }), transparent: true, depthWrite: false, depthTest: false}));
+badgeT.visible = false; badgeT.renderOrder = 9; scene.add(badgeT);
+// ---------- motions ----------
+const names = {idle:'待機', race:'慢慢來賽跑', river:'背小朋友過河', trail:'步道里程碑', sleep:'睡覺', eat:'開心吃', snack:'最愛點心', refuse:'搖頭不吃'};
+const LEN = {idle:8, race:12, river:12, trail:12, sleep:8, eat:6, snack:7, refuse:5};
+const TALENT = ['race', 'river', 'trail'];
+let move = 'idle', t0 = performance.now()/1000, frozen = null, gY = 0, __dE = 0.016;
+const hitT = (T, X) => T >= X && T - __dE < X;
+let __hold = 0; const EMBED = new URLSearchParams(location.search).get('embed') === '1';   // 才藝、餵食播一次：停在最後一格約 1 秒再回待機（App 裡只停住，由 App 切回待機）
+const blinkAt = (t, off = 0) => { const b = ((t + off) % 4.2) / 0.2; return b < 1 ? Math.sin(Math.PI * b) : 0; };
+const ears = () => {};
+const sides = ['Left', 'Right'];
+const sgn = sd => sd === 'Left' ? 1 : -1;
+function place(p){
+  QYXZ(rig.quaternion, p.ry, p.pitch, p.roll);
+  rig.position.set(p.x, p.yAbs != null ? p.yAbs : gY + p.hop, p.z);
+  rig.scale.set(1 / Math.sqrt(p.sy), p.sy, 1 / Math.sqrt(p.sy)); rig.updateMatrixWorld(true);
+}
+const _fv = V3(), footV = [], legV = [], sitV = [];
+function skinLow(list, step){ skinned.updateMatrixWorld(true); skinned.skeleton.update(); let mn = Infinity; for (let k = 0; k < list.length; k += step){ skinned.getVertexPosition(list[k], _fv); _fv.applyMatrix4(skinned.matrixWorld); if (_fv.y < mn) mn = _fv.y; } return mn; }
+function footMin(){ return skinLow(legV, 1) - 0.004; }
+function legSwing(ph, amt){
+  const s = Math.sin(ph);
+  rot('LeftUpLeg', 'x', -0.36 * amt * s); rot('RightUpLeg', 'x', 0.36 * amt * s);
+  rot('LeftLeg', 'x', 0.45 * amt * Math.max(0, -s)); rot('RightLeg', 'x', 0.45 * amt * Math.max(0, s));
+}
+function squat(a){ for (const sd of sides){ rot(sd + 'UpLeg', 'x', -0.55 * a); rot(sd + 'Leg', 'x', 1.0 * a); rot(sd + 'Foot', 'x', -0.45 * a); } }
+function spineLean(a){ rot('Spine02', 'x', a * 0.4); rot('Spine01', 'x', a * 0.35); rot('Spine', 'x', a * 0.25); }
+// the tail feathers are three bones: side swing + raising, each only a little (<= 30 deg)
+function tailChain(sway, ph, raise = 0){ rot('Tail01', 'y', sway * Math.sin(ph)); if (raise) rot('Tail01', 'x', raise); }
+function life(p, t, k = 1){
+  const br = Math.sin(TAU * t / 3.6);
+  rot('Spine02', 'x', 0.012 * br * k); rot('Spine01', 'x', 0.012 * br * k);
+  rot('Head', 'y', 0.12 * Math.sin(t * 0.55) * k); rot('Head', 'x', 0.03 * Math.sin(t * 0.9) * k);
+  tailChain(0.05, t * 1.5, 0.05);
+  p.lid = Math.max(p.lid, blinkAt(t));
+}
+// the wing is the arm: up = lift sideways (0.85 rad = level with the shoulder), fwd = swing forward
+function wingUp(sd, a){ const u = Math.min(0.6, a); rot(sd + 'Arm', 'z', sgn(sd) * u); rot(sd + 'ForeArm', 'z', sgn(sd) * 0.2 * u); }
+function wingFwd(sd, a){ rot(sd + 'Arm', 'x', -a); rot(sd + 'ForeArm', 'x', -0.3 * a); }
+const _ta = V3(), _tb = V3();
+// the tip of the wing (feather end), measured from the hand bone along the wing
+function tipOf(sd, out = V3()){ wpos(sd + 'Hand', _ta); wpos(sd + 'ForeArm', _tb); _tb.subVectors(_ta, _tb); return out.copy(_ta).addScaledVector(_tb, 0.58); }
+// slide the owl sideways so that the wing tip is exactly at world x = tx (one correction pass)
+function alignTip(p, sd, tx, w = 1){ place(p); tipOf(sd, _tp); p.x += w * (tx - _tp.x); place(p); }
+const _tp = V3();
+
+function clampN(x, a, b){ return Math.max(a, Math.min(b, x)); }
+function poseIdle(p, t, T){
+  life(p, t);
+  const look = bell(span(T, 3.0, 5.0));
+  rot('Head', 'y', 0.45 * look * Math.sin(span(T, 3, 5) * TAU)); p.happy = ease(bell(span(T, 6.0, 7.2)));
+  wingUp('Left', 0.04 * Math.sin(t * 1.1)); wingUp('Right', 0.04 * Math.sin(t * 1.1 + 1));
+  if (hitT(T, 6.2)) p.events.push('hello');
+  place(p);
+}
+function poseSleep(p, t, T){
+  const br = Math.sin(TAU * t / 4.4);
+  squat(1.0); spineLean(0.5 + 0.02 * br); rot('neck', 'x', 0.15); rot('Head', 'x', 0.25 + 0.02 * br);
+  tailChain(0.03 * br, t * 0.8, 0.0); p.lid = 1;
+  place(p);
+}
+// turtle walking (slow, steady): legs, a little arm swing, a nod on every step
+function walkT(ph, amt){ if (amt <= 0) return; legSwing(ph, 0.8 * amt); const s = Math.sin(ph); rot('LeftArm', 'x', 0.18 * amt * s); rot('RightArm', 'x', -0.18 * amt * s); rot('Spine02', 'y', 0.03 * amt * s); rot('Head', 'x', 0.04 * amt * Math.abs(Math.cos(ph))); }
+// ---------- the rabbit teen (own skeleton, same bone axes) ----------
+function rabReset(){ if (!RB.ready) return; for (const n in RB.bones){ RB.bones[n].quaternion.copy(RB.rest[n]); RB.bones[n].position.copy(RB.restP[n]); } }
+const sgR = sd => sd === 'Left' ? 1 : -1;
+function rabRun(ph, amt){ if (amt <= 0) return; const s = Math.sin(ph); for (const sd of sides){ const k = sd === 'Left' ? 1 : -1;
+    rotR(sd + 'UpLeg', 'x', -0.7 * amt * s * k); rotR(sd + 'Leg', 'x', 0.8 * amt * Math.max(0, -s * k)); rotR(sd + 'Arm', 'x', 0.7 * amt * s * k); rotR(sd + 'ForeArm', 'x', -0.45 * amt * Math.max(0, s * k)); }
+  rotR('Spine', 'x', -0.12 * amt); rotR('Spine1', 'x', -0.12 * amt); rotR('Head', 'x', 0.1 * amt); }
+function rabSit(a){ for (const sd of sides){ rotR(sd + 'UpLeg', 'x', -1.2 * a); rotR(sd + 'Leg', 'x', 1.5 * a); rotR(sd + 'Foot', 'x', -0.35 * a); } rotR('Spine', 'x', -0.3 * a); rotR('Spine1', 'x', -0.3 * a); }
+function rabNapHead(a){ rotR('Neck', 'x', 0.4 * a); rotR('Head', 'x', 0.45 * a); }
+function rabArmsUp(a){ for (const sd of sides) rotR(sd + 'Arm', 'z', sgR(sd) * Math.min(0.85, a)); }
+function rabClap(a, ph){ for (const sd of sides){ rotR(sd + 'Arm', 'x', -0.9 * a); rotR(sd + 'Arm', 'z', -sgR(sd) * 0.25 * a); rotR(sd + 'ForeArm', 'x', -0.7 * a * (0.5 + 0.5 * Math.sin(ph))); } }
+
+// =====================================================================================================
+// 慢慢來賽跑 (long track: the rabbit sprints far ahead and naps, the turtle keeps one slow pace)
+// =====================================================================================================
+const RACE_TW = {u0: 1.2, u1: RACE.tFin};
+function raceTx(T){ const u = span(T, RACE_TW.u0, RACE_TW.u1); return RACE.x0 + (RACE.x1 - RACE.x0) * (0.92 * u + 0.08 * ease(u)); }
+const RACE_RUN_X = RACE.x0 + 0.7 * (RACE.x1 - RACE.x0);
+const RR = 16;   // rabbit leg cycle rate (rad/s)
+function raceRab(T){
+  const z = RACE.zR, nap = RACE.nap, tw = 10.3, wk = 9.8;
+  if (T < 1.2) return {x: RACE.x0, z, yaw: 1.35, run: 0, hop: 0.07 * Math.abs(Math.sin(T * 6)) * bell(span(T, 0.2, 1.1))};
+  if (T < 3.6){ const u = span(T, 1.2, 3.6), e = ease(u) * 0.35 + 0.65 * u; const a = ease(span(T, 1.2, 1.6)); return {x: lerp(RACE.x0, RACE_RUN_X, e), z, yaw: 1.35, run: a, ph: (T - 1.2) * RR, hop: 0.07 * Math.abs(Math.sin((T - 1.2) * RR / 2)) * a}; }
+  if (T < 4.1) return {x: lerp(RACE_RUN_X, nap - 0.1, ease(span(T, 3.6, 4.1))), z, yaw: lerp(1.35, 0.1, ease(span(T, 3.7, 4.1))), run: 1 - ease(span(T, 3.6, 4.0)), ph: (T - 1.2) * RR, hop: 0};
+  if (T < 4.9) return {x: lerp(nap - 0.1, nap, ease(span(T, 4.1, 4.9))), z, yaw: lerp(0.1, 1.2, span(T, 4.1, 4.9)), run: 0, hop: 0};
+  if (T < wk) return {x: nap, z, yaw: 1.2, run: 0, hop: 0, sit: ease(span(T, 4.9, 5.6)), nap: ease(span(T, 5.4, 6.0))};
+  if (T < 10.2) return {x: nap, z, yaw: lerp(1.2, 1.35, ease(span(T, wk, 10.2))), run: 0, hop: 0.22 * bell(span(T, wk, wk + 0.4)), sit: 1 - ease(span(T, wk, wk + 0.4)), nap: 1 - ease(span(T, wk, wk + 0.35)), wake: bell(span(T, wk, 10.2))};
+  if (T < 10.95){ const u = span(T, 10.2, 10.95), a = ease(span(T, 10.2, 10.5)) * (1 - ease(span(T, 10.7, 10.95))); return {x: lerp(nap, RACE.x1 - 0.8, ease(u)), z, yaw: 1.35, run: a, ph: (T - 10.2) * RR, hop: 0.07 * Math.abs(Math.sin((T - 10.2) * RR / 2)) * a}; }
+  return {x: RACE.x1 - 0.8, z, yaw: lerp(1.35, 0.5, ease(span(T, 10.95, 11.4))), run: 0, hop: T > 11.4 ? 0.12 * Math.abs(Math.sin((T - 11.4) * 9)) : 0, clap: ease(span(T, 11.0, 11.4))};
+}
+function poseRace(p, t, T){
+  life(p, t, 0.4);
+  const x = raceTx(T), sp = Math.abs(raceTx(T + 0.05) - raceTx(T - 0.05)) / 0.1, mv = Math.min(1, sp / 0.7);
+  p.x = x; p.z = RACE.zT;
+  p.ry = lerp(1.35, 0.35, ease(span(T, RACE.tFin, RACE.tFin + 0.7)));
+  walkT((x - RACE.x0) / 0.55 * TAU, mv);
+  const ready = bell(span(T, 0.3, 1.2)); rot('Head', 'x', 0.1 * ready);
+  const cheer = ease(span(T, RACE.tFin + 0.1, RACE.tFin + 0.6)) * (1 - ease(span(T, 11.5, 11.95)));
+  wingUp('Left', 0.55 * cheer); wingUp('Right', 0.55 * cheer); p.hop += 0.05 * cheer * Math.abs(Math.sin(T * 7));
+  const pass = bell(span(x, RACE.nap - 1.0, RACE.nap + 0.3)); rot('Head', 'y', -0.35 * pass);
+  const bow = bell(span(T, 11.2, 11.95)); spineLean(0.3 * bow);
+  tailChain(0.06, T * 2.5, 0.05);
+  p.happy = Math.max(ease(bell(span(T, RACE.tFin, 11.3))) * 0.95, 0);
+  if (hitT(T, 0.8)) p.events.push('ready'); if (hitT(T, 1.2)) p.events.push('go');
+  if (hitT(T, 4.0)) p.events.push('rabzz'); if (hitT(T, RACE_TPASS)) p.events.push('pass');
+  if (hitT(T, RACE.tFin)) p.events.push('finish'); if (hitT(T, 9.8)) p.events.push('wake'); if (hitT(T, 11.3)) p.events.push('gz');
+  place(p);
+  p.race = {T, rab: raceRab(T)};
+}
+const RACE_TPASS = (() => { let lo = 1.2, hi = RACE.tFin; for (let i = 0; i < 30; i++){ const m = (lo + hi) / 2; if (raceTx(m) < RACE.nap - 0.4) lo = m; else hi = m; } return lo; })();
+// =====================================================================================================
+// 背小朋友過河 (a deep, wide stream: only shoulders and head stay above the water; the turtle jumps out on the far bank)
+// =====================================================================================================
+const RV = {bank0: -2.65, bank1: 3.05, kidZ: 0.35, jump0: 8.45, jump1: 9.05};
+function riverTx(T){
+  if (T < 1.4) return lerp(-3.6, -2.65, 0.6 * span(T, 0, 1.4) + 0.4 * ease(span(T, 0.0, 1.4)));
+  if (T < 3.5) return -2.65;
+  if (T < 4.5) return lerp(-2.65, -1.7, span(T, 3.5, 4.5));
+  if (T < 8.0) return lerp(-1.7, 1.55, span(T, 4.5, 8.0));
+  if (T < RV.jump0) return 1.55;
+  if (T < RV.jump1) return lerp(1.55, 2.75, ease(span(T, RV.jump0, RV.jump1)));
+  return 2.75;
+}
+const riverDepth = T => RIV.D * ease(span(T, 3.5, 4.5)) * (1 - ease(span(T, RV.jump0 + 0.05, RV.jump1 - 0.1)));
+const riverCrouch = T => ease(span(T, 1.3, 2.0)) * (1 - ease(span(T, 2.8, 3.4))) + ease(span(T, 7.9, 8.4)) * (1 - ease(span(T, RV.jump0, RV.jump0 + 0.2))) + 0.5 * ease(span(T, RV.jump1 - 0.05, RV.jump1 + 0.15)) * (1 - ease(span(T, RV.jump1 + 0.15, RV.jump1 + 0.6)));
+function poseRiver(p, t, T){
+  life(p, t, 0.4);
+  const x = riverTx(T), sp = Math.abs(riverTx(T + 0.05) - riverTx(T - 0.05)) / 0.1, mv = (T > RV.jump0 - 0.05 && T < RV.jump1 + 0.05) ? 0 : Math.min(1, sp / 0.6);
+  p.x = x; p.z = RV.kidZ;
+  p.ry = lerp(1.35, 0.3, ease(span(T, 10.0, 10.8)));
+  walkT((x + 3.6) / 0.5 * TAU, mv);
+  const cr = riverCrouch(T); squat(0.95 * cr); spineLean(0.25 * cr);
+  const jmp = span(T, RV.jump0, RV.jump1); p.hop += -riverDepth(T) + 0.5 * Math.sin(Math.PI * jmp) * (jmp > 0 && jmp < 1 ? 1 : 0);
+  // jump: legs tuck in the air
+  const air = bell(span(T, RV.jump0 + 0.05, RV.jump1 - 0.05)); squat(0.5 * air); rot('Head', 'x', -0.1 * air);
+  const carry = ease(span(T, 3.2, 3.9)) * (1 - ease(span(T, 7.9, 8.4))); spineLean(0.08 * carry); rot('Head', 'x', -0.04 * carry);
+  const look = T < 2.0 ? bell(span(T, 1.0, 2.0)) : 0; rot('Head', 'y', 0.35 * look);
+  // wading: slow head bob
+  const wd = ease(span(T, 4.4, 4.9)) * (1 - ease(span(T, 7.8, 8.2))); rot('Head', 'x', 0.05 * wd * Math.sin(T * 2.6));
+  const wv = ease(span(T, 9.4, 9.9)) * (1 - ease(span(T, 10.8, 11.2)));
+  wingUp('Right', 0.6 * wv); rot('RightForeArm', 'z', -0.2 * wv * Math.sin(T * 9));
+  const bow = bell(span(T, 10.8, 11.9)); spineLean(0.35 * bow);
+  tailChain(0.06, T * 2.5, 0.05);
+  p.happy = Math.max(ease(bell(span(T, 4.8, 6.0))) * 0.7, ease(bell(span(T, 9.2, 10.3))) * 0.95);
+  if (hitT(T, 0.8)) p.events.push('shy'); if (hitT(T, 2.1)) p.events.push('jumpup'); if (hitT(T, 2.7)) p.events.push('hold');
+  if (hitT(T, 4.2)) p.events.push('splashin'); if (hitT(T, 5.5)) p.events.push('fishhi');
+  if (hitT(T, RV.jump0 + 0.1)) p.events.push('leap'); if (hitT(T, RV.jump1)) p.events.push('land');
+  if (hitT(T, 9.6)) p.events.push('jumpdown'); if (hitT(T, 9.9)) p.events.push('thanks'); if (hitT(T, 10.9)) p.events.push('gz');
+  place(p);
+  p.rv = {T, x};
+}
+// =====================================================================================================
+// 步道里程碑 (long trail with slopes and stairs; the turtle slows on climbs, puffs and sweats)
+// =====================================================================================================
+const TRT = {u0: 0.9, u1: 9.3};
+// speed profile along the trail (m/s): flat 1.25, slope up 0.8, stairs 0.55, plateau 1.1, slope down 1.0 ... integrated once and rescaled to the time window
+const TRSEG = (() => { const xs = []; for (let x = TR.x0; x <= TR.x1; x += 0.05) xs.push(x); let t = 0; const ts = [0]; for (let i = 1; i < xs.length; i++){ const xm = (xs[i] + xs[i - 1]) / 2, dh = terrH(xm + 0.2) - terrH(xm - 0.2); let v = 1.25; if (dh > 0.3) v = 0.6; else if (dh > 0.08) v = 0.85; else if (dh < -0.08) v = 1.0; else if (terrH(xm) > 0.3) v = 1.1; t += 0.05 / v; ts.push(t); } return {xs, ts, T: t}; })();
+function trailTx(T){ const u = clamp01((T - TRT.u0) / (TRT.u1 - TRT.u0)); const tt = u * TRSEG.T; let lo = 0, hi = TRSEG.ts.length - 1; while (hi - lo > 1){ const m = (lo + hi) >> 1; if (TRSEG.ts[m] <= tt) lo = m; else hi = m; } const f = (tt - TRSEG.ts[lo]) / Math.max(1e-6, TRSEG.ts[hi] - TRSEG.ts[lo]); return lerp(TRSEG.xs[lo], TRSEG.xs[hi], f); }
+function poseTrail(p, t, T){
+  life(p, t, 0.4);
+  const x = trailTx(T), sp = Math.abs(trailTx(T + 0.05) - trailTx(T - 0.05)) / 0.1, mv = Math.min(1, sp / 0.8);
+  p.x = x; p.z = TR.z; p.ry = lerp(1.35, 0.3, ease(span(T, TRT.u1 + 0.5, TRT.u1 + 1.3)));
+  const slope = (terrH(x + 0.3) - terrH(x - 0.3)) / 0.6;   // + uphill
+  const stairs = clamp01((Math.abs(terrH(x + 0.2) - terrH(x - 0.2)) - 0.12) / 0.1) * (Math.abs(slope) > 0.15 ? 1 : 0);
+  walkT((x - TR.x0) / 0.5 * TAU, mv);
+  // climbing: lean in, bigger knee lift on the stairs, head down; downhill: lean back a little
+  const up = clamp01(slope / 0.5), dn = clamp01(-slope / 0.4);
+  spineLean(0.2 * up * mv - 0.08 * dn * mv); rot('Head', 'x', 0.06 * up * mv); rot('LeftUpLeg', 'x', -0.3 * stairs * Math.max(0, Math.sin((x - TR.x0) / 0.5 * TAU)) * mv); rot('RightUpLeg', 'x', -0.3 * stairs * Math.max(0, -Math.sin((x - TR.x0) / 0.5 * TAU)) * mv);
+  p.hop += terrS(x) + trailLiftAt(T);
+  let nod = 0; for (const m of TR.ms) nod = Math.max(nod, bell(span(x, m - 0.05, m + 0.5))); rot('Head', 'x', 0.12 * nod);
+  const wv = ease(span(T, TRT.u1 + 0.1, TRT.u1 + 0.6)) * (1 - ease(span(T, 11.0, 11.3)));
+  wingUp('Right', 0.55 * wv); rot('RightForeArm', 'z', -0.2 * wv * Math.sin(T * 9));
+  const bow = bell(span(T, 11.0, 11.95)); spineLean(0.3 * bow);
+  tailChain(0.06, T * 2.5, 0.05);
+  p.happy = Math.max(ease(bell(span(T, TRT.u1, 10.8))) * 0.95, 0);
+  if (hitT(T, TRT.u1)) p.events.push('end'); if (hitT(T, TRT.u1 + 0.4)) p.events.push('badge'); if (hitT(T, 11.3)) p.events.push('gz');
+  place(p);
+  p.tr = {T, x, up, dn, stairs};
+}
+// ---------- load the turtle ----------
+const _tp2 = V3(), _td = V3(), _rp = V3(), _pp = V3(), _hd = V3(), _dir = V3(), _fp = V3();
+let apexI = -1;
+
+// =====================================================================================================
+// 餵食（2026-11-02）：開心吃 / 最愛點心 / 搖頭不吃（食物飛到嘴前、頭湊上去咬；搖頭不吃＝湊近聞、搖頭難過、食物飛走）
+// =====================================================================================================
+const FK = makeEat(THREE, GLTFLoader, scene, makeTex, spawn, fx);
+window.__eatWrong = window.__eatWrong || 'bittermelon';   // 搖頭不吃：少年固定紅辣椒、成年固定苦瓜（App 會自己放玩家給的食物）
+FK.preload(["cucumber", "pudding", "bittermelon"]); window.__eatPreload = n => FK.preload(n);
+
+const FH = makeHold(THREE, { EATK: FK, rig, get model(){ return model; }, skin: () => skinned,
+  reach(){}, grip: (sd, out) => out.copy(wpos(sd + 'Hand')),
+  armRe: /(Left|Right)(Shoulder|Arm|ForeArm|Hand)/, S: 1, size: 0.3, chestY: 1.13, mouthY: 1.34, follow: 1, float: true, floatY: -0.12 });
+function feedLean(a){ rot('Spine02', 'x', a * 0.4); rot('Spine01', 'x', a * 0.35); rot('Spine', 'x', a * 0.25); }
+function feedYaw(yaw){ rot('neck', 'y', yaw * 0.4); rot('Head', 'y', yaw * 0.6); }
+function poseEat(p, t, name){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const P = phases(name, t); p.eat = P; if (!FH.m) FH.measure();
+  const br = Math.sin(TAU * t / 3.6); rot('Spine02', 'x', 0.012 * br * 0.4); rot('Spine01', 'x', 0.012 * br * 0.4);
+  if (typeof tailSway === 'function') tailSway(0.15, t, 1.3);
+  
+  p.lid = Math.max(p.lid || 0, blinkAt(t));
+  if (name === 'refuse'){
+    const sn = ease(P.sniff) * (1 - ease(P.shake));
+    feedLean(0.14 * sn); rot('neck', 'x', 0.1 * sn); rot('Head', 'x', 0.12 * sn);
+    if (P.shake > 0 && P.shake < 1){ const k = Math.sin(Math.PI * P.shake); feedYaw(0.55 * Math.sin(TAU * P.shake * 3) * k); rot('Head', 'z', -0.06 * k); }
+    p.sad = P.sad; if (P.sad) p.lid = 0;
+  } else {
+    const nod = P.biting ? P.lunge : 0;
+    feedLean(0.1 * nod + 0.04 * P.hold); rot('neck', 'x', 0.14 * nod); rot('Head', 'x', 0.18 * nod + 0.06 * P.hold);
+    p.happy = P.happy && !P.chew ? 1 : 0; p.lid = P.chew ? 1 : (p.happy ? 0 : p.lid);
+    p.hop = 0.08 * P.hop;
+  }
+  p.ry = 0.1 + (name === 'snack' ? TAU * P.spin : 0); place(p);
+}
+fetchModel('turtleadult_model.json').then(gltf => {
+  model = gltf.scene; model.scale.setScalar(CFG.scale);
+  model.traverse(o => {
+    if (o.isBone){ bones[o.name] = o; rest[o.name] = o.quaternion.clone(); restP[o.name] = o.position.clone(); }
+    if (o.isMesh){ skinned = o; o.frustumCulled = false; prepFace(o, {cx:CFG.cx, eye:CFG.eye, eyeR:CFG.eyeR, eyeZ:CFG.eyeZ, eyeFill:CFG.eyeFill, mouth:CFG.mouth, mouthR:CFG.mouthR, mouthZ:CFG.mouthZ, noPink:CFG.noPink}); (Array.isArray(o.material) ? o.material : [o.material]).forEach(patch); }
+  });
+  rig.add(model); rig.updateMatrixWorld(true); restFeet = feetLow();
+  renderer.localClippingEnabled = true; (Array.isArray(skinned.material) ? skinned.material : [skinned.material]).forEach(m => { m.clippingPlanes = [riverClip]; });
+  { const P = skinned.geometry.attributes.position, si = skinned.geometry.attributes.skinIndex, sw = skinned.geometry.attributes.skinWeight, bn = skinned.skeleton.bones;
+    const s1 = bn.findIndex(b => b.name === 'Spine01'); let best = -9;
+    for (let i = 0; i < P.count; i += 2){ if (P.getY(i) > 0.6) { /* leg test below */ } else continue; }
+    for (let i = 0; i < P.count; i += 2){ if (P.getY(i) > 0.6) continue; let b2 = -1, bw = 0; for (let k = 0; k < 4; k++){ const w = sw.getComponent(i, k); if (w > bw){ bw = w; b2 = si.getComponent(i, k); } } if (/(Foot|Toe|Leg)/.test(bn[b2].name)) legV.push(i); }
+    for (let i = 0; i < P.count; i++){ let b2 = -1, bw = 0; for (let k = 0; k < 4; k++){ const w = sw.getComponent(i, k); if (w > bw){ bw = w; b2 = si.getComponent(i, k); } }
+      if (b2 === s1 && bw > 0.9 && P.getZ(i) < -0.05 && Math.abs(P.getX(i)) < 0.08 && P.getY(i) > best){ best = P.getY(i); apexI = i; } } }
+  loadingEl.hidden = true; statusEl.hidden = false;
+  setMove('idle'); requestAnimationFrame(loop);
+}).catch(e => { console.error(e); loadingEl.textContent = '模型載入失敗，請重新整理頁面。'; });
+// the lowest foot vertex must not sink into the terrain (stairs, slopes): lift the body by what is missing
+let TRLIFT = null;
+function trailLiftAt(T){ if (!TRLIFT) return 0; const f = clampN(T * 30, 0, TRLIFT.length - 1.001), i = Math.floor(f); return lerp(TRLIFT[i], TRLIFT[i + 1], f - i); }
+// needed lift so that no foot vertex sinks into the terrain, as an upper envelope smoothed in time (no popping from foot to foot)
+function buildTrailLift(){
+  TRLIFT = new Float32Array(12 * 30 + 2); const need = new Float32Array(TRLIFT.length);
+  for (let i = 0; i < need.length; i++){ const T = i / 30; if (T < 0.6 || T > 10.0) continue; const p = pose('trail', T); settle('trail', T);
+    skinned.updateMatrixWorld(true); skinned.skeleton.update(); let mn = 9; for (let k = 0; k < legV.length; k += 2){ skinned.getVertexPosition(legV[k], _fp); _fp.applyMatrix4(skinned.matrixWorld); const d = _fp.y - terrH(_fp.x); if (d < mn) mn = d; } need[i] = Math.max(0, -mn); }
+  const env = new Float32Array(need.length); for (let i = 0; i < env.length; i++){ let m = 0; for (let j = Math.max(0, i - 3); j <= Math.min(env.length - 1, i + 3); j++) m = Math.max(m, need[j]); env[i] = m; }
+  for (let i = 0; i < env.length; i++){ let s = 0, c = 0; for (let j = Math.max(0, i - 3); j <= Math.min(env.length - 1, i + 3); j++){ s += env[j]; c++; } TRLIFT[i] = s / c; }
+  { let mx = 0; for (let i = 0; i < need.length; i++) mx = Math.max(mx, need[i]); TRLIFT.maxNeed = mx; }
+}
+function terrainLift(p){
+  skinned.updateMatrixWorld(true); skinned.skeleton.update(); let mn = 9;
+  for (let k = 0; k < legV.length; k += 2){ skinned.getVertexPosition(legV[k], _fp); _fp.applyMatrix4(skinned.matrixWorld); const d = _fp.y - terrH(_fp.x); if (d < mn) mn = d; }
+  if (mn < 0) { p.hop += -mn; place(p); }
+  p.terrMin = mn;
+}
+function shellApex(out){ skinned.updateMatrixWorld(true); skinned.skeleton.update(); skinned.getVertexPosition(apexI, out); return out.applyMatrix4(skinned.matrixWorld); }
+
+// ---------- the rabbit teen (rigged) ----------
+const RB = {root: new THREE.Group(), model: null, bones: {}, rest: {}, restP: {}, ready: false, skinned: null, legV: []}; RB.root.visible = false; scene.add(RB.root);
+function rotR(name, axis, ang){
+  const b = RB.bones[name]; if (!b || !ang) return;
+  b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pq); RB.model.getWorldQuaternion(_rq); _pq.premultiply(_rq.invert());
+  _w.setFromAxisAngle(AX[axis], ang); _l.copy(_pq).invert().multiply(_w).multiply(_pq); b.quaternion.premultiply(_l).normalize();
+}
+fetchModel('rabbitteen_model.json').then(gl => {
+  const m = gl.scene; m.scale.setScalar(0.55);
+  m.traverse(o => { if (o.isBone){ const n = o.name.replace('mixamorig', '').replace(':', ''); RB.bones[n] = o; RB.rest[n] = o.quaternion.clone(); RB.restP[n] = o.position.clone(); }
+    if (o.isMesh){ RB.skinned = o; o.frustumCulled = false; (Array.isArray(o.material) ? o.material : [o.material]).forEach(mm => { mm.roughness = Math.max(mm.roughness || 0, 0.7); mm.metalness = 0; }); } });
+  RB.model = m; RB.root.add(m); RB.root.updateMatrixWorld(true);
+  { const P = RB.skinned.geometry.attributes.position, si = RB.skinned.geometry.attributes.skinIndex, sw = RB.skinned.geometry.attributes.skinWeight, bn = RB.skinned.skeleton.bones;
+    for (let i = 0; i < P.count; i += 2){ if (P.getY(i) > 0.62) continue; let b2 = -1, bw = 0; for (let k = 0; k < 4; k++){ const w = sw.getComponent(i, k); if (w > bw){ bw = w; b2 = si.getComponent(i, k); } } if (/(Foot|Toe|Leg|Hips)/.test(bn[b2].name)) RB.legV.push(i); } }
+  { const headB = RB.bones['Head']; m.updateMatrixWorld(true); const qa = new THREE.Quaternion(), qb = new THREE.Quaternion(); headB.getWorldQuaternion(qa); m.getWorldQuaternion(qb); const qLocal = qa.invert().multiply(qb);
+    const white = new THREE.MeshStandardMaterial({color: 0xeeeeee, roughness: 0.95}), dark = new THREE.MeshStandardMaterial({color: 0x3a3030, roughness: 0.8}); RB.lids = [];
+    for (const sx of [1, -1]){ const wp = m.localToWorld(V3(sx * 0.138, 1.328, 0.232)); const lp = headB.worldToLocal(wp.clone()); const grp = new THREE.Group(); grp.position.copy(lp); grp.quaternion.copy(qLocal); headB.add(grp);
+      const disc = new THREE.Mesh(SPH, white); disc.scale.set(0.064, 0.064, 0.02); grp.add(disc);
+      const arc = new THREE.Mesh(new THREE.TorusGeometry(0.036, 0.006, 6, 14, Math.PI), dark); arc.rotation.z = Math.PI; arc.position.set(0, 0.012, 0.02); grp.add(arc); grp.scale.setScalar(0.001); grp.visible = false; RB.lids.push(grp); } }
+  RB.ready = true;
+}).catch(err => console.error('rabbit', err));
+function rabGround(hop){ RB.root.position.y = 0; RB.root.updateMatrixWorld(true); RB.skinned.skeleton.update(); let mn = Infinity; const v = V3(); for (const i of RB.legV){ RB.skinned.getVertexPosition(i, v); v.applyMatrix4(RB.skinned.matrixWorld); if (v.y < mn) mn = v.y; } RB.root.position.y = -mn + 0.003 + hop; RB.root.updateMatrixWorld(true); }
+
+// ---------- the babies ----------
+function makeBaby(file){
+  const B = {root: new THREE.Group(), body: new THREE.Group(), ready: false}; B.root.add(B.body); B.root.visible = false; scene.add(B.root);
+  fetchModel(file).then(gl => {
+    const m = gl.scene, H = 0.72; m.scale.setScalar(H / 1.89); m.position.y = 0.945 * H / 1.89;
+    m.traverse(o => { if (o.isMesh){ o.frustumCulled = false; (Array.isArray(o.material) ? o.material : [o.material]).forEach(mm => { mm.roughness = Math.max(mm.roughness || 0, 0.7); mm.metalness = 0; }); } });
+    B.body.add(m); m.updateMatrixWorld(true); { const bb = new THREE.Box3().setFromObject(m); m.position.y -= bb.min.y; }
+    B.sh = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), new THREE.MeshBasicMaterial({map: shadow.material.map, transparent: true, depthWrite: false})); AXQ(B.sh, 'x', -Math.PI / 2); B.sh.position.y = 0.004; B.sh.renderOrder = -1; B.root.add(B.sh); B.ready = true;
+  }).catch(err => console.error(file, err));
+  return B;
+}
+const DOG = makeBaby('dogbaby_model.json'), COW = makeBaby('cowbaby_model.json');
+function placeBaby(B, s){
+  if (!B.ready) return; B.root.position.set(s.x, s.y || 0, s.z); B.root.rotation.set(0, s.yaw, 0);
+  B.body.scale.set(1 / Math.sqrt(s.sq || 1), s.sq || 1, 1 / Math.sqrt(s.sq || 1)); B.body.rotation.set(s.tilt || 0, 0, s.roll || 0);
+  if (B.sh){ const gnd = Math.max(0, (s.y || 0)); B.sh.position.y = 0.004 - (s.y || 0); B.sh.scale.setScalar(s.onShell ? 0.001 : 1 - 0.5 * Math.min(1, ((s.hop || 0) + gnd) / 0.3)); }
+}
+// cheering spectators (race): sway, little hops, big jumps at the start, passing and the finish
+function cheerState(T, off, x, side){
+  const act = 0.4 + 0.6 * bell(span(T, 0, 12)) ;
+  let hop = 0, roll = 0.09 * Math.sin(T * 3.2 + off), sq = 1;
+  { const u = span(T, 0.8 + off * 0.05, 1.7); if (u > 0 && u < 1) hop += 0.18 * Math.abs(Math.sin(u * Math.PI * 2)); }
+  { const u = span(T, RACE_TPASS - 0.5 + off * 0.05, RACE_TPASS + 0.6); if (u > 0 && u < 1) hop += 0.14 * Math.abs(Math.sin(u * Math.PI * 2)); }
+  { const u = span(T, RACE.tFin - 0.6 + off * 0.04, 11.8); if (u > 0 && u < 1){ hop += 0.24 * Math.abs(Math.sin(u * Math.PI * 4 + off)); roll += 0.12 * Math.sin(T * 9); } }
+  return {x, z: -1.4, y: 0, hop, roll, sq, yaw: 0.0 + side, tilt: 0};
+}
+const CS = (T, B, off, x, side) => { const s = cheerState(T, off, x, side); s.y = s.hop; return s; };
+// river rider: the cow baby climbs onto the shell, rides over the stream, climbs down
+function cowRiver(T, ry){
+  const bank0 = V3(RV.bank0 - 0.35, 0, 0.55), bank1 = V3(RV.bank1 + 0.35, 0, 0.55); const out = {x: 0, y: 0, z: 0, yaw: 0.9, roll: 0, tilt: 0, sq: 1, onShell: false};
+  if (T < 2.0){ out.x = bank0.x; out.z = bank0.z; out.yaw = 0.9; const shy = bell(span(T, 0.6, 1.9)); out.roll = 0.15 * Math.sin(T * 14) * shy; out.y = 0.1 * Math.abs(Math.sin(T * 5)) * bell(span(T, 1.5, 2.0)); out.x -= 0.1 * shy; return out; }
+  if (T < 2.7){ const u = span(T, 2.0, 2.7); shellApex(_pp); out.x = lerp(bank0.x, _pp.x, ease(u)); out.z = lerp(bank0.z, _pp.z, ease(u)); out.y = lerp(0, _pp.y - 0.02, ease(u)) + 0.5 * Math.sin(Math.PI * u); out.sq = 1 + 0.06 * bell(u); out.yaw = lerp(0.9, 0.5, u); return out; }
+  if (T < 9.2){ shellApex(_pp); out.x = _pp.x; out.y = _pp.y - 0.02; out.z = _pp.z; out.yaw = 0.5; out.onShell = true; out.roll = 0.08 * Math.sin(T * 3.1) + 0.06 * Math.sin(T * 7.3) * span(T, 3.7, 4.2); out.sq = 1; return out; }
+  if (T < 9.8){ const u = span(T, 9.2, 9.8); shellApex(_pp); out.x = lerp(_pp.x, bank1.x, ease(u)); out.z = lerp(_pp.z, bank1.z, ease(u)); out.y = lerp(_pp.y - 0.02, 0, ease(u)) + 0.5 * Math.sin(Math.PI * u); out.yaw = lerp(0.5, 0.3, u); out.sq = 1 + 0.06 * bell(u); return out; }
+  out.x = bank1.x; out.z = bank1.z; out.yaw = 0.3 - 0.2 * span(T, 9.8, 11.0); out.y = (T > 9.9 && T < 11.3) ? 0.16 * Math.abs(Math.sin((T - 9.9) * 8)) * (1 - 0.3 * span(T, 9.9, 11.3)) : 0; out.roll = 0.06 * Math.sin(T * 6) * span(T, 9.8, 10.4); return out;
+}
+
+// ---------- placing the props ----------
+const popS = (T, a, b, c, d) => Math.max(0.001, backOut(span(T, a, b)) * (1 - ease(span(T, c, d))));
+function placeProps(p){
+  const T = p.T; shadow.visible = true; SAFE_OPT.groundY = move === 'river' ? -2.5 : 0;
+  raceG.visible = move === 'race'; riverG.visible = move === 'river'; trailG.visible = move === 'trail'; mapHud.visible = move === 'trail';
+  const rbOn = move === 'race' && RB.ready;
+  RB.root.visible = rbOn; DOG.root.visible = move === 'race' && DOG.ready; COW.root.visible = (move === 'race' || move === 'river') && COW.ready;
+  ribbon.visible = false; ribbonL.visible = ribbonR.visible = false; rippleS.forEach(s => s.material.opacity = 0); badgeT.visible = false;
+  if (move === 'race' && p.race) placeRace(p);
+  if (move === 'river' && p.rv) placeRiver(p);
+  if (move === 'trail' && p.tr) placeTrail(p);
+}
+function placeRace(p){
+  const T = p.T, s = popS(T, 0.05, 0.5, 11.8, 12.0); raceG.scale.setScalar(s); raceG.position.set(0, 0, 0);
+  // ribbon: whole until the turtle breaks it at x = finish, then two halves fall
+  if (T < RACE.tFin){ ribbon.visible = true; } else { const u = T - RACE.tFin; for (const [h, sg] of [[ribbonL, -1], [ribbonR, 1]]){ h.visible = u < 2.0; h.scale.set(0.02, 0.07, 0.7); h.position.set(RACE.x1 + 0.1 * u, 0.95 - 0.4 * u * u - 0.2 * u, (RACE.zT + RACE.zR) / 2 + sg * (0.38 + 0.55 * u)); h.rotation.set(sg * 1.2 * u, 0, 0); } }
+  // rabbit teen
+  const r = p.race.rab; if (RB.ready){
+    rabReset();
+    if (r.run) rabRun(r.ph || 0, r.run); if (r.sit) rabSit(r.sit); if (r.nap) rabNapHead(r.nap); if (r.wake) rabArmsUp(0.85 * r.wake); if (r.clap) rabClap(r.clap, T * 14);
+    RB.lids && RB.lids.forEach(l => { const k = clamp01(((r.nap || 0) - 0.05) / 0.9); l.visible = k > 0.01; l.scale.setScalar(Math.max(0.001, k)); });
+    RB.root.position.set(r.x, 0, r.z); RB.root.rotation.set(0, r.yaw, 0); RB.root.scale.setScalar(s); rabGround(r.hop || 0);
+  }
+  placeBaby(COW, CS(T, COW, 0, RACE.x1 - 1.5, 0.15)); placeBaby(DOG, CS(T, DOG, 1.7, RACE.x1 - 0.7, -0.1)); COW.root.scale.setScalar(s); DOG.root.scale.setScalar(s);
+}
+function placeRiver(p){
+  const T = p.T, s = popS(T, 0.05, 0.5, 11.8, 12.0); riverG.scale.setScalar(s); riverG.position.set(0, 0, 0);
+  const x = p.rv.x, dep = riverDepth(T), inW = dep > 0.02 || (x > RIV.x0 - 0.15 && x < RIV.x1 + 0.15 && T < RV.jump1 + 0.2 && T > 3.4);
+  riverClip.constant = (x > RIV.x0 - 0.35 && x < RIV.x1 + 0.35 && T > 3.3 && T < RV.jump1 + 0.1) ? -0.015 : 50;
+  // fish circle around the turtle just under the surface; when it is out of the water they swim by
+  fish.forEach((f, i) => { const a = T * (0.9 + 0.12 * i) + i * 1.3, R = 0.7 + 0.14 * i; const near = inW; f.position.set(near ? x + Math.cos(a) * R : lerp(-1.2, 1.2, i / 4) + 0.3 * Math.sin(T * 0.8 + i), 0.012, near ? 0.35 + Math.sin(a) * R * 0.9 : -1.4 + i * 0.7); f.rotation.y = near ? -a + Math.PI / 2 : 0.5 + 0.2 * Math.sin(T + i); });
+  // rings on the water around the body (waterline) and splashes
+  rippleS.forEach((sp, i) => { sp.material.opacity = 0; });
+  if (dep > 0.3){ rippleS.forEach((sp, i) => { const u = ((T * 0.9 + i * 0.2) % 1); sp.position.set(x, 0.03, 0.35); sp.scale.setScalar(0.5 + 0.9 * u + 0.06 * i); sp.material.opacity = 0.7 * (1 - u); }); }
+  shadow.visible = !(dep > 0.05);
+  placeBaby(COW, cowRiver(T, p)); COW.root.scale.setScalar(s);
+}
+function placeTrail(p){
+  const T = p.T, s = popS(T, 0.05, 0.5, 11.8, 12.0), x = p.tr.x; trailG.scale.setScalar(s); trailG.position.set(0, 0, 0);
+  mapHud.visible = true; mapHud.scale.set(1.15 * s, 0.86 * s, 1);
+  let seg = -1; TR.ms.forEach((m, i) => { const g = msG[i], u = span(x, m - 0.9, m - 0.2); g.visible = u > 0; g.scale.setScalar(Math.max(0.001, backOut(u) * s)); if (x >= m + 0.25) seg = i; });
+  if (T >= TRT.u1 + 0.15) seg = 3; if (seg !== mapState.seg){ mapState.seg = seg; drawMap(seg); }
+  if (T > TRT.u1 + 0.4 && T < 12){ badgeT.position.set(TR.arch - 0.5, terrH(TR.arch) + 2.3, TR.z + 0.75); badgeT.scale.setScalar(0.8 * popS(T, TRT.u1 + 0.4, TRT.u1 + 0.8, 11.7, 12.0)); badgeT.visible = true; }
+}
+const confTex = confTex0.map(c => makeTex(g => { g.fillStyle = '#' + c.toString(16).padStart(6, '0'); g.fillRect(34, 20, 60, 88); }));
+function confetti(x, y, z, n){ for (let i = 0; i < n; i++){ const a = Math.random() * TAU, r = Math.random(); spawn(confTex[i % 4], V3(x, y, z), V3(Math.cos(a) * (0.3 + r * 0.6), 0.8 + Math.random() * 0.6, Math.sin(a) * 0.3), 1.2 + r * 0.4, 0.07, 0, {gravity: -1.6}); } }
+function hearts(pos, n = 3, sz = 0.15){ for (let i = 0; i < n; i++) spawn(heartTex, pos.clone().add(V3((i - (n - 1) / 2) * 0.3, 0.1, 0.1)), V3((i - (n - 1) / 2) * 0.12, 0.45, 0), 1.1, sz); }
+function stars(pos, n = 5, sz = 0.13, sp = 0.6){ for (let i = 0; i < n; i++){ const a = i / n * TAU; spawn(starTex, pos.clone(), V3(Math.cos(a) * sp, 0.5 + Math.random() * 0.3, Math.sin(a) * sp * 0.5), 0.8, sz); } }
+function dustRing(x, y, z, n = 6, r = 0.3){ for (let i = 0; i < n; i++){ const a = i / n * TAU; spawn(dustTex, V3(x + Math.cos(a) * r * 0.5, y, z + Math.sin(a) * r * 0.5), V3(Math.cos(a) * 0.5, 0.3, Math.sin(a) * 0.5), 0.7, 0.16, 0.8); } }
+const W = {ready: wordTex('預備…', '#e8853a'), go: wordTex('開始！', '#e8584a'), cheer: wordTex('加油！', '#e8584a'), cheer2: wordTex('加油加油！', '#e8584a'), near: wordTex('快到了！', '#2b7a4b'), champ: wordTex('冠軍！', '#e8584a'), slow: wordTex('慢慢來～', '#2b7a4b'),
+  wow: wordTex('哇！', '#e8584a'), ohno: wordTex('輸了…', '#4aa3df'), clap: wordTex('恭喜！', '#e8853a'), shy: wordTex('我怕…', '#4aa3df'), up: wordTex('上來吧', '#2b7a4b'), hold: wordTex('抓緊喔', '#e8853a'), splash: wordTex('嘩啦～', '#4aa3df'), fish: wordTex('小魚～', '#e8853a'), thanks: wordTex('謝謝！', '#e8584a'), done: wordTex('到了！', '#2b7a4b'), one: wordTex('100 公尺', '#2b7a4b'), end: wordTex('終點到了', '#e8584a')};
+function events(p){
+  if (reduceMotion) return;
+  const T = p.T;
+  for (const e of p.events){
+    const head = wpos('Head', V3());
+    if (e === 'hello') hearts(head.clone().add(V3(0, 0.6, 0)), 3);
+    // race
+    if (e === 'ready') showWord(W.ready, V3(RACE.x0 + 0.5, 1.9, 0.3), 1.0);
+    if (e === 'go'){ showWord(W.go, V3(RACE.x0 + 0.8, 1.9, 0.3), 1.1); dustRing(RACE.x0 + 0.2, 0.02, RACE.zR, 6, 0.4); showWord(W.cheer, V3(RACE.x1 - 1.5, 2.0, -1.2), 0.8); }
+    if (e === 'rabzz') showWord(W.slow, head.clone().add(V3(0, 0.6, 0.2)), 0.8);
+    if (e === 'pass') showWord(W.cheer2, V3(RACE.x1 - 1.2, 2.0, -1.2), 0.9);
+    if (e === 'finish'){ showWord(W.champ, V3(RACE.x1 - 0.2, 2.1, 0.3), 1.2); confetti(RACE.x1, 1.0, 0.0, 14); stars(V3(RACE.x1, 1.4, 0.2), 8, 0.14, 0.8); }
+    if (e === 'wake') showWord(W.wow, V3(RACE.nap, 1.7, RACE.zR), 0.9);
+    if (e === 'gz'){ hearts(head.clone().add(V3(0, 0.55, 0.25)), 3); }
+    // river
+    if (e === 'shy') showWord(W.shy, V3(RV.bank0, 1.1, 0.6), 0.8);
+    if (e === 'jumpup') showWord(W.up, head.clone().add(V3(-0.2, 0.7, 0.2)), 0.9);
+    if (e === 'hold'){ showWord(W.hold, head.clone().add(V3(0, 0.8, 0.2)), 0.9); dustRing(p.rv.x, 0.02, 0.35, 4, 0.5); }
+    if (e === 'splashin'){ stars(V3(p.rv.x, 0.25, 0.5), 8, 0.1, 0.6); showWord(W.splash, V3(p.rv.x, 2.1, 0.4), 0.9); }
+    if (e === 'leap'){ stars(V3(p.rv.x + 0.3, 0.2, 0.5), 8, 0.12, 0.7); showWord(W.wow, V3(p.rv.x + 0.3, 2.3, 0.4), 0.9); }
+    if (e === 'land'){ dustRing(p.rv.x, 0.02, 0.35, 8, 0.8); stars(V3(p.rv.x, 0.3, 0.5), 8, 0.14, 0.8); showWord(W.done, V3(p.rv.x, 2.2, 0.4), 0.9); }
+    if (e === 'fishhi') showWord(W.fish, V3(p.rv.x + 0.4, 0.8, 0.7), 0.8);
+    if (e === 'jumpdown') dustRing(RV.bank1 + 0.35, 0.02, 0.55, 5, 0.4);
+    if (e === 'thanks'){ showWord(W.thanks, V3(RV.bank1 + 0.35, 1.2, 0.55), 0.9); hearts(V3(RV.bank1 + 0.35, 0.9, 0.6), 3, 0.14); }
+    // trail
+    if (e === 'end'){ const hA = terrH(TR.arch); showWord(W.end, V3(TR.arch - 2.1, hA + 2.0, TR.z + 0.75), 1.0); confetti(TR.arch - 0.3, hA + 1.2, TR.z, 14); stars(V3(TR.arch - 0.3, hA + 1.4, TR.z), 8, 0.15, 0.8); }
+    if (e === 'badge') stars(V3(TR.arch - 0.5, terrH(TR.arch) + 2.3, TR.z + 0.75), 6, 0.12, 0.7);
+  }
+  if (move === 'race' && p.race && p.race.rab && p.race.rab.nap > 0.5 && Math.floor(T * 0.9) !== Math.floor((T - __dE) * 0.9)) spawn(zzTex, V3(RACE.nap + 0.1, 1.3, RACE.zR), V3(0.12, 0.22, 0), 2.2, 0.15, 1.2);
+  if (move === 'trail' && p.tr && (p.tr.up > 0.3 || p.tr.stairs > 0.5) && Math.floor(T * 2.2) !== Math.floor((T - __dE) * 2.2)){ const hd = wpos('Head', V3()); spawn(dropTex, hd.clone().add(V3(0.25, 0.25, 0.2)), V3(0.05, -0.1, 0), 0.9, 0.07); if (Math.floor(T * 1.1) !== Math.floor((T - __dE) * 1.1)) showWord(wordTex(Math.random() < 0.5 ? '呼～' : '加油！', '#2b7a4b'), hd.clone().add(V3(-0.2, 0.7, 0.2)), 0.7); }
+  if (move === 'trail' && p.tr){ TR.ms.forEach((m, i) => { const was = p.tr.x - (p.tr.x - trailTx(T - __dE)); if (trailTx(T - __dE) < m - 0.3 && p.tr.x >= m - 0.3){ dustRing(m, terrH(m) + 0.02, TR.z - 0.5, 6, 0.5); stars(V3(m, terrH(m) + 0.9, TR.z + 0.3), 3 + 2 * i, 0.09 + 0.04 * i, 0.4); showWord(wordTex((i + 1) * 100 + ' 公尺', '#2b7a4b'), V3(m, terrH(m) + 2.2, TR.z + 0.75), 1.25); } }); }
+}
+// ---------- buttons, camera, loop ----------
+const snap = {}; let blendStart = -10;
+function setMove(name){
+  if (FK.wait(name, 'turtle', setMove)) return;   // 食物載好才開始
+  if (model){ for (const n in bones) snap[n] = bones[n].quaternion.clone(); snap.rp = rig.position.clone(); snap.rq = rig.quaternion.clone(); blendStart = performance.now() / 1000; }
+  clearFx(); userCam = false;
+  PARKS.show(isEat(name) ? 'idle' : name); FK.show(name, 'turtle', 0.3);
+  move = name; t0 = performance.now() / 1000; frozen = null; __hold = 0;
+  document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
+  statusEl.textContent = names[name];
+}
+document.querySelectorAll('.moves button').forEach(b => b.addEventListener('click', () => setMove(b.dataset.move)));
+const CAM = { eat:CAMEAT, snack:CAMEAT, refuse:CAMEAT,idle:{t:[0, 0.85, 0.1], d:5.0, az:0.09}, race:{t:[0.0, 0.8, 0.0], d:11.6, az:0.04, fov:34}, river:{t:[0.2, 0.9, 0.3], d:11.0, az:0.04, fov:36}, trail:{t:[0.2, 0.95, 0.0], d:11.6, az:0.04, fov:36}, sleep:{t:[0, 0.6, 0.1], d:4.6, az:0.1}};
+const _ct = V3(), _cp = V3();
+let zTimer = 0, last = performance.now() / 1000;
+function loop(){
+  const now = performance.now() / 1000, rawDt = Math.max(0, now - last), dt = Math.min(rawDt, 0.05); last = now; if (__hold && loopEl.checked) __hold = 0;
+  let t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  if (frozen === null && !loopEl.checked && (/^(eat|snack|refuse)$/.test(move) || TALENT.includes(move) ) && t >= LEN[move]){ if (!__hold) __hold = now; t = LEN[move] - 0.001; if (now - __hold >= 1 && !EMBED){ setMove('idle'); t = 0; } }
+  __dE = (frozen !== null || __hold) ? 1e-4 : Math.min(0.5, Math.max(0.001, rawDt));   // 字卡用真實經過時間判斷（上限 0.5 秒），慢手機不會漏
+  if (move === 'trail' && !TRLIFT){ TRLIFT = new Float32Array(12 * 30 + 2); buildTrailLift(); }
+  let p = pose(move, t);
+  if (p.yAbs == null && !p.free){
+    const lowRel = footMin() - rig.position.y, gNew = -lowRel;
+    if (Math.abs(gNew - gY) > 0.0015){ gY = gNew; p = pose(move, t); }
+  }
+  const bw = frozen !== null ? 1 : Math.min(1, (now - blendStart) / 0.35);
+  if (bw < 1){ const e = ease(bw); for (const n in bones){ if (!snap[n]) continue; bones[n].quaternion.slerpQuaternions(snap[n], bones[n].quaternion.clone(), e); }
+    rig.position.lerpVectors(snap.rp, rig.position.clone(), e); rig.quaternion.slerpQuaternions(snap.rq, rig.quaternion.clone(), e); }
+  rig.updateMatrixWorld(true);
+  placeProps(p);
+  if (p.eat){ FH.arms(p.eat, move); FH.place(p.eat, move, dt, wpos('Head', V3()), reduceMotion); } else FK.food.visible = false;
+  lidU.value = move === 'sleep' ? lidU.value + (1 - lidU.value) * (1 - Math.pow(0.02, dt)) : p.lid;
+  happyU.value = p.happy; sadU.value = p.sad;
+  flatEU.value = Math.max(lidU.value, p.happy, p.sad); flatMU.value = 0;
+  if (move === 'sleep' && !reduceMotion){ zTimer -= dt; if (zTimer <= 0){ zTimer = 1.1; spawn(zTex, wpos('Head', V3()).add(V3(0.3, 0.5, 0.3)), V3(0.14, 0.24, 0), 2.6, 0.15, 1.3); } }
+  if (frozen === null && !__hold) events(p);
+  updateFx(dt); updateWord(dt);
+  shadow.scale.set(1.2, 1.2, 1.2); shadow.position.set(rig.position.x, 0.003, rig.position.z);
+  if (!userCam){
+    const c = CAM[move]; _ct.set(c.t[0], c.t[1], c.t[2]);
+    if (move === 'race' && p.race){ _ct.x = clampN((p.x + p.race.rab.x) / 2, RACE.x0 + 1.5, RACE.x1 - 1.5); }
+    if (move === 'trail' && p.tr){ _ct.x = clampN(p.x + 0.8, TR.x0 + 2, TXE - 2.2); _ct.y = 0.95 + 0.5 * terrS(p.x); }
+    const k = 1 - Math.pow(0.04, dt); controls.target.lerp(_ct, k);
+    _cp.set(controls.target.x + Math.sin(c.az) * c.d, controls.target.y + 0.45 + c.d * 0.04, controls.target.z + Math.cos(c.az) * c.d); camera.position.lerp(_cp, k);
+  }
+  { const fT = (CAM[move] && CAM[move].fov) || 32; if (Math.abs(camera.fov - fT) > 0.05){ camera.fov += (fT - camera.fov) * (1 - Math.pow(0.04, dt)); camera.updateProjectionMatrix(); } }
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+function settle(name, t){ let p = pose(name, t); if (p.yAbs == null && !p.free){ const lowRel = footMin() - rig.position.y, gNew = -lowRel; if (Math.abs(gNew - gY) > 0.0015){ gY = gNew; p = pose(name, t); } } rig.updateMatrixWorld(true); return p; }
+function pose(name, t){
+  const T = t % LEN[name];
+  const p = {T, x:0, z:0, ry:0, pitch:0, roll:0, hop:0, yAbs:null, sy:1, lid:0, happy:0, sad:0, events:[], race:null, rv:null, tr:null, free:false};
+  resetPose();
+  if (isEat(name)){ poseEat(p, t, name); return p; }
+  armGap();
+  if (name === 'idle') poseIdle(p, t, T); else if (name === 'sleep') poseSleep(p, t, T);
+  else if (name === 'race') poseRace(p, t, T); else if (name === 'river') poseRiver(p, t, T); else if (name === 'trail') poseTrail(p, t, T);
+  return p;
+}
+window.__m = {THREE, setMove, camera, controls, bones, rig, freeze(x){ frozen = x; }, setT(x){ frozen = null; t0 = performance.now()/1000 - x; },
+  setUser(v){ userCam = v; }, HOLD: FH, EATK: FK, get model(){ return model; }, get skinned(){ return skinned; }, showWord, wordTex, get legV(){ return legV; }, buildTrailLift, get TRLIFT(){ return TRLIFT; }, wpos, pose, settle, footMin, placeProps, rot, place, V3, RB, COW, DOG, shellApex, terrH, terrS, riverDepth, trailTx, TXE, raceRab, cowRiver, RACE, RIV, TR,
+  minY(){ let mn = Infinity; const v = V3(); skinned.updateMatrixWorld(true); skinned.skeleton.update(); for (let i = 0; i < skinned.geometry.attributes.position.count; i += 3){ skinned.getVertexPosition(i, v); v.applyMatrix4(skinned.matrixWorld); mn = Math.min(mn, v.y); } return mn; }};
+window.__armClear = 0;
+const SAFE_OPT = { clock: () => (frozen !== null ? frozen : performance.now() / 1000 - t0), groundY: 0 };
+camera.far = 400; camera.updateProjectionMatrix();
+if (!new URLSearchParams(location.search).has('nosafe')){
+const __sh = setInterval(() => { if (model && bones.Head){ clearInterval(__sh); import('./meshysafe-a5c99b6d.js').then(m => { window.__SAFE = m.installSafety(THREE, () => model, bones, rig, scene, SAFE_OPT); }); } }, 300);
+}
+</script>
+</body></html>

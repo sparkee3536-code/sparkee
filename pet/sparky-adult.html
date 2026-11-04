@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>獨角獸 Sparky 成年才藝試作</title>
+<style>
+body.embed{margin:0;background:transparent;overflow:hidden}
+body.embed .wrap{padding:0;max-width:none;gap:0}
+body.embed .wrap>*:not(.stage){display:none!important}
+body.embed .stage{position:fixed;inset:0;aspect-ratio:auto;border-radius:0;border:0}
+body.embed .status{display:none}
+</style>
+<script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('embed-doc'),addEventListener('DOMContentLoaded',()=>document.body.classList.add('embed'));</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F4F6F1; --surface:#FFFFFF; --fg:#1B2A22; --muted:#55645B; --line:#DCE3DA;
+  --grass:#7B5BC8; --grass-ink:#FFFFFF; --spark:#F5A524; --spark-soft:#FFF1D6;
+  --sky-top:#DCEAF7; --sky-bot:#EEF5E6;
+  --f-display:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#B9A2F0; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#B9A2F0; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:20px 40px;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--f-display);font-weight:400;font-size:30px;margin:0;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted)}
+.stage{position:relative;width:100%;aspect-ratio:4/3.9;border-radius:24px;overflow:hidden;background:linear-gradient(var(--sky-top),var(--sky-bot));border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.status{position:absolute;left:12px;top:12px;background:var(--surface);color:var(--fg);border-radius:99px;padding:6px 16px;font-size:17px;font-weight:700;border:1px solid var(--line)}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:17px;pointer-events:none}
+.moves{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.moves{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.moves button{min-height:64px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:18px;font-weight:700;cursor:pointer;padding:6px;line-height:1.25}
+.moves button small{display:block;font-weight:400;font-size:14px;color:var(--muted)}
+.moves button[aria-pressed="true"]{background:var(--grass);color:var(--grass-ink);border-color:var(--grass)}
+.moves button[aria-pressed="true"] small{color:var(--grass-ink)}
+.moves button.sig{border-color:var(--spark)}
+.moves button:focus-visible{outline:3px solid var(--spark);outline-offset:2px}
+.toggle{display:flex;gap:10px;align-items:center;font-size:17px;color:var(--muted)}
+.toggle input{width:20px;height:20px;accent-color:var(--grass)}
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <h1>獨角獸 Sparky 成年</h1>
+    <p class="sub">三個才藝試作：獨角療癒（小狗寶寶來互動）、彩虹橋、花開公園。拖曳可以轉視角。</p>
+  </header>
+  <div class="stage" id="stage">
+    <div class="loading" id="loading">獨角獸 Sparky 成年載入中（約 9 MB）…</div>
+    <span class="status" id="status" hidden>待機</span>
+  </div>
+  <div class="moves" role="group" aria-label="動作">
+    <button data-move="idle" aria-pressed="true">待機</button>
+    <button data-move="heal" class="sig" aria-pressed="false">獨角療癒<small>13 秒</small></button>
+    <button data-move="bridge" class="sig" aria-pressed="false">彩虹橋<small>13 秒</small></button>
+    <button data-move="bloom" class="sig" aria-pressed="false">花開公園<small>13 秒</small></button>
+    <button data-move="sleep" aria-pressed="false">睡覺</button>
+    <button data-move="eat" class="feed" aria-pressed="false">開心吃<small>6 秒</small></button>
+    <button data-move="snack" class="feed" aria-pressed="false">最愛點心<small>7 秒</small></button>
+    <button data-move="refuse" class="feed" aria-pressed="false">搖頭不吃<small>5 秒</small></button>
+  </div>
+  <label class="toggle"><input type="checkbox" id="loopT"> 才藝播完自動重播</label>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+// 3D動畫生成規範 2.1: rotations are quaternions (axis-angle products), never Euler writes
+import {makeParks} from './parkscenes.js';
+import {makeEat, makeHold, phases, isEat} from './eatkit.js';
+const CAMEAT = {t:[0, 0.95, 0.3], d: 5.8, az: 0};
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+const TAU = Math.PI * 2;
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const AX = {x:V3(1,0,0), y:V3(0,1,0), z:V3(0,0,1)};
+const __qa = new THREE.Quaternion(), __qb = new THREE.Quaternion(), __qc = new THREE.Quaternion();
+function QYXZ(out, yaw, pitch, roll){ __qa.setFromAxisAngle(AX.y, yaw); __qb.setFromAxisAngle(AX.x, pitch); __qc.setFromAxisAngle(AX.z, roll); return out.copy(__qa).multiply(__qb).multiply(__qc); }
+
+// ---------- calibration (model space of the rigged GLB: feet at 0, height 1.65, facing +z) ----------
+const CFG = { scale:1, eye:[0.086,1.307], eyeR:[0.04,0.048], eyeZ:0.08, eyeOut:1.25, eyeFill:[0.66,0.52,0.48], noPink:true, ink:true, mouth:[0,1.2], mouthR:[0.05,0.03], mouthZ:9 };
+
+{ const q = new URLSearchParams(location.search); if (q.get('eyeR')) CFG.eyeR = q.get('eyeR').split(',').map(Number); if (q.get('eye')) CFG.eye = q.get('eye').split(',').map(Number); }
+const stage = document.getElementById('stage');
+const statusEl = document.getElementById('status');
+const loadingEl = document.getElementById('loading');
+const loopEl = document.getElementById('loopT');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb59a, 2.0));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3); scene.add(sun);
+const PARKS = makeParks(THREE, scene, 'adult-sparky'); PARKS.show('idle');
+const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 60);
+camera.position.set(0.6, 1.5, 6.6);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.95, 0.1); controls.enablePan = false; controls.enableDamping = true;
+controls.minDistance = 2.8; controls.maxDistance = 18; controls.maxPolarAngle = Math.PI * 0.52;
+let userCam = false; controls.addEventListener('start', () => { userCam = true; });
+
+const ground = new THREE.Mesh(new THREE.CircleGeometry(3.8, 64), new THREE.MeshLambertMaterial({color:0xcfe5c4}));
+AXQ(ground, 'x', -Math.PI/2); ground.material.depthWrite = false; ground.renderOrder = -2; scene.add(ground);
+function AXQ(o, a, ang){ o.quaternion.setFromAxisAngle(AX[a], ang); }
+const shCanvas = document.createElement('canvas'); shCanvas.width = shCanvas.height = 128;
+const sctx = shCanvas.getContext('2d'); const gr = sctx.createRadialGradient(64,64,4,64,64,62);
+gr.addColorStop(0,'rgba(30,50,35,0.45)'); gr.addColorStop(1,'rgba(30,50,35,0)'); sctx.fillStyle = gr; sctx.fillRect(0,0,128,128);
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.4,1.4), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shCanvas), transparent:true, depthWrite:false}));
+AXQ(shadow, 'x', -Math.PI/2); shadow.position.y = 0.003; shadow.renderOrder = -1; scene.add(shadow);
+
+const rig = new THREE.Group(); scene.add(rig);
+const glowU = {value:0}, calmU = {value:0}, flatEU = {value:0}, flatMU = {value:0}, lidU = {value:0}, happyU = {value:0}, sadU = {value:0};
+
+// ---------- floating symbols ----------
+function makeTex(draw){ const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); draw(g); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx; }
+const heartTex = makeTex(g => { g.translate(64, 66); g.beginPath(); g.moveTo(0, 40); g.bezierCurveTo(-64, -4, -36, -56, 0, -24); g.bezierCurveTo(36, -56, 64, -4, 0, 40); g.closePath(); g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ff6f8e'; g.fill(); });
+const zTex = makeTex(g => { g.font = '900 104px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.lineJoin = 'round'; g.strokeText('Z', 64, 68); g.fillStyle = '#5a6fa8'; g.fillText('Z', 64, 68); });
+const starTex = makeTex(g => { g.translate(64, 64); g.beginPath(); for (let i = 0; i < 10; i++){ const r = i % 2 ? 22 : 54, a = -Math.PI/2 + i*Math.PI/5; g.lineTo(Math.cos(a)*r, Math.sin(a)*r); } g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#f5c24a'; g.fill(); });
+const dustTex = makeTex(g => { g.beginPath(); g.arc(64, 64, 50, 0, TAU); g.fillStyle = '#e6dcc8'; g.fill(); });
+const dropTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -52); g.bezierCurveTo(22, -18, 40, 6, 40, 22); g.arc(0, 22, 40, 0, Math.PI); g.bezierCurveTo(-40, 6, -22, -18, 0, -52); g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#6fbfee'; g.fill(); });
+const noteTex = color => makeTex(g => { const shape = () => { g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.moveTo(62, 92); g.lineTo(62, 20); g.quadraticCurveTo(92, 34, 96, 62); };
+  g.lineJoin = 'round'; g.lineCap = 'round'; shape(); g.lineWidth = 20; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ffffff'; g.fill(); shape(); g.lineWidth = 9; g.strokeStyle = color; g.stroke(); g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.fillStyle = color; g.fill(); });
+const noteTexes = [noteTex('#f5a524'), noteTex('#2b7a4b')];
+const words = {};
+function wordTex(txt, col = '#e8584a'){
+  if (words[txt]) return words[txt];
+  const c = document.createElement('canvas'); c.width = 384; c.height = 160; const g = c.getContext('2d');
+  g.font = '900 96px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  let s = 96; while (g.measureText(txt).width > 340 && s > 40){ s -= 6; g.font = `900 ${s}px "Huninn","Noto Sans TC",sans-serif`; }
+  g.lineJoin = 'round'; g.lineWidth = 18; g.strokeStyle = '#ffffff'; g.strokeText(txt, 192, 84); g.fillStyle = col; g.fillText(txt, 192, 84);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return (words[txt] = tx);
+}
+const fx = [];
+function spawn(map, pos, vel, life, size, grow = 0, extra = null){
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map, transparent:true, depthWrite:false})); sp.position.copy(pos); sp.renderOrder = 5; scene.add(sp);
+  const f = Object.assign({sp, vel, life, size, grow, age:0}, extra || {}); fx.push(f); return f;
+}
+function updateFx(dt){
+  for (let i = fx.length - 1; i >= 0; i--){
+    const f = fx[i]; f.age += dt;
+    if (f.age > f.life){ scene.remove(f.sp); f.sp.material.dispose(); fx.splice(i, 1); continue; }
+    const u = f.age / f.life; if (f.gravity) f.vel.y += f.gravity * dt;
+    if (f.follow) f.sp.position.copy(f.follow(f.age)); else f.sp.position.addScaledVector(f.vel, dt);
+    const s = f.size * (Math.min(1, f.age/0.2)*0.4 + 0.6) * (1 + f.grow*u); f.sp.scale.set(s, s, s);
+    f.sp.material.opacity = Math.min(1, f.age/0.15) * (u > 0.6 ? 1 - (u-0.6)/0.4 : 1);
+  }
+}
+function clearFx(){ fx.forEach(f => { scene.remove(f.sp); f.sp.material.dispose(); }); fx.length = 0; }
+let wordSprite = null;
+function showWord(tex, pos, scale = 0.8){
+  if (wordSprite){ scene.remove(wordSprite); wordSprite.material.dispose(); }
+  wordSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: tex, transparent: true, depthWrite: false, depthTest: false}));
+  wordSprite.renderOrder = 9; wordSprite.position.copy(pos); wordSprite.userData.age = 0; wordSprite.userData.sc = scale; scene.add(wordSprite);
+}
+function updateWord(dt){
+  if (!wordSprite) return;
+  const a = (wordSprite.userData.age += dt), pop = a < 0.18 ? 0.6 + 2.6 * a : 1.07 - 0.07 * Math.min(1, (a - 0.18) / 0.15), k = wordSprite.userData.sc;
+  wordSprite.scale.set(k * pop, k * 0.5 * pop, 1); wordSprite.material.opacity = a > 1.2 ? Math.max(0, 1 - (a - 1.2) / 0.3) : 1;
+  if (a > 1.5){ scene.remove(wordSprite); wordSprite.material.dispose(); wordSprite = null; }
+}
+function resize(){ const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage); resize();
+// ---------- face prep: when an expression is drawn, the painted eye/mouth disappears into clean skin ----------
+// For each vertex on an eye or the mouth we store the skin colour of the surrounding ring, plus an offset and
+// a normal that sink the eye/mouth bump back onto the surrounding surface, so nothing looks like a closed lid.
+function prepFace(mesh, F){
+  const g = mesh.geometry, P = g.attributes.position, UV = g.attributes.uv, N = g.attributes.normal, n = P.count;
+  const img = mesh.material.map && mesh.material.map.image;
+  const W = img.width, H = img.height, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d', {willReadFrequently: true}); cx.drawImage(img, 0, 0); const px = cx.getImageData(0, 0, W, H).data;
+  const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const colOf = i => { const u = UV.getX(i), v = UV.getY(i);
+    const x = Math.min(W - 1, Math.max(0, Math.floor(((u % 1) + 1) % 1 * W))), y = Math.min(H - 1, Math.max(0, Math.floor(((v % 1) + 1) % 1 * H)));
+    const k = (y * W + x) * 4; return [lin(px[k]), lin(px[k + 1]), lin(px[k + 2])]; };
+  const OUT = F.eyeOut || 1.35, re = new Float32Array(n), rm = new Float32Array(n), cols = new Array(n);
+  for (let i = 0; i < n; i++){
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i), s = x < 0 ? -1 : 1;
+    re[i] = z > F.eyeZ ? Math.hypot((x - F.eye[0] * s) / F.eyeR[0], (y - F.eye[1]) / F.eyeR[1]) : 99;
+    rm[i] = z > F.mouthZ ? Math.hypot((x - F.mouth[0]) / F.mouthR[0], (y - F.mouth[1]) / F.mouthR[1]) : 99;
+    if (re[i] < OUT + 0.9 || rm[i] < 2.1) cols[i] = colOf(i);
+  }
+  const lum = c => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  const ringE = [], ringM = [];
+  for (let i = 0; i < n; i++){
+    if (re[i] > OUT - 0.1 && re[i] < OUT + 0.6 && lum(cols[i]) > 0.15) ringE.push(i);
+    else if (rm[i] > 1.25 && rm[i] < 2.0 && re[i] > 1.35 && lum(cols[i]) > 0.15) ringM.push(i);
+  }
+  // centre of the head from the skin ring around the eyes (least-squares sphere)
+  const M = Array.from({length: 4}, () => [0, 0, 0, 0, 0]);
+  for (const i of ringE){ const x = P.getX(i), y = P.getY(i), z = P.getZ(i), r = [2*x, 2*y, 2*z, 1], b = x*x + y*y + z*z;
+    for (let a = 0; a < 4; a++){ for (let c = 0; c < 4; c++) M[a][c] += r[a] * r[c]; M[a][4] += r[a] * b; } }
+  for (let a = 0; a < 4; a++){ let p = a; for (let r = a + 1; r < 4; r++) if (Math.abs(M[r][a]) > Math.abs(M[p][a])) p = r; [M[a], M[p]] = [M[p], M[a]];
+    for (let r = 0; r < 4; r++){ if (r === a) continue; const f = M[r][a] / M[a][a]; for (let c = a; c < 5; c++) M[r][c] -= f * M[a][c]; } }
+  const C = [M[0][4] / M[0][0], M[1][4] / M[1][1], M[2][4] / M[2][2]];
+  // eyes are filled with the dominant skin colour around each eye (keeps a clean, even patch)
+  const domE = F.eyeFill ? [F.eyeFill, F.eyeFill] : [-1, 1].map(sd => { const sel = ringE.filter(j => (P.getX(j) < 0 ? -1 : 1) === sd && P.getY(j) > F.eye[1] && re[j] < OUT + 0.3);   // upper half: forehead fur, away from snout and blush
+    return [0, 1, 2].map(k => { const v = sel.map(j => cols[j][k]).sort((a, b) => a - b); return v.length ? v[v.length >> 1] : 0.8; }); });
+  const aSkin = new Float32Array(n * 4), aFlat = new Float32Array(n * 4), aFlatN = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++){
+    aFlatN[i*3] = N.getX(i); aFlatN[i*3+1] = N.getY(i); aFlatN[i*3+2] = N.getZ(i);
+    const own = cols[i]; if (own){ aSkin[i*4] = own[0]; aSkin[i*4+1] = own[1]; aSkin[i*4+2] = own[2]; }
+    const pinkV = !F.noPink && cols[i] && cols[i][0] - cols[i][2] > 0.15 && cols[i][1] > 0.3;   // snout & blush stay as they are
+    const isE = re[i] < OUT && !pinkV, isM = !isE && rm[i] < 1.4;
+    if (!isE && !isM) continue;
+    const ring = isE ? ringE : ringM, r = isE ? re[i] : rm[i];
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+    const near = [];
+    for (const j of ring){ const d = Math.hypot(P.getX(j) - x, P.getY(j) - y, P.getZ(j) - z); if (near.length < 18 || d < near[near.length - 1][0]){ near.push([d, j]); near.sort((a, b) => a[0] - b[0]); if (near.length > 18) near.pop(); } }
+    if (!near.length) continue;
+    // colour: take ring samples lying in the same direction from the eye/mouth centre, so the skin pattern continues across
+    const sx = x < 0 ? -1 : 1, cxE = isE ? F.eye[0] * sx : F.mouth[0], cyE = isE ? F.eye[1] : F.mouth[1], rx = isE ? F.eyeR[0] : F.mouthR[0], ry = isE ? F.eyeR[1] : F.mouthR[1];
+    const ang = Math.atan2((y - cyE) / ry, (x - cxE) / rx), dirSet = [];
+    for (const j of ring){ const jx = P.getX(j), jy = P.getY(j); if (isE && (jx < 0) !== (x < 0)) continue;
+      let da = Math.abs(Math.atan2((jy - cyE) / ry, (jx - cxE) / rx) - ang); if (da > Math.PI) da = 2 * Math.PI - da;
+      if (da < 0.4) dirSet.push([Math.hypot(jx - x, jy - y, P.getZ(j) - z), j]); }
+    dirSet.sort((a, b) => a[0] - b[0]);
+    const pick = r < 0.6 || dirSet.length < 4 ? near : dirSet.slice(0, 8);   // the very middle blends from all around
+    const med = isE ? domE[x < 0 ? 0 : 1] : [0, 1, 2].map(k => { const v = pick.map(q => cols[q[1]][k]).sort((a, b) => a - b); return v[v.length >> 1]; });
+    let wsum = 0, rad = 0, nx = 0, ny = 0, nz = 0;
+    for (const [d, j] of near.slice(0, 10)){ const w = 1 / (d + 0.01); wsum += w;
+      rad += w * Math.hypot(P.getX(j) - C[0], P.getY(j) - C[1], P.getZ(j) - C[2]); nx += w * N.getX(j); ny += w * N.getY(j); nz += w * N.getZ(j); }
+    rad /= wsum; const nl = Math.hypot(nx, ny, nz) || 1;
+    const dx = x - C[0], dy = y - C[1], dz = z - C[2], dl = Math.hypot(dx, dy, dz) || 1;
+    const fade = isE ? 1 - Math.min(1, Math.max(0, (r - (OUT - 0.3)) / 0.3)) : 1 - Math.min(1, Math.max(0, (r - 1.05) / 0.3));
+    aSkin[i*4] = med[0]; aSkin[i*4+1] = med[1]; aSkin[i*4+2] = med[2]; aSkin[i*4+3] = fade;
+    aFlat[i*4] = C[0] + dx / dl * rad - x; aFlat[i*4+1] = C[1] + dy / dl * rad - y; aFlat[i*4+2] = C[2] + dz / dl * rad - z; aFlat[i*4+3] = isE ? 1 : 2;
+    aFlatN[i*3] = nx / nl; aFlatN[i*3+1] = ny / nl; aFlatN[i*3+2] = nz / nl;
+  }
+  g.setAttribute('aSkin', new THREE.BufferAttribute(aSkin, 4));
+  g.setAttribute('aFlat', new THREE.BufferAttribute(aFlat, 4));
+  g.setAttribute('aFlatN', new THREE.BufferAttribute(aFlatN, 3));
+}
+const FLAT_VS_HEAD = 'attribute vec4 aSkin;\nattribute vec4 aFlat;\nattribute vec3 aFlatN;\nuniform float uFlatE;\nuniform float uFlatM;\nvarying vec4 vSkin;\nvarying float vFlatW;\n';
+const FLAT_VS_NORMAL = `#include <beginnormal_vertex>
+  float flatW = (aFlat.w > 0.5 && aFlat.w < 1.5 ? uFlatE : (aFlat.w > 1.5 ? uFlatM : 0.0)) * aSkin.a;
+  objectNormal = normalize(mix(objectNormal, aFlatN, flatW));
+  vSkin = aSkin; vFlatW = flatW;`;
+
+// ---------- shader: blink / closed eyes, calm closed mouth, happy eyes, ear wobble ----------
+const f = x => Number(x).toFixed(4);
+const v2 = a => `vec2(${f(a[0])}, ${f(a[1])})`;
+const v3 = a => `vec3(${f(a[0])}, ${f(a[1])}, ${f(a[2])})`;
+function patch(m){ for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap']){ const tx = m[k]; if (tx){ tx.generateMipmaps = false; tx.minFilter = THREE.LinearFilter; tx.needsUpdate = true; } }   // 模型建立規則 4.6
+  const c = CFG;
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, {uGlow:glowU, uFlatE:flatEU, uFlatM:flatMU, uLid:lidU, uCalm:calmU, uHappy:happyU, uSad:sadU});
+    sh.fragmentShader = 'uniform float uGlow;\nuniform float uLid;\nuniform float uCalm;\nuniform float uHappy;\nuniform float uSad;\nvarying vec3 vObj;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+      if (!gl_FrontFacing && vFlatW > 0.05) discard;
+      float coverM = 0.0;
+      float inkK = 0.0;
+      float eyeK = max(max(uLid, uHappy), uSad);
+      if (eyeK > 0.01 && vObj.z > ${f(c.eyeZ)}) {
+        float side = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 e = (vObj.xy - vec2(${f(c.eye[0])} * side, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        float r = length(e);
+        if (r < ${f((c.eyeOut || 1.35) + 0.15)} && (uHappy > 0.5 || uSad > 0.5 || e.y > ${f(c.eyeOut || 1.35)} * (1.0 - 2.0 * uLid))) {
+          coverM = smoothstep(${f((c.eyeOut || 1.35) + 0.15)}, ${f((c.eyeOut || 1.35) - 0.1)}, r)${c.noPink ? '' : ' * (1.0 - step(0.15, diffuseColor.r - diffuseColor.b) * step(0.3, diffuseColor.g))'};
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, coverM);
+          if (uHappy > 0.9) {
+            vec2 tip = vec2(0.0, 0.62), a1 = vec2(-0.92, -0.38), a2 = vec2(0.92, -0.38);
+            vec2 pa = e - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = e - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.2) { diffuseColor.rgb = vec3(0.045, 0.025, 0.03); inkK = 1.0; }
+          } else if (uSad > 0.9) {
+            // 難過：「> <」眼（2026-10-18 搖頭不吃）
+            vec2 q = vec2(-e.x * side, e.y), tip = vec2(0.42, 0.0), a1 = vec2(-0.5, 0.42), a2 = vec2(-0.5, -0.42);
+            vec2 pa = q - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = q - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.12) { diffuseColor.rgb = vec3(0.045, 0.025, 0.03); inkK = 1.0; }
+          } else if (uLid > 0.9 && abs(e.x) < 1.2) {
+            float yc = -0.12 - 0.56 * (1.0 - (e.x * e.x) / 1.44);
+            if (abs(e.y - yc) < 0.17) { diffuseColor.rgb = vec3(0.045, 0.025, 0.03); inkK = 1.0; }
+          }
+        }
+      }
+      float mouthK = max(uCalm, uSad);
+      if (mouthK > 0.01 && vObj.z > ${f(c.mouthZ)}) {
+        vec2 mo = (vObj.xy - ${v2(c.mouth)}) / ${v2(c.mouthR)};
+        float r = length(mo);
+        if (r < 1.2) {
+          float mm = smoothstep(1.2, 0.95, r) * mouthK;
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, mm);
+          coverM = max(coverM, mm);
+          vec2 q = (vObj.xy - vec2(0.0, ${f(c.mouth[1] + 0.01)})) / vec2(0.045, 0.02);
+          if (mouthK > 0.9 && abs(q.x) < 1.0) {
+            float yc = (uSad > 0.5 ? 0.6 : -0.6) * (1.0 - q.x * q.x);   // 難過時嘴角往下
+            if (abs(q.y - yc) < 0.38) diffuseColor.rgb = vec3(0.36, 0.2, 0.22);
+          }
+        }
+      }`).replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+      totalEmissiveRadiance += vec3(0.0) * inkK;
+      if (uGlow > 0.001 && vObj.z > ${f(c.eyeZ)}) {
+        float sideG = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 eg = (vObj.xy - vec2(${f(c.eye[0])} * sideG, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        float rg = length(eg), gmask = smoothstep(1.08, 0.86, rg) * uGlow;
+        float slit = smoothstep(0.2, 0.1, abs(eg.x) / (1.0 - 0.75 * eg.y * eg.y + 0.0001)) * step(abs(eg.y), 0.82);   /* cat slit pupil */
+        diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.55, 1.0, 0.62), vec3(0.05, 0.25, 0.1), slit), gmask);
+        totalEmissiveRadiance += vec3(0.35, 1.0, 0.55) * gmask * (1.0 - 0.85 * slit) * 1.6;
+        float halo = smoothstep(1.35, 1.0, rg) * (1.0 - smoothstep(1.0, 0.86, rg)) * uGlow;   /* soft glow on the rim */
+        totalEmissiveRadiance += vec3(0.25, 0.8, 0.4) * halo * 0.5;
+      }`).replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+          roughnessFactor = mix(roughnessFactor, 0.85, max(coverM, vFlatW));
+`).replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+          metalnessFactor = mix(metalnessFactor, 0.0, max(coverM, vFlatW));`).replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+      normal = normalize(mix(normal, nonPerturbedNormal, max(coverM, vFlatW)));`);
+    sh.vertexShader = FLAT_VS_HEAD + 'varying vec3 vObj;\n' + sh.vertexShader.replace('#include <beginnormal_vertex>', FLAT_VS_NORMAL).replace('#include <begin_vertex>', `#include <begin_vertex>
+      transformed += aFlat.xyz * flatW;
+      vObj = position;`);
+  };
+  m.customProgramCacheKey = () => 'sparkyadult';
+  m.needsUpdate = true;
+}
+
+
+// ---------- skeleton helpers ----------
+let model = null; const bones = {}, rest = {}, restP = {};
+const _pq = new THREE.Quaternion(), _rq = new THREE.Quaternion(), _w = new THREE.Quaternion(), _l = new THREE.Quaternion();
+function resetPose(){ for (const n in bones){ bones[n].quaternion.copy(rest[n]); bones[n].position.copy(restP[n]); } }
+// rotate a bone about an axis in the character's own space (x = his left, y = up, z = forward)
+function rot(name, axis, ang){
+  const b = bones[name]; if (!b || !ang) return;
+  b.parent.updateWorldMatrix(true, false);
+  b.parent.getWorldQuaternion(_pq); model.getWorldQuaternion(_rq);
+  _pq.premultiply(_rq.invert());
+  _w.setFromAxisAngle(AX[axis], ang);
+  _l.copy(_pq).invert().multiply(_w).multiply(_pq);
+  b.quaternion.premultiply(_l).normalize();
+}
+function rotWorld(b, axis, ang){
+  b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pq);
+  _w.setFromAxisAngle(axis, ang); _l.copy(_pq).invert().multiply(_w).multiply(_pq); b.quaternion.premultiply(_l);
+}
+const FEET = ['LeftFoot','RightFoot','LeftToeBase','RightToeBase'];
+const _v = V3();
+function wpos(n, out = V3()){ return bones[n].getWorldPosition(out); }
+const tailR = {};
+function feetLow(){ let mn = Infinity; model.updateMatrixWorld(true); for (const n of FEET) mn = Math.min(mn, wpos(n, _v).y); for (const n in tailR) mn = Math.min(mn, wpos(n, _v).y - tailR[n]); return mn; }
+let restFeet = 0, skinned = null;
+const charPt = (x, y, z) => rig.localToWorld(V3(x, y, z));
+
+// ---------- tail (6), mane (5), ears ----------
+const TL = ['Tail01', 'Tail02', 'Tail03', 'Tail04', 'Tail05', 'Tail06'];
+const ML = ['Mane01', 'Mane02', 'Mane03', 'Mane04', 'Mane05'];
+/* gentle sway: every bone turns a little, the wave travels down the chain */
+function tailSway(amp, t, spd = 1.7, curl = 0){ TL.forEach((n, i) => { rot(n, 'y', amp * 0.13 * Math.sin(t * spd - 0.6 * i)); if (curl) rot(n, 'x', curl * 0.09); }); }
+function tailBend(yaw, curl = 0, w = null){ TL.forEach((n, i) => { const k = w ? w[i] : 1 / TL.length; rot(n, 'y', yaw * k); if (curl) rot(n, 'x', curl * k); }); }
+function maneSway(amp, t, spd = 1.5, curl = 0){ ML.forEach((n, i) => { rot(n, 'y', amp * 0.12 * Math.sin(t * spd - 0.7 * i)); rot(n, 'x', curl * 0.1 + amp * 0.05 * Math.sin(t * spd * 0.8 - 0.7 * i + 1)); }); }
+function maneBend(roll, back = 0){ ML.forEach(n => { rot(n, 'y', roll / ML.length); if (back) rot(n, 'x', back / ML.length); }); }
+function earWag(a, b = 0){ rot('EarL', 'z', a); rot('EarR', 'z', -a); if (b){ rot('EarL', 'x', b); rot('EarR', 'x', b); } }
+/* arms hang from the shoulder: lift > 0 raises the arm (shared over shoulder / arm / forearm); f > 0 swings it forward */
+function armSet(sd, lift, f = 0, bend = 0){ const s = sd === 'Left' ? 1 : -1, a = lift - ARM_DROP;
+  rot(sd + 'Shoulder', 'z', s * a * 0.22); rot(sd + 'Arm', 'z', s * a * 0.5); rot(sd + 'ForeArm', 'z', s * a * 0.28);
+  if (f){ rot(sd + 'Shoulder', 'x', -f * 0.2); rot(sd + 'Arm', 'x', -f * 0.5); rot(sd + 'ForeArm', 'x', -f * 0.3); } if (bend) rot(sd + 'ForeArm', 'x', -bend); }
+function arms(lift, f = 0, liftR = lift, fR = f, bend = 0, bendR = bend){ armSet('Left', lift, f, bend); armSet('Right', liftR, fR, bendR); }
+let ARM_DROP = 0.8;
+let hornLocal = null; const _ht = V3();
+function hornTip(out = V3()){ bones.Head.updateWorldMatrix(true, false); return out.copy(hornLocal).applyMatrix4(bones.Head.matrixWorld); }
+function clampTo(n, lim){ const b = bones[n], a = b.quaternion.angleTo(rest[n]); if (a > lim){ _l.copy(rest[n]).slerp(b.quaternion, lim / a); b.quaternion.copy(_l); } }
+async function fetchModel(file){
+  const res = await fetch(file); if (!res.ok) throw new Error('fetch ' + res.status);
+  const j = await res.json(); const raw = atob(j._bin); delete j._bin;
+  const bin = new Uint8Array(raw.length); for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
+  delete j.buffers[0].uri; j.buffers[0].byteLength = bin.length;
+  const jb = new TextEncoder().encode(JSON.stringify(j)); const jLen = Math.ceil(jb.length/4)*4, bLen = Math.ceil(bin.length/4)*4;
+  const buf = new ArrayBuffer(28 + jLen + bLen), dv = new DataView(buf), u8 = new Uint8Array(buf);
+  dv.setUint32(0, 0x46546C67, true); dv.setUint32(4, 2, true); dv.setUint32(8, buf.byteLength, true);
+  dv.setUint32(12, jLen, true); dv.setUint32(16, 0x4E4F534A, true); u8.fill(0x20, 20, 20 + jLen); u8.set(jb, 20);
+  const o = 20 + jLen; dv.setUint32(o, bLen, true); dv.setUint32(o + 4, 0x004E4942, true); u8.set(bin, o + 8);
+  return new Promise((ok, fail) => new GLTFLoader().parse(buf, './', ok, fail));
+}
+
+// ---------- prop helpers ----------
+const mat = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({color: c, roughness: 0.75}, o));
+const SPH = new THREE.SphereGeometry(1, 20, 14), CYL = new THREE.CylinderGeometry(1, 1, 1, 14), CONE = new THREE.ConeGeometry(1, 1, 12), BOX = new THREE.BoxGeometry(1, 1, 1);
+function mesh(p, geo, m, pos, s){ const o = new THREE.Mesh(geo, m); o.position.set(...pos); if (Array.isArray(s)) o.scale.set(...s); else o.scale.setScalar(s); p.add(o); return o; }
+function placeStick(o, A, B, r){ const d = _d1.subVectors(B, A); const L = d.length() || 1e-4; o.position.copy(A).addScaledVector(d, 0.5); o.scale.set(r, L, r); o.quaternion.setFromUnitVectors(AX.y, d.multiplyScalar(1 / L)); }
+const _d1 = V3();
+function stick(p, a, b, r, m){ const o = new THREE.Mesh(CYL, m); placeStick(o, V3(...a), V3(...b), r); p.add(o); return o; }
+const ease = x => x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const span = (t, a, b) => clamp01((t - a) / (b - a));
+const bell = x => Math.sin(Math.PI * clamp01(x));
+const backOut = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, t) => a + (b - a) * t;
+const glowTexB = makeTex(g => { const r = g.createRadialGradient(64, 64, 2, 64, 64, 62); r.addColorStop(0, 'rgba(255,255,255,0.9)'); r.addColorStop(0.35, 'rgba(190,225,255,0.45)'); r.addColorStop(1, 'rgba(160,200,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+const popS = (T, a, b, c, d) => Math.max(0.001, backOut(span(T, a, b)) * (1 - ease(span(T, c, d))));
+const _bp = V3();
+const sparkTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -56); g.quadraticCurveTo(6, -6, 56, 0); g.quadraticCurveTo(6, 6, 0, 56); g.quadraticCurveTo(-6, 6, -56, 0); g.quadraticCurveTo(-6, -6, 0, -56); g.closePath(); g.fillStyle = '#fff6b8'; g.fill(); g.lineWidth = 6; g.strokeStyle = '#ffffff'; g.stroke(); });
+const tearTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -46); g.bezierCurveTo(26, -10, 38, 10, 38, 24); g.arc(0, 24, 38, 0, Math.PI); g.bezierCurveTo(-38, 10, -26, -10, 0, -46); g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#7ec8f5'; g.fill(); });
+
+// the cow baby (real 3D model, rigid), same loader as the other adult pages
+function makeBaby(file, H){
+  const B = {root: new THREE.Group(), body: new THREE.Group(), ready: false}; B.root.add(B.body); B.root.visible = false; scene.add(B.root);
+  fetchModel(file).then(gl => {
+    const m = gl.scene; m.scale.setScalar(H / 1.89); m.position.y = 0.945 * H / 1.89;
+    m.traverse(o => { if (o.isMesh){ o.frustumCulled = false; (Array.isArray(o.material) ? o.material : [o.material]).forEach(mm => { mm.roughness = Math.max(mm.roughness || 0, 0.7); mm.metalness = 0; for (const tk of ['map','normalMap','roughnessMap','metalnessMap']) if (mm[tk]){ mm[tk].generateMipmaps = false; mm[tk].minFilter = THREE.LinearFilter; mm[tk].needsUpdate = true; } }); } });
+    B.body.add(m); m.updateMatrixWorld(true); { const bb = new THREE.Box3().setFromObject(m); m.position.y -= bb.min.y; }
+    B.sh = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), new THREE.MeshBasicMaterial({map: shadow.material.map, transparent: true, depthWrite: false})); AXQ(B.sh, 'x', -Math.PI / 2); B.sh.position.y = 0.004; B.sh.renderOrder = -1; scene.add(B.sh); B.ready = true;
+  }).catch(err => console.error(file, err));
+  return B;
+}
+
+// =====================================================================================================
+// props for the three talents of Sparky: dog baby, glows, rainbow bridge, flowers, butterflies
+// =====================================================================================================
+const DOG = makeBaby('puppy_model.json', 0.72);
+function placeDog(s){
+  const B = DOG; if (!B.ready) return;
+  B.root.position.set(s.x, s.y, s.z); QYXZ(B.root.quaternion, s.yaw, s.pitch || 0, s.roll || 0);
+  B.body.scale.set(1 / Math.sqrt(s.sq || 1), s.sq || 1, 1 / Math.sqrt(s.sq || 1));
+  B.sh.visible = s.y < 0.06; B.sh.position.set(s.x, 0.004, s.z); B.sh.scale.setScalar(0.9 - 0.4 * Math.min(1, s.y / 0.06));
+}
+const glowPink = makeTex(g => { const r = g.createRadialGradient(64, 64, 2, 64, 64, 62); r.addColorStop(0, 'rgba(255,255,255,0.95)'); r.addColorStop(0.3, 'rgba(255,200,240,0.55)'); r.addColorStop(0.6, 'rgba(190,170,255,0.25)'); r.addColorStop(1, 'rgba(180,160,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+const hornGlow = new THREE.Sprite(new THREE.SpriteMaterial({map: glowPink, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, opacity: 0})); hornGlow.renderOrder = 8; hornGlow.visible = false; scene.add(hornGlow);
+const healGlow = new THREE.Sprite(new THREE.SpriteMaterial({map: glowPink, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, opacity: 0})); healGlow.renderOrder = 8; healGlow.visible = false; scene.add(healGlow);
+const bandaid = new THREE.Group(); bandaid.visible = false; scene.add(bandaid);   // unused placeholder kept for later tweaks
+
+// ---- rainbow bridge: 7 concentric bands, drawn from the left end to the right end ----
+const BR = {R: 3.0, H: 1.6, hw: 0.46, th: 0.115, N: 72};
+const bridgeY = x => { const u = Math.max(0, Math.min(1, (x + BR.R) / (2 * BR.R))); const s = Math.sin(Math.PI * u); return BR.H * s * s; };
+const bridgeSlope = x => { const u = (x + BR.R) / (2 * BR.R); return BR.H * 2 * Math.sin(Math.PI * u) * Math.cos(Math.PI * u) * Math.PI / (2 * BR.R); };
+const bridgeG = new THREE.Group(); bridgeG.visible = false; scene.add(bridgeG);
+const BR_COL = [0xe8584a, 0xf08a3a, 0xf6c445, 0x5cae4f, 0x4aa3df, 0x3b5fc8, 0x8a5ad0];
+const bridgeBands = BR_COL.map((c, i) => {
+  const pos = [], idx = [], N = BR.N, y0 = i * BR.th, y1 = (i + 1) * BR.th;
+  for (let k = 0; k <= N; k++){ const x = -BR.R + 2 * BR.R * k / N, yt = bridgeY(x); pos.push(x, yt - y0, BR.hw, x, yt - y1, BR.hw, x, yt - y0, -BR.hw); }   /* front top, front bottom, back top */
+  for (let k = 0; k < N; k++){ const a = k * 3, b = (k + 1) * 3; idx.push(a, a + 1, b, b, a + 1, b + 1);          /* front face */
+    if (i === 0) idx.push(a + 2, a, b + 2, b + 2, a, b);                                                      /* walking surface (top band only) */
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  const m = new THREE.MeshBasicMaterial({color: c, side: THREE.DoubleSide, transparent: true, opacity: 1}); const o = new THREE.Mesh(g, m); o.frustumCulled = false; o.userData.full = idx.length; bridgeG.add(o); return o;
+});
+function setBridge(u, op){ bridgeG.visible = u > 0.002 && op > 0.01; bridgeBands.forEach(o => { const n = Math.floor(o.userData.full * u / 6) * 6; o.geometry.setDrawRange(0, n); o.material.opacity = op; }); }
+const bridgeTipPos = (u, out = V3()) => { const x = -BR.R + 2 * BR.R * u; return out.set(x, bridgeY(x), 0); };
+
+// ---- flowers ----
+const FLW_COL = [0xff8fb8, 0xffd84a, 0xffffff, 0xb79cff, 0xff9a6a, 0x7fd3ff];
+const flowerG = new THREE.Group(); scene.add(flowerG);
+const FLW = [];
+function makeFlower(x, z, col, sc){
+  const g = new THREE.Group(); g.position.set(x, 0, z); const stemH = 0.26 * sc;
+  mesh(g, CYL, mat(0x4f9a46), [0, stemH / 2, 0], [0.012 * sc, stemH, 0.012 * sc]);
+  mesh(g, SPH, mat(0x5cae4f), [0.035 * sc, stemH * 0.4, 0], [0.04 * sc, 0.012 * sc, 0.02 * sc]);
+  const head = new THREE.Group(); head.position.y = stemH; g.add(head);
+  const pm = mat(col, {roughness: 0.6});
+  for (let i = 0; i < 6; i++){ const a = i / 6 * TAU; const pt = mesh(head, SPH, pm, [Math.cos(a) * 0.05 * sc, 0, Math.sin(a) * 0.05 * sc], [0.045 * sc, 0.014 * sc, 0.03 * sc]); pt.rotation.y = -a; }
+  mesh(head, SPH, mat(0xffc93c, {roughness: 0.5}), [0, 0.012 * sc, 0], 0.03 * sc);
+  g.scale.setScalar(0.001); g.visible = false; flowerG.add(g);
+  const f = {g, head, x, z, t: -1, sc}; FLW.push(f); return f;
+}
+function bloomFlower(f, T, a, dur = 0.7){ const u = span(T, a, a + dur); const s = u <= 0 ? 0.001 : Math.max(0.001, backOut(u)); f.g.visible = u > 0; f.g.scale.setScalar(s); f.head.rotation.y = 0.9 * u; f.g.rotation.z = 0.05 * Math.sin(T * 2 + f.x * 3) * u; }
+const BUT_COL = [0xff8fb8, 0xffd84a, 0x7fd3ff];
+const butterflies = BUT_COL.map((c, i) => { const g = new THREE.Group(); const wm = mat(c, {roughness: 0.5, side: THREE.DoubleSide}); const wl = mesh(g, SPH, wm, [0.035, 0, 0], [0.04, 0.003, 0.03]), wr = mesh(g, SPH, wm, [-0.035, 0, 0], [0.04, 0.003, 0.03]); mesh(g, SPH, mat(0x3a2a20), [0, 0, 0], [0.008, 0.008, 0.03]); g.visible = false; scene.add(g); return {g, wl, wr, ph: i * 1.7}; });
+
+const shockRing = new THREE.Mesh(new THREE.RingGeometry(0.93, 1.0, 72), new THREE.MeshBasicMaterial({color: 0xffd6f4, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending})); AXQ(shockRing, 'x', -Math.PI / 2); shockRing.visible = false; shockRing.renderOrder = 3; scene.add(shockRing);
+// ---------- motions ----------
+const names = {idle:'待機', heal:'獨角療癒', bridge:'彩虹橋', bloom:'花開公園', sleep:'睡覺', eat:'開心吃', snack:'最愛點心', refuse:'搖頭不吃'};
+const LEN = {idle:8, heal:12.8, bridge:12.8, bloom:12.8, sleep:8, eat:6, snack:7, refuse:5};
+let move = 'idle', t0 = performance.now()/1000, frozen = null, gY = 0, __dE = 0.016;
+const hitT = (T, X) => T >= X && T - __dE < X;
+let __hold = 0; const EMBED = new URLSearchParams(location.search).get('embed') === '1';   // 才藝、餵食播一次：停在最後一格約 1 秒再回待機（App 裡只停住，由 App 切回待機）
+const sides = ['Left', 'Right'];
+const blinkAt = (t, off = 0) => { const b = ((t + off) % 4.6) / 0.2; return b < 1 ? Math.sin(Math.PI * b) : 0; };
+const wrapA = a => Math.atan2(Math.sin(a), Math.cos(a));
+const angLerp = (a, b, u) => a + wrapA(b - a) * u;
+function place(p){
+  for (const n of [...TL, ...ML, 'Head', 'neck', 'Spine', 'Spine01', 'Spine02']) clampTo(n, 0.5);
+  if (p.q) rig.quaternion.copy(p.q); else QYXZ(rig.quaternion, p.ry, p.pitch, p.roll);
+  rig.position.set(p.x, (p.yAbs != null ? p.yAbs : gY) + (p.surf == null ? p.hop : 0), p.z);
+  rig.scale.set(1 / Math.sqrt(p.sy), p.sy, 1 / Math.sqrt(p.sy)); rig.updateMatrixWorld(true);
+}
+/* two-legged walk: phase ph (radians, advance it by distance so the feet never slide). returns the arm swing -1..1 */
+function sWalk(ph, amt){
+  if (amt <= 0) return 0;
+  const s = Math.sin(ph);
+  rot('LeftUpLeg', 'x', -0.4 * amt * s); rot('RightUpLeg', 'x', 0.4 * amt * s);
+  rot('LeftLeg', 'x', 0.5 * amt * Math.max(0, -s)); rot('RightLeg', 'x', 0.5 * amt * Math.max(0, s));
+  rot('LeftFoot', 'x', 0.3 * amt * s - 0.3 * amt * Math.max(0, -s)); rot('RightFoot', 'x', -0.3 * amt * s - 0.3 * amt * Math.max(0, s));
+  rot('Spine02', 'y', 0.06 * amt * s); rot('Head', 'y', -0.04 * amt * s); rot('Head', 'x', 0.03 * amt * Math.cos(2 * ph));
+  tailBend(0.18 * amt * Math.sin(ph + 0.8), 0.06 * amt * Math.cos(2 * ph));
+  return s * amt;
+}
+function squat(a){ for (const sd of sides){ rot(sd + 'UpLeg', 'x', -0.55 * a); rot(sd + 'Leg', 'x', 1.0 * a); rot(sd + 'Foot', 'x', -0.45 * a); } }
+function spineLean(a){ rot('Spine02', 'x', a * 0.4); rot('Spine01', 'x', a * 0.35); rot('Spine', 'x', a * 0.25); }
+function headTurn(yaw, pitch = 0){ rot('neck', 'y', yaw * 0.4); rot('Head', 'y', yaw * 0.6); rot('neck', 'x', pitch * 0.4); rot('Head', 'x', pitch * 0.6); }
+function life(p, t, k = 1){
+  const br = Math.sin(TAU * t / 3.6);
+  rot('Spine02', 'x', 0.012 * br * k); rot('Spine01', 'x', 0.012 * br * k);
+  rot('Head', 'y', 0.1 * Math.sin(t * 0.55) * k); rot('Head', 'x', 0.03 * Math.sin(t * 0.9) * k);
+  earWag((0.07 * Math.sin(t * 1.7) + Math.pow(Math.max(0, Math.sin(TAU * t / 4.3)), 6) * 0.3) * k);
+  tailSway(0.4 * k, t, 1.2); maneSway(0.5 * k, t, 1.3);
+  p.lid = Math.max(p.lid, blinkAt(t));
+}
+const _fwd = V3();
+const fwdOf = ry => _fwd.set(Math.sin(ry), 0, Math.cos(ry));
+/* glow on the horn: p.glow 0..1 */
+const glowMax = 0.8;
+
+function poseIdle(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  life(p, t);
+  headTurn(0.35 * Math.sin(t * 0.45));
+  const wv = bell(span(T, 3.4, 5.2));
+  arms(0.05, 0.05, 0.05 + 1.9 * wv, 0.05 + 0.3 * wv, 0, 0.6 * wv * (0.5 + 0.5 * Math.sin(t * 9)));
+  if (wv > 0.1) p.glow = 0.5 * wv;
+  p.ry = 0.1; place(p);
+}
+function poseSleep(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const br = Math.sin(TAU * t / 4.4);
+  squat(0.9); spineLean(0.55 + 0.03 * br); rot('neck', 'x', 0.3); rot('Head', 'x', 0.35 + 0.02 * br);
+  arms(0.05, 0.05, 0.05, 0.05, 0, 0); maneBend(0, -1.1); tailBend(0.3, -0.1); tailSway(0.1, t, 0.8); maneSway(0.2, t, 0.7, 0); earWag(-0.25);
+  p.ry = 0.2; p.lid = 1; place(p);
+}
+const trap = (u, a = 0.2) => { u = clamp01(u); return u < a ? u * u / (2 * a * (1 - a)) : u > 1 - a ? 1 - (1 - u) * (1 - u) / (2 * a * (1 - a)) : (u - a / 2) / (1 - a); };
+
+// =====================================================================================================
+// 1. 獨角療癒: the dog baby trips, Sparky kneels and heals it with the horn light, the baby runs a happy lap
+// =====================================================================================================
+const HT = {run:[0.2, 2.0], fall:[2.0, 2.45], sit:[2.45, 3.2], walk:[2.5, 4.3], kneel:[4.3, 5.1], glow:[5.0, 6.5], rise:[6.8, 7.7], hop:[7.4, 8.7], orbit:[8.8, 11.2], fin:[11.2, 12.2]};
+const H_BX = -1.05, H_Z = 0.7, H_SX = 0.2, H_S0 = 1.4, H_R = H_SX - H_BX;
+const healTheta = T => Math.PI - 2 * Math.PI * ease(span(T, ...HT.orbit));
+function dogHeal(T){
+  const s = {x: -3.6, y: 0, z: H_Z, yaw: Math.PI / 2, pitch: 0, roll: 0, sq: 1, ph: 0};
+  if (T < HT.fall[0]){ const u = span(T, ...HT.run); s.x = lerp(-3.6, -1.5, u); s.y = u > 0 && u < 1 ? 0.05 * Math.abs(Math.sin(T * 15)) : 0; s.sq = 1 + 0.04 * Math.sin(T * 30) * (u > 0 && u < 1 ? 1 : 0); }
+  else if (T < HT.sit[0]){ const u = span(T, ...HT.fall); s.x = -1.5 + 0.45 * ease(u); s.pitch = 1.25 * ease(u); s.sq = 1 - 0.1 * bell(u); }
+  else if (T < HT.orbit[0]){
+    s.x = H_BX; const su = ease(span(T, ...HT.sit)), crying = span(T, 3.2, 3.3) * (1 - span(T, 6.3, 6.5));
+    s.pitch = lerp(1.25, -0.3, su); s.sq = 1 - 0.1 * su + 0.1 * (1 - su) * 0;
+    s.roll = 0.07 * Math.sin(T * 24) * crying * su; s.yaw = Math.PI / 2;
+    const st = ease(span(T, 6.5, 7.2)); s.pitch = lerp(s.pitch, 0, st); s.sq = lerp(s.sq, 1, st); s.yaw = lerp(Math.PI / 2, 0.5, st);
+    s.y = 0.2 * bell(span(T, 7.0, 7.5)) + (T > HT.hop[0] ? 0.22 * Math.abs(Math.sin(span(T, HT.hop[0] + 0.1, HT.hop[1]) * Math.PI * 3)) * (T < HT.hop[1] ? 1 : 0) : 0);
+    if (T > HT.hop[0]){ const hu = span(T, ...HT.hop); s.yaw = lerp(0.5, 0.5 + 2 * Math.PI * 0, hu) + 0.4 * Math.sin(hu * 9); s.sq = 1 + 0.08 * Math.sin(hu * Math.PI * 6) * (1 - hu); }
+  } else if (T < HT.fin[0]){
+    const th = healTheta(T); s.x = H_SX + H_R * Math.cos(th); s.z = H_Z + H_R * Math.sin(th); s.yaw = Math.atan2(Math.sin(th), -Math.cos(th)); s.y = 0.05 * Math.abs(Math.sin(T * 13)); s.sq = 1 + 0.03 * Math.sin(T * 26);
+  } else { const u = ease(span(T, ...HT.fin)); s.x = lerp(H_BX, -0.7, u); s.z = lerp(H_Z, 1.45, u); s.yaw = lerp(-Math.atan2(0.0, 1), 0.3, u) + (1 - u) * 0 ; s.y = 0.05 * Math.abs(Math.sin(T * 13)) * (1 - u) + (T > 11.9 ? 0.25 * Math.abs(Math.sin((T - 11.9) * Math.PI * 2.2)) : 0); }
+  return s;
+}
+const HBABY = V3();
+/* one knee on the ground (the left, nearest the camera), the right foot forward, back upright */
+function kneel1(k){ rot('LeftUpLeg', 'x', 0.1 * k); rot('LeftLeg', 'x', 1.55 * k); rot('LeftFoot', 'x', 0.5 * k); rot('RightUpLeg', 'x', -1.5 * k); rot('RightLeg', 'x', 0.55 * k); rot('RightFoot', 'x', 1.0 * k); }
+function poseHeal(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const k = ease(span(T, ...HT.kneel)) * (1 - ease(span(T, ...HT.rise)));
+  const th = healTheta(T), orb = T >= HT.orbit[0] && T < HT.fin[0];
+  /* position and heading */
+  const wu = trap(span(T, ...HT.walk)), sx = lerp(H_S0, H_SX, wu);
+  p.x = sx; p.z = H_Z;
+  const d = dogHeal(T);
+  let ry = -0.9;
+  if (T > HT.walk[0]) ry = angLerp(-0.9, -Math.PI / 2, ease(span(T, 2.5, 3.1)));
+  if (orb || T >= HT.fin[0]){ const base = Math.PI / 2 - th; ry = T < HT.fin[0] ? base : lerp(Math.PI / 2 + Math.PI, 2 * Math.PI + 0.1, ease(span(T, ...HT.fin))); if (T < HT.orbit[0] + 0.3){ ry = lerp(-Math.PI / 2, base, ease(span(T, HT.orbit[0], HT.orbit[0] + 0.3))); } }
+  p.ry = ry;
+  const ph = (H_S0 - sx) * (TAU / 0.98) + (orb ? Math.abs(th) * 3.0 : 0);
+  const walkAmt = ease(span(T, 2.5, 2.75)) * (1 - ease(span(T, 4.1, 4.4))), tw = 0.5 * ease(span(T, 8.7, 9.0)) * (1 - ease(span(T, 11.0, 11.3)));
+  const sw = sWalk(ph, Math.max(walkAmt, tw));
+  life(p, t, 0.6 * (1 - k));
+  /* look at the baby */
+  const bx = d.x - p.x, bz = d.z - p.z, toB = wrapA(Math.atan2(bx, bz) - p.ry);
+  const watch = T < HT.walk[1] ? 1 : (orb ? 0.8 : 0.4 * (1 - k));
+  headTurn(clamp01(1) * Math.max(-0.9, Math.min(0.9, toB)) * watch, -0.15 * (T < 2.6 ? 1 : 0));
+  /* kneel: squat, lean, bow the head so the horn points at the baby */
+  spineLean(0.1 * k); headTurn(0, 0.12 * k);
+  const gasp = bell(span(T, 2.0, 2.9));
+  const heal = ease(span(T, HT.glow[0], HT.glow[0] + 0.7)) * (1 - ease(span(T, 6.4, 6.9)));
+  const hug = k, cast = ease(span(T, 4.6, 5.2)) * (1 - ease(span(T, 6.4, 6.9)));
+  const wl = 0.15 * gasp + (orb ? 0.5 : 0) + 0.8 * bell(span(T, 7.4, 8.5)) + 0.9 * ease(span(T, 11.6, 12.2));
+  arms(wl + 0.9 * cast + 0.0 * hug, 0.2 * gasp - 0.45 * sw + 1.0 * cast, wl + 0.1 * hug, 0.2 * gasp + 0.45 * sw + 0.25 * hug, 0.25 * cast, 0.3 * hug);
+  p.glow = heal + 0.35 * ease(span(T, HT.fin[0], HT.fin[0] + 0.5)) * (1 - ease(span(T, 12.0, 12.6)));
+  maneSway(0.5 * (1 + k), t, 1.4, 0.2 * k); tailSway(0.4, t, 1.5); earWag(-0.35 * k + 0.35 * bell(span(T, 7.0, 8.0)));
+  p.happy = Math.min(1, 3 * bell(span(T, 7.0, 9.4))) + Math.min(1, 3 * bell(span(T, 11.2, 12.8)));
+  p.sad = ease(span(T, 2.2, 2.5)) * (1 - ease(span(T, 4.0, 4.3)));
+  p.lid = Math.max(p.lid, ease(span(T, 4.9, 5.2)) * (1 - ease(span(T, 6.3, 6.6))));
+  if (hitT(T, 2.0)) p.events.push('oops'); if (hitT(T, 2.45)) p.events.push('dust'); if (hitT(T, 2.9)) p.events.push('cry'); if (hitT(T, 3.6)) p.events.push('tear');
+  if (hitT(T, 4.0)) p.events.push('dont'); if (hitT(T, 5.2)) p.events.push('glow'); if (hitT(T, 6.4)) p.events.push('fixed'); if (hitT(T, 7.2)) p.events.push('yayb');
+  if (hitT(T, 8.9)) p.events.push('again'); if (hitT(T, 11.9)) p.events.push('yay');
+  place(p);
+}
+
+// =====================================================================================================
+// 2. 彩虹橋: the horn paints a rainbow bridge, Sparky walks over it, twirls on the top and bows
+// =====================================================================================================
+const BT = {draw:[1.2, 3.8], walk1:[3.8, 7.0], twirl:[7.0, 8.4], walk2:[8.5, 11.3], bow:[11.3, 12.5], fade:[11.4, 12.6]};
+const ARC = (() => { const a = [0], N = 600; for (let i = 1; i <= N; i++){ const x0 = -BR.R + 2 * BR.R * (i - 1) / N, x1 = -BR.R + 2 * BR.R * i / N; a.push(a[i - 1] + Math.hypot(x1 - x0, bridgeY(x1) - bridgeY(x0))); } return a; })();
+const arcAt = x => ARC[Math.round(clamp01((x + BR.R) / (2 * BR.R)) * 600)];
+function bridgeX(T){
+  if (T < BT.walk1[0]) return -BR.R;
+  if (T < BT.twirl[0]) return lerp(-BR.R, -0.2, trap(span(T, ...BT.walk1), 0.25));
+  if (T < BT.walk2[0]) return lerp(-0.2, 0.2, ease(span(T, ...BT.twirl)));
+  return lerp(0.2, BR.R, trap(span(T, ...BT.walk2), 0.25));
+}
+const _tipB = V3();
+function poseBridge(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const x = bridgeX(T), walking = Math.max(ease(span(T, 3.7, 4.1)) * (1 - ease(span(T, 6.7, 7.0))), ease(span(T, 8.4, 8.8)) * (1 - ease(span(T, 11.0, 11.4))));
+  const u = ease(span(T, ...BT.draw)), drawing = T > BT.draw[0] - 0.4 && T < BT.draw[1] + 0.5, dw = ease(span(T, 0.8, 1.3)) * (1 - ease(span(T, BT.draw[1], BT.draw[1] + 0.6)));
+  const tw = span(T, ...BT.twirl), twirlB = bell(tw);
+  p.x = x; p.z = 0; p.floor = bridgeY(x); p.tailFloor = bridgeY(x - 0.3);
+  const sl = bridgeSlope(x), onB = T > BT.walk1[0] ? 1 : 0;
+  let ry = Math.PI / 2;
+  if (T >= BT.twirl[0] && T < BT.walk2[0]) ry = Math.PI / 2 + TAU * ease(tw);
+  if (T >= BT.bow[0]) ry = lerp(Math.PI / 2, 0.15, ease(span(T, BT.bow[0], BT.bow[0] + 0.7)));
+  if (T < 0.6) ry = lerp(0.3, Math.PI / 2, ease(span(T, 0.1, 0.7)));
+  p.ry = ry; p.pitch = (0.12 - 0.35 * Math.atan(sl)) * (T >= BT.bow[0] ? 1 - ease(span(T, BT.bow[0], BT.bow[0] + 0.5)) : 1) * (T > 3.6 ? 1 : ease(span(T, 3.4, 3.6)));
+  const ph = arcAt(x) * (TAU / 0.98);
+  const sw = sWalk(ph, walking);
+  life(p, t, 0.5);
+  /* the head follows the tip of the rainbow while it is being drawn */
+  bridgeTipPos(u, _tipB); const dxx = _tipB.x - (-BR.R) + 0.6, dyy = _tipB.y - 1.5;
+  const look = drawing ? Math.max(-0.1, Math.min(0.6, Math.atan2(dyy, dxx))) : 0;
+  headTurn(0, -look * dw);
+  /* conducting arm while drawing, both arms up for the twirl, a bow at the end */
+  const cond = dw, sweep = 0.5 + 0.5 * Math.sin(T * 5.5);
+  const bw = bell(span(T, BT.bow[0] + 0.3, 12.7));
+  arms(0.1 + 1.3 * twirlB + 0.5 * bw + 0.5 * cond * sweep + 0.5 * cond, 0.4 * cond - 0.4 * sw - 0.2 * twirlB + 0.2 * bw, undefined, 0.4 * cond + 0.4 * sw - 0.2 * twirlB + 0.2 * bw, 0.4 * cond, 0.4 * cond);
+  spineLean(0.55 * bw); rot('neck', 'x', 0.1 * bw);
+  maneSway(0.5 + 1.2 * twirlB, t, 1.5 + 3 * twirlB, 0.1 + 0.5 * twirlB); tailBend(1.0 * twirlB * Math.sign(1), 0.3 * twirlB); tailSway(0.4, t, 1.6);
+  earWag(-0.2 * twirlB + 0.25 * cond);
+  p.glow = ease(span(T, 0.9, 1.3)) * (1 - ease(span(T, BT.draw[1] + 0.2, BT.draw[1] + 0.9))) + 0.6 * twirlB;
+  p.happy = Math.min(1, 3 * bell(span(T, 6.9, 8.6))) + Math.min(1, 3 * bw);
+  if (hitT(T, 1.3)) p.events.push('paint'); if (hitT(T, 3.8)) p.events.push('ta'); if (hitT(T, 7.3)) p.events.push('twirl'); if (hitT(T, 9.6)) p.events.push('wow'); if (hitT(T, 11.5)) p.events.push('bye');
+  place(p);
+}
+
+// =====================================================================================================
+// 3. 花開公園: flowers bloom along her path, a kneeling bow of horn light makes a whole ring bloom
+// =====================================================================================================
+const BL = {walk:[0.6, 7.0], turn:[7.0, 7.8], kneel:[7.9, 8.9], burst:9.1, rise:[10.5, 11.4], end:12.8};
+const BL_PATH = new THREE.CatmullRomCurve3([V3(-3.4, 0, -2.4), V3(-1.9, 0, -1.2), V3(-0.5, 0, -0.1), V3(0.9, 0, 0.35), V3(0.7, 0, 1.0)], false, 'centripetal');
+const BL_LEN = BL_PATH.getLength(), BL_END = BL_PATH.getPointAt(1), BL_C = V3(BL_END.x, 0, BL_END.z);
+const blD = T => BL_LEN * trap(span(T, ...BL.walk), 0.18);
+const blTimeAt = d => { for (let T = BL.walk[0]; T <= BL.walk[1]; T += 0.01) if (blD(T) >= d) return T; return BL.walk[1]; };
+const BL_CL = [0.12, 0.24, 0.36, 0.48, 0.6, 0.72];
+const _bn = V3(), _bt = V3();
+BL_CL.forEach((fr, i) => {
+  const P = BL_PATH.getPointAt(fr), Tn = BL_PATH.getTangentAt(fr), nx = -Tn.z, nz = Tn.x, tb = blTimeAt(fr * BL_LEN) + 0.35;
+  [[0.62, 0.0], [-0.72, 0.1], [0.82, -0.25]].forEach(([lat, off], j) => {
+    const f = makeFlower(P.x + nx * lat + Tn.x * off, P.z + nz * lat + Tn.z * off, FLW_COL[(i + j * 2) % 6], 1.0 + 0.15 * j); f.tb = tb + 0.12 * j;
+  });
+});
+{ const R1 = 1.5, R2 = 2.35; for (let i = 0; i < 14; i++){ const a = i / 14 * TAU + 0.2; const f = makeFlower(BL_C.x + Math.cos(a) * R1, BL_C.z + Math.sin(a) * R1, FLW_COL[i % 6], 1.25); f.tb = BL.burst + 0.35 + 0.03 * i; }
+  for (let i = 0; i < 20; i++){ const a = i / 20 * TAU + 0.45; const f = makeFlower(BL_C.x + Math.cos(a) * R2, BL_C.z + Math.sin(a) * R2, FLW_COL[(i + 3) % 6], 1.35); f.tb = BL.burst + 0.75 + 0.03 * i; } }
+function poseBloom(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const d = blD(T), uu = clamp01(d / BL_LEN), P = BL_PATH.getPointAt(uu), Tn = BL_PATH.getTangentAt(Math.min(0.999, uu));
+  const walking = ease(span(T, 0.55, 0.95)) * (1 - ease(span(T, 6.6, 7.0)));
+  p.x = P.x; p.z = P.z;
+  let ry = Math.atan2(Tn.x, Tn.z);
+  if (T < BL.walk[0]) ry = lerp(0.3, Math.atan2(BL_PATH.getTangentAt(0).x, BL_PATH.getTangentAt(0).z), ease(span(T, 0.0, 0.6)));
+  if (T >= BL.walk[1] - 0.6) ry = angLerp(ry, 0.0, ease(span(T, BL.walk[1] - 0.6, BL.turn[1])));
+  p.ry = ry;
+  const sw = sWalk(d * (TAU / 0.98), walking);
+  life(p, t, 0.6);
+  headTurn(0.2 * Math.sin(t * 1.1) * walking, 0.0);
+  /* standing cast: both arms rise overhead, the head tips back, the horn blazes, then the flowers burst open */
+  const up = ease(span(T, 7.9, 8.9)) * (1 - ease(span(T, 10.6, 11.4))), gl = ease(span(T, 8.2, 9.1)) * (1 - ease(span(T, 10.2, 10.9)));
+  const open = ease(span(T, 11.2, 11.9)) * (1 - ease(span(T, 12.4, 12.8)));
+  arms(0.1 + 2.1 * up + 1.3 * open, -0.4 * sw, undefined, 0.4 * sw, 0.0, 0.0);
+  rot('Head', 'x', -0.3 * up); rot('neck', 'x', -0.15 * up); spineLean(-0.25 * up); maneBend(0, 0.6 * up);
+  maneSway(0.5 + 1.6 * gl, t, 1.4 + 2 * gl, 0.2 + 0.8 * gl); tailSway(0.4 + 0.6 * gl, t, 1.4 + 1.5 * gl); earWag(0.3 * open + 0.4 * gl);
+  p.glow = gl + 0.4 * open; p.gp = gl;
+  p.happy = Math.min(1, 3 * gl) + Math.min(1, 3 * open);
+  if (hitT(T, 0.8)) p.events.push('hum'); if (hitT(T, 3.4)) p.events.push('pop'); if (hitT(T, 8.5)) p.events.push('ready'); if (hitT(T, BL.burst)) p.events.push('burst'); if (hitT(T, 11.6)) p.events.push('good');
+  place(p);
+}
+const SUB_FEET = []; const SUB_TAIL = [];
+const _gv = V3();
+/* put the lowest foot/leg vertex on the floor (the ground, or the bridge surface when p.floor is set), then add the hop */
+function groundFix(p){
+  rig.updateMatrixWorld(true); skinned.skeleton.update();
+  let mn = Infinity; for (const i of SUB_FEET){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn) mn = _gv.y; }
+  rig.position.y += -mn + 0.004 + (p.floor || 0) + (p.hop || 0); rig.updateMatrixWorld(true);
+}
+const _tw = V3();
+function tailMinY(){ skinned.skeleton.update(); let mn = Infinity, mi = -1; for (const i of SUB_TAIL){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn){ mn = _gv.y; mi = i; } } return [mn, mi]; }
+function tailGuard(floor = 0){
+  for (let it = 0; it < 4; it++){
+    rig.updateMatrixWorld(true); const [mn, mi] = tailMinY(); if (mn >= floor + 0.012) return;
+    skinned.getVertexPosition(mi, _gv); _gv.applyMatrix4(skinned.matrixWorld); bones.Tail01.getWorldPosition(_tw);
+    const d = Math.max(0.2, Math.hypot(_gv.x - _tw.x, _gv.z - _tw.z)), ang = (floor + 0.012 - mn) / d * 1.15;
+    rot(TL[0], 'x', TAIL_UP * ang);
+  }
+}
+let TAIL_UP = 1;
+const newP = () => ({T: 0, x: 0, z: 0, ry: 0, pitch: 0, roll: 0, hop: 0, yAbs: 0, sy: 1, lid: 0, happy: 0, sad: 0, glow: 0, events: [], free: true, surf: 0, floor: 0, q: null});
+// ---------- load the model ----------
+
+// =====================================================================================================
+// 餵食（2026-11-02）：開心吃 / 最愛點心 / 搖頭不吃（雙手捧到嘴前、低頭咬三口；搖頭不吃＝湊近聞、搖頭難過、雙手推開）
+// =====================================================================================================
+const FK = makeEat(THREE, GLTFLoader, scene, makeTex, spawn, fx);
+window.__eatWrong = window.__eatWrong || 'bittermelon';   // 搖頭不吃：少年固定紅辣椒、成年固定苦瓜（App 會自己放玩家給的食物）
+FK.preload(["cloudmallow", "macaron", "bittermelon"]); window.__eatPreload = n => FK.preload(n);
+/* ---- two-bone arm IK (world space). The bone lengths are measured once at the bind pose. pole = the way the elbow should point.
+   k blends from the pose the page already set (0) to the full IK pose (1). */
+let armLen = null;
+function measureArms(){ armLen = {}; model.updateMatrixWorld(true); for (const sd of ['Left', 'Right']){ const S = wpos(sd + 'Arm', V3()), E = wpos(sd + 'ForeArm', V3()), H = wpos(sd + 'Hand', V3()); armLen[sd] = [S.distanceTo(E), E.distanceTo(H)]; } }
+const _aq = new THREE.Quaternion();
+function aimBone(b, cur, tgt){ _aq.setFromUnitVectors(cur, tgt); b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pq); _l.copy(_pq).invert().multiply(_aq).multiply(_pq); b.quaternion.premultiply(_l).normalize(); b.updateMatrixWorld(true); }
+const _qa0 = new THREE.Quaternion(), _qf0 = new THREE.Quaternion();
+function elbowPole(sd, up = -0.8, out = 0.6, back = 0.2){ const s = sd === 'Left' ? 1 : -1, o = V3(s, 0, 0).applyQuaternion(rig.quaternion), f = V3(0, 0, 1).applyQuaternion(rig.quaternion); return o.multiplyScalar(out).add(V3(0, up, 0)).addScaledVector(f, -back); }
+function ikArm(sd, X, pole, k = 1){
+  if (k <= 0.001 || !armLen) return;
+  const A = bones[sd + 'Arm'], F = bones[sd + 'ForeArm'], Hd = bones[sd + 'Hand'], l = armLen[sd] || [0.29, 0.24];
+  model.updateMatrixWorld(true);
+  const S = A.getWorldPosition(V3()); let d = X.distanceTo(S); const dmax = l[0] + l[1] - 0.012, dmin = Math.max(Math.abs(l[0] - l[1]) + 0.03, 0.36);   /* never fold the elbow past ~110 deg */ d = Math.max(dmin, Math.min(dmax, d));
+  const dir = X.clone().sub(S).normalize(); const a = (l[0] * l[0] - l[1] * l[1] + d * d) / (2 * d), h = Math.sqrt(Math.max(0, l[0] * l[0] - a * a));
+  const perp = pole.clone().sub(dir.clone().multiplyScalar(pole.dot(dir))).normalize();
+  const E = S.clone().addScaledVector(dir, a).addScaledVector(perp, h);
+  _qa0.copy(A.quaternion); _qf0.copy(F.quaternion);
+  const E0 = F.getWorldPosition(V3()); aimBone(A, E0.sub(S).normalize(), E.clone().sub(S).normalize());
+  F.updateWorldMatrix(true, false); const Ec = F.getWorldPosition(V3()), H0 = Hd.getWorldPosition(V3()); aimBone(F, H0.sub(Ec).normalize(), X.clone().sub(Ec).normalize().multiplyScalar(1));
+  if (k < 0.999){ const qa1 = A.quaternion.clone(), qf1 = F.quaternion.clone(); A.quaternion.slerpQuaternions(_qa0, qa1, k); F.quaternion.slerpQuaternions(_qf0, qf1, k); }
+  A.updateMatrixWorld(true);
+}
+
+const FH = makeHold(THREE, { EATK: FK, rig, get model(){ return model; }, skin: () => skinned,
+  reach: (sd, tg, w) => { if (!armLen) measureArms(); ikArm(sd, tg, elbowPole(sd, -0.8, 0.5, 0.1), w); }, grip: (sd, out) => out.copy(wpos(sd + 'Hand')),
+  armRe: /(Left|Right)(Shoulder|Arm|ForeArm|Hand)/, S: 1, size: 0.3, chestY: 0.94, mouthY: 1.21, follow: 1 });
+function feedLean(a){ rot('Spine02', 'x', a * 0.4); rot('Spine01', 'x', a * 0.35); rot('Spine', 'x', a * 0.25); }
+function feedYaw(yaw){ rot('neck', 'y', yaw * 0.4); rot('Head', 'y', yaw * 0.6); }
+function poseEat(p, t, name){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const P = phases(name, t); p.eat = P; if (!FH.m) FH.measure();
+  const br = Math.sin(TAU * t / 3.6); rot('Spine02', 'x', 0.012 * br * 0.4); rot('Spine01', 'x', 0.012 * br * 0.4);
+  if (typeof tailSway === 'function') tailSway(0.15, t, 1.3);
+  arms(0.05, 0.05);
+  p.lid = Math.max(p.lid || 0, blinkAt(t));
+  if (name === 'refuse'){
+    const sn = ease(P.sniff) * (1 - ease(P.shake));
+    feedLean(0.14 * sn); rot('neck', 'x', 0.1 * sn); rot('Head', 'x', 0.12 * sn);
+    if (P.shake > 0 && P.shake < 1){ const k = Math.sin(Math.PI * P.shake); feedYaw(0.55 * Math.sin(TAU * P.shake * 3) * k); rot('Head', 'z', -0.06 * k); }
+    p.sad = P.sad; if (P.sad) p.lid = 0;
+  } else {
+    const nod = P.biting ? P.lunge : 0;
+    feedLean(0.1 * nod + 0.04 * P.hold); rot('neck', 'x', 0.14 * nod); rot('Head', 'x', 0.18 * nod + 0.06 * P.hold);
+    p.happy = P.happy && !P.chew ? 1 : 0; p.lid = P.chew ? 1 : (p.happy ? 0 : p.lid);
+    p.hop = 0.08 * P.hop;
+  }
+  p.ry = 0.1 + (name === 'snack' ? TAU * P.spin : 0); place(p);
+}
+fetchModel('sparkyadult_model.json').then(gltf => {
+  model = gltf.scene; model.scale.setScalar(CFG.scale);
+  model.traverse(o => {
+    if (o.isBone){ bones[o.name] = o; rest[o.name] = o.quaternion.clone(); restP[o.name] = o.position.clone(); }
+    if (o.isMesh){ skinned = o; o.frustumCulled = false; prepFace(o, {eye:CFG.eye, eyeR:CFG.eyeR, eyeZ:CFG.eyeZ, eyeOut:CFG.eyeOut, eyeFill:CFG.eyeFill, mouth:CFG.mouth, mouthR:CFG.mouthR, mouthZ:CFG.mouthZ, noPink:CFG.noPink}); (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.roughness = Math.max(m.roughness || 0, 0.75); m.metalness = 0; patch(m); }); }
+  });
+  rig.add(model); rig.updateMatrixWorld(true); skinned.skeleton.update();
+  { const g = skinned.geometry, n = g.attributes.position.count, SI = g.attributes.skinIndex, SW = g.attributes.skinWeight, BN = skinned.skeleton.bones.map(b => b.name); let top = -1, ty = -1;
+    for (let i = 0; i < n; i += 1){ let best = 0, bw = -1; for (let c = 0; c < 4; c++){ const w = SW.getComponent(i, c); if (w > bw){ bw = w; best = SI.getComponent(i, c); } } if (/Leg|Foot|Toe/.test(BN[best])) SUB_FEET.push(i); if (/^Tail/.test(BN[best]) && i % 3 === 0) SUB_TAIL.push(i);
+      skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y > ty){ ty = _gv.y; top = i; } }
+    skinned.getVertexPosition(top, _gv); _gv.applyMatrix4(skinned.matrixWorld); hornLocal = bones.Head.worldToLocal(_gv.clone()); console.log('horn tip', _gv.toArray().map(v => +v.toFixed(3))); }
+  { resetPose(); rig.updateMatrixWorld(true); const a = tailMinY()[0]; rot('Tail01', 'x', 0.2); rig.updateMatrixWorld(true); const b = tailMinY()[0]; TAIL_UP = b > a ? 1 : -1; resetPose(); }
+  loadingEl.hidden = true; statusEl.hidden = false;
+  setMove('idle'); requestAnimationFrame(loop);
+}).catch(e => { console.error(e); loadingEl.textContent = '模型載入失敗，請重新整理頁面。'; });
+
+// ---------- effects ----------
+const confTex = [0xe8584a, 0xf6c445, 0x4aa3df, 0x9a6bd8].map(c => makeTex(g => { g.fillStyle = '#' + c.toString(16).padStart(6, '0'); g.fillRect(34, 20, 60, 88); }));
+function confetti(x, y, z, n){ for (let i = 0; i < n; i++){ const a = Math.random() * TAU, r = Math.random(); spawn(confTex[i % 4], V3(x, y, z), V3(Math.cos(a) * (0.3 + r * 0.6), 0.8 + Math.random() * 0.6, Math.sin(a) * 0.3), 1.2 + r * 0.4, 0.07, 0, {gravity: -1.6}); } }
+function hearts(pos, n = 3, sz = 0.15){ for (let i = 0; i < n; i++) spawn(heartTex, pos.clone().add(V3((i - (n - 1) / 2) * 0.3, 0.1, 0.1)), V3((i - (n - 1) / 2) * 0.12, 0.45, 0), 1.1, sz); }
+function stars(pos, n = 5, sz = 0.13, sp = 0.6){ for (let i = 0; i < n; i++){ const a = i / n * TAU; spawn(starTex, pos.clone(), V3(Math.cos(a) * sp, 0.5 + Math.random() * 0.3, Math.sin(a) * sp * 0.5), 0.8, sz); } }
+function dustRing(x, y, z, n = 6, r = 0.3){ for (let i = 0; i < n; i++){ const a = i / n * TAU; spawn(dustTex, V3(x + Math.cos(a) * r * 0.5, y, z + Math.sin(a) * r * 0.5), V3(Math.cos(a) * 0.5, 0.3, Math.sin(a) * 0.5), 0.7, 0.16, 0.8); } }
+const petalTex = [0xff8fb8, 0xffd84a, 0xffffff, 0xb79cff].map(c => makeTex(g => { g.translate(64, 64); g.rotate(-0.5); g.beginPath(); g.ellipse(0, 0, 40, 22, 0, 0, TAU); g.fillStyle = '#' + c.toString(16).padStart(6, '0'); g.fill(); }));
+function petals(pos, n){ for (let i = 0; i < n; i++){ const a = Math.random() * TAU, r = Math.random(); spawn(petalTex[i % 4], pos.clone(), V3(Math.cos(a) * (0.4 + r), 0.8 + Math.random() * 0.8, Math.sin(a) * (0.4 + r)), 1.6 + r * 0.5, 0.09, 0, {gravity: -1.2}); } }
+const W = {oops: wordTex('哎呀！', '#e8853a'), cry: wordTex('嗚嗚…', '#5a6fa8'), dont: wordTex('別怕～', '#9a6bd8'), glow: wordTex('呼～呼～', '#c45c9a'), fixed: wordTex('好了！', '#2b7a4b'), yayb: wordTex('汪！', '#e8584a'), again: wordTex('再玩！', '#e8853a'), yay: wordTex('耶～', '#e8584a'),
+  paint: wordTex('畫彩虹～', '#9a6bd8'), ta: wordTex('完成！', '#e8584a'), twirl: wordTex('轉～轉～', '#c45c9a'), wow: wordTex('好高呀！', '#2f63b8'), bye: wordTex('謝謝大家～', '#2b7a4b'),
+  hum: wordTex('哼～♪', '#c45c9a'), pop: wordTex('開花囉！', '#e8584a'), ready: wordTex('來吧～', '#9a6bd8'), burst: wordTex('花開！', '#e8584a'), good: wordTex('好美～', '#c45c9a')};
+const BABY_EV = new Set(['oops', 'cry', 'yayb', 'again']);
+const babyPos = V3();
+function events(p){
+  if (reduceMotion) return;
+  for (const e of p.events){
+    const head = wpos('Head', V3()).add(V3(0, 0.35, 0));
+    if (W[e]){ const at = BABY_EV.has(e) ? babyPos.clone().add(V3(0, 0.55, 0.15)) : head.clone().add(V3(0, 0.55, 0.2)); showWord(W[e], at, 1.55); }
+    if (e === 'yay'){ confetti(head.x, head.y + 0.2, head.z, 16); confetti(babyPos.x, 0.6, babyPos.z, 12); hearts(babyPos.clone().add(V3(0, 0.5, 0)), 2, 0.12); }
+    if (e === 'dust') dustRing(babyPos.x, 0.05, babyPos.z, 8, 0.6);
+    if (e === 'tear') spawn(tearTex, babyPos.clone().add(V3(0.15, 0.4, 0.25)), V3(0.02, -0.18, 0), 0.9, 0.07, 0, {gravity: -0.1});
+    if (e === 'fixed'){ hearts(babyPos.clone().add(V3(0, 0.45, 0)), 3); stars(babyPos.clone().add(V3(0, 0.3, 0)), 6, 0.1, 0.5); }
+    if (e === 'yayb') stars(babyPos.clone().add(V3(0, 0.4, 0)), 5, 0.1, 0.5);
+    if (e === 'ta' || e === 'bye') stars(head.clone().add(V3(0, 0.1, 0)), 6, 0.14, 0.7);
+    if (e === 'burst'){ petals(V3(BL_C.x, 0.5, BL_C.z), 30); stars(V3(BL_C.x, 0.6, BL_C.z), 12, 0.16, 1.6); stars(head.clone(), 10, 0.14, 1.0); }
+    if (e === 'good'){ hearts(head.clone().add(V3(0, 0.25, 0.2)), 3); petals(head.clone(), 10); }
+    if (e === 'pop') petals(V3(rig.position.x, 0.4, rig.position.z), 8);
+  }
+}
+// ---------- placing the props ----------
+let beamT = 0, sparkT = 0;
+const _hp = V3(), _kp = V3();
+function placeHeal(p, T){
+  const d = dogHeal(T); placeDog(d); babyPos.set(d.x, d.y, d.z); HBABY.copy(babyPos);
+  const hb = DOG.root; hb.visible = DOG.ready;
+  /* beam of sparks from the horn to the baby's knee while the horn glows */
+  const on = T > 5.2 && T < 6.6;
+  if (on && !reduceMotion && Math.floor(T * 18) !== Math.floor((T - __dE) * 18)){ hornTip(_hp); _kp.set(d.x, 0.28, d.z); const a = _hp.clone(), b = _kp.clone().add(V3((Math.random() - 0.5) * 0.15, (Math.random() - 0.5) * 0.15, (Math.random() - 0.5) * 0.15)); spawn(sparkTex, a, V3(), 0.7, 0.1, 0, {follow: age => a.clone().lerp(b, Math.min(1, age / 0.7)).add(V3(0, 0.08 * Math.sin(age * 9 + b.x * 5), 0))}); }
+  const g = bell(span(T, 5.7, 6.9)); healGlow.visible = g > 0.01; healGlow.position.set(d.x, 0.32, d.z); healGlow.scale.setScalar(0.5 + 0.6 * g); healGlow.material.opacity = 0.9 * g;
+}
+function placeBridge(p, T){
+  const u = ease(span(T, ...BT.draw)), op = 1 - ease(span(T, ...BT.fade)); setBridge(u, op);
+  if (!reduceMotion && T > BT.draw[0] && T < BT.draw[1] + 0.2 && Math.floor(T * 22) !== Math.floor((T - __dE) * 22)){ bridgeTipPos(u, _kp); const q = _kp.clone(); spawn(sparkTex, q, V3((Math.random() - 0.5) * 0.4, -0.1 - Math.random() * 0.3, (Math.random() - 0.5) * 0.4), 0.9, 0.11); }
+  if (!reduceMotion && T > BT.fade[0] && T < BT.fade[1] && Math.floor(T * 14) !== Math.floor((T - __dE) * 14)){ const x = -BR.R + 2 * BR.R * Math.random(); spawn(starTex, V3(x, bridgeY(x) + 0.1, 0), V3((Math.random() - 0.5) * 0.3, 0.4, 0), 0.9, 0.12); }
+}
+const _bu = V3();
+function placeBloom(p, T){
+  { const su = span(T, BL.burst, BL.burst + 1.5); shockRing.visible = su > 0 && su < 1; shockRing.position.set(BL_C.x, 0.04, BL_C.z); shockRing.scale.setScalar(0.3 + 3.1 * ease(su)); shockRing.material.opacity = 0.9 * (1 - su); }
+  FLW.forEach(f => { if (f.tb == null) return; bloomFlower(f, T, f.tb); });
+  const bf = T > 9.9 ? 1 : 0;
+  butterflies.forEach((b, i) => { b.g.visible = bf > 0 && !reduceMotion; if (!b.g.visible) return; const a = T * (0.7 + 0.1 * i) + b.ph, r = 0.9 + 0.5 * i * 0.4; b.g.position.set(BL_C.x + Math.cos(a) * r, 1.0 + 0.3 * Math.sin(T * 2 + b.ph) + 0.2 * i, BL_C.z + Math.sin(a) * r); b.g.rotation.y = -a; const fl = 0.9 * Math.abs(Math.sin(T * 20 + b.ph)); b.wl.rotation.z = fl; b.wr.rotation.z = -fl; });
+  if (!reduceMotion && T > 9.1 && T < 10.3 && Math.floor(T * 16) !== Math.floor((T - __dE) * 16)){ const a = Math.random() * TAU, r = 0.5 + Math.random() * 2.2; spawn(sparkTex, V3(BL_C.x + Math.cos(a) * r, 0.1, BL_C.z + Math.sin(a) * r), V3(0, 0.6, 0), 1.0, 0.1); }
+}
+function placeProps(p, t){
+  if (move !== 'bloom') shockRing.visible = false;
+  const isH = move === 'heal', isB = move === 'bridge', isL = move === 'bloom';
+  DOG.root.visible = isH && DOG.ready; if (DOG.sh && !isH) DOG.sh.visible = false; if (!isH) healGlow.visible = false;
+  if (!isB) bridgeG.visible = false;
+  flowerG.visible = isL; if (!isL) butterflies.forEach(b => { b.g.visible = false; });
+  if (isH) placeHeal(p, p.T); if (isB) placeBridge(p, p.T); if (isL) placeBloom(p, p.T);
+  /* horn glow */
+  const gl = Math.max(0, Math.min(1, p.glow)); hornGlow.visible = gl > 0.02 && !!hornLocal;
+  if (hornGlow.visible){ hornTip(_hp); hornGlow.position.copy(_hp); const gp = p.gp || 0; hornGlow.scale.setScalar((0.18 + 0.5 * gl + 0.04 * Math.sin(t * 12)) * (1 + 2.0 * gp)); hornGlow.material.opacity = 0.35 + 0.65 * gl;
+    if (!reduceMotion && gl > 0.4 && Math.floor(t * 12) !== Math.floor((t - __dE) * 12)) spawn(sparkTex, _hp.clone().add(V3((Math.random() - 0.5) * 0.2, (Math.random() - 0.5) * 0.2, (Math.random() - 0.5) * 0.2)), V3((Math.random() - 0.5) * 0.3, 0.2, (Math.random() - 0.5) * 0.3), 0.6, 0.07); }
+}
+
+// ---------- buttons, camera, loop ----------
+const snap = {}; let blendStart = -10;
+function setMove(name){
+  if (FK.wait(name, 'sparky', setMove)) return;   // 食物載好才開始
+  if (model){ for (const n in bones) snap[n] = bones[n].quaternion.clone(); snap.rp = rig.position.clone(); snap.rq = rig.quaternion.clone(); blendStart = performance.now() / 1000; }
+  clearFx(); userCam = false;
+  PARKS.show(isEat(name) ? 'idle' : name); FK.show(name, 'sparky', 0.3);
+  move = name; t0 = performance.now() / 1000; frozen = null; __hold = 0;
+  document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
+  statusEl.textContent = names[name];
+}
+document.querySelectorAll('.moves button').forEach(b => b.addEventListener('click', () => setMove(b.dataset.move)));
+const CAM = { eat:CAMEAT, snack:CAMEAT, refuse:CAMEAT,idle:{t:[0, 0.9, 0.1], d:6.6, az:0.09}, heal:{t:[-0.6, 0.7, 0.7], d:8.6, az:0.06}, bridge:{t:[0, 1.4, 0], d:12.6, az:0.05}, bloom:{t:[-0.2, 0.5, 0.5], d:10.2, az:0.5}, sleep:{t:[0, 0.7, 0.1], d:5.4, az:0.1}};
+const COM_L = V3(0, 0.8, 0.1);
+const _ct = V3(), _cp = V3();
+let zTimer = 0, last = performance.now() / 1000, shY = 0;
+function loop(){
+  const now = performance.now() / 1000, rawDt = Math.max(0, now - last), dt = Math.min(rawDt, 0.05); last = now; if (__hold && loopEl.checked) __hold = 0;
+  let t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  if (frozen === null && !loopEl.checked && (/^(eat|snack|refuse)$/.test(move) || (move === 'heal' || move === 'bridge' || move === 'bloom') ) && t >= LEN[move]){ if (!__hold) __hold = now; t = LEN[move] - 0.001; if (now - __hold >= 1 && !EMBED){ setMove('idle'); t = 0; } }
+  __dE = (frozen !== null || __hold) ? 1e-4 : Math.min(0.5, Math.max(0.001, rawDt));   // 字卡用真實經過時間判斷（上限 0.5 秒），慢手機不會漏
+  let p = pose(move, t);
+  const bw = frozen !== null ? 1 : Math.min(1, (now - blendStart) / 0.35);
+  if (bw < 1){ const e = ease(bw); for (const n in bones){ if (!snap[n]) continue; bones[n].quaternion.slerpQuaternions(snap[n], bones[n].quaternion.clone(), e); }
+    rig.position.lerpVectors(snap.rp, rig.position.clone(), e); rig.quaternion.slerpQuaternions(snap.rq, rig.quaternion.clone(), e); }
+  if (p.surf != null && skinned) groundFix(p);
+  if (skinned) tailGuard(p.tailFloor != null ? p.tailFloor : (p.floor || 0));
+  rig.updateMatrixWorld(true);
+  placeProps(p, t);
+  if (p.eat){ FH.arms(p.eat, move); FH.place(p.eat, move, dt, wpos('Head', V3()), reduceMotion); } else FK.food.visible = false;
+  lidU.value = move === 'sleep' ? lidU.value + (1 - lidU.value) * (1 - Math.pow(0.02, dt)) : p.lid;
+  happyU.value = p.happy; sadU.value = p.sad;
+  flatEU.value = Math.max(lidU.value, p.happy, p.sad); flatMU.value = 0;
+  if (move === 'sleep' && !reduceMotion){ zTimer -= dt; if (zTimer <= 0){ zTimer = 1.1; spawn(zTex, wpos('Head', V3()).add(V3(0.3, 0.5, 0.3)), V3(0.14, 0.24, 0), 2.6, 0.15, 1.3); } }
+  if (frozen === null && !__hold) events(p);
+  updateFx(dt); updateWord(dt);
+  shY = move === 'bridge' ? (p.floor || 0) : 0;
+  const com = rig.localToWorld(COM_L.clone()), hgt = Math.max(0, com.y - 0.78 - shY);
+  const s = 1 / (1 + hgt * 0.9); shadow.scale.set(s, s, s); shadow.position.set(com.x, 0.003 + shY * 0, com.z);
+  if (!userCam){
+    const c = CAM[move]; _ct.set(c.t[0], c.t[1], c.t[2]);
+    const k = 1 - Math.pow(0.04, dt); controls.target.lerp(_ct, k);
+    _cp.set(controls.target.x + Math.sin(c.az) * c.d, controls.target.y + 0.45 + c.d * 0.04 + (c.el || 0), controls.target.z + Math.cos(c.az) * c.d); camera.position.lerp(_cp, k);
+  }
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+function pose(name, t){
+  const T = t % LEN[name];
+  const p = newP(); p.T = T;
+  resetPose();
+  if (isEat(name)){ poseEat(p, t, name); return p; }
+  if (name === 'idle') poseIdle(p, t, T); else if (name === 'sleep') poseSleep(p, t, T);
+  else if (name === 'heal') poseHeal(p, t, T); else if (name === 'bridge') poseBridge(p, t, T); else if (name === 'bloom') poseBloom(p, t, T);
+  return p;
+}
+window.__m = {lidU, happyU, sadU, flatEU, rot, resetPose, arms, newP, place, groundFix, THREE, rest, setMove, camera, controls, bones, rig, freeze(x){ frozen = x; }, setT(x){ frozen = null; t0 = performance.now()/1000 - x; },
+  setUser(v){ userCam = v; }, HOLD: FH, EATK: FK, get model(){ return model; }, get skinned(){ return skinned; }, wpos, hornTip, DOG, scene, PARKS, babyPos, dogHeal,
+  minY(){ let mn = Infinity; const v = V3(); skinned.updateMatrixWorld(true); skinned.skeleton.update(); for (let i = 0; i < skinned.geometry.attributes.position.count; i += 3){ skinned.getVertexPosition(i, v); v.applyMatrix4(skinned.matrixWorld); mn = Math.min(mn, v.y); } return mn; }};
+window.__armClear = 0; /* arms hang close to the body; no forced abduction (user choice 2026-10-22) */
+// 3D動畫生成規範 safety layer (meshysafe.js)
+const __sh = /nosafe/.test(location.search) ? 0 : setInterval(() => { if (model && bones.Head){ clearInterval(__sh); import('./meshysafe-c14b1db8.js').then(m => { window.__SAFE = m.installSafety(THREE, () => model, bones, rig, scene, { clock: () => (frozen !== null ? frozen : performance.now() / 1000 - t0) }); }); } }, 300);
+</script>
+</body></html>

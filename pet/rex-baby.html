@@ -104,7 +104,7 @@ function QRc(o, ax, v){ const r = QRa(o); return QR(o, ax === 'x' ? v : r[0], ax
 
 import {makeParks} from './parkscenes.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {makeEat, makeHold, phases, isEat} from './eatkit.js';
+import {makeEat, makeHold, phases, isEat, period as __eatLen} from './eatkit.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
 // ---------- calibration (model space: feet at y=0, height 1.65, facing +z), measured from the texture ----------
@@ -651,6 +651,7 @@ async function loadPet(){
     const pos = o.geometry.attributes.position; for (let i = 0; i < pos.count; i += 2) P.push(pos.getX(i), pos.getY(i), pos.getZ(i));
     const mats = Array.isArray(o.material) ? o.material : [o.material];
     mats.forEach(m => {
+      if (m.map){ m.map.generateMipmaps = false; m.map.minFilter = THREE.LinearFilter; m.map.needsUpdate = true; }   // 關 mipmap（2026-11-04）：縮小時不混出拼塊邊緣的細紋
       m.onBeforeCompile = (sh) => {
         Object.assign(sh.uniforms, {uFlatE:flatEU, uFlatM:flatMU, uDizzy:dizzyU, uEar:earU, uTail:tailU, uLid:lidU, uCry:cryU, uHappy:happyU, uLove:loveU, uDbg:dbgU, uSpark:sparkU, uRoar:roarU, uInBowl:inBowlU, uBowlC:bowlCU, uCapOn:capOnU});
         sh.fragmentShader = 'uniform float uInBowl;\nuniform vec3 uBowlC;\nvarying vec3 vWP;\nuniform float uDizzy;\nuniform float uLid;\nuniform float uCry;\nuniform float uHappy;\nuniform float uLove;\nuniform float uDbg;\nuniform float uSpark;\nuniform float uRoar;\nvarying vec3 vObj;\nvarying vec3 vFP;\nvec2 eyeUV(vec3 p, float side){ vec3 c = vec3(0.273 * side, 1.118, 0.296); vec3 n = normalize(vec3(0.45 * side, 0.29, 0.85)); vec3 u = normalize(cross(vec3(0.0, 1.0, 0.0), n)); vec3 v = cross(n, u); vec3 d = p - c; return vec2(dot(d, u) * side, dot(d, v)) / 0.115; }\nvarying vec3 vHeadN;\nvarying vec2 vMask;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader
@@ -813,7 +814,7 @@ const HOLD = makeHold(THREE, { EATK, rig: eatAnchor, model: rig, skin: rexSk, re
 function setMove(name){
   if (EATK.wait(name, 'rex', setMove)) return;   // 食物載好才開始
   PARKS.show(isEat(name) ? 'idle' : name); EATK.show(name, 'rex', name === 'refuse' ? 0.26 : 0.44);   // 肉肉丸是長串，大一點才看得到
-  move = name; t0 = performance.now()/1000; lastT = 0; clearFx();
+  move = name; t0 = performance.now()/1000; __hold = 0; lastT = 0; clearFx();
   if (name === 'shell'){ cur.x = S0[0]; cur.z = S0[1]; }
   document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
   statusEl.textContent = names[name];
@@ -855,8 +856,18 @@ function placeCap(p){
 }
 
 let last = performance.now()/1000, running = false, frozen = null;
+// 才藝、餵食播一次（2026-11-04）：時間到停在最後一格約 1 秒再回待機；App 裡（?embed=1）只停住，由 App 切回待機
+var __hold = 0, EMBED = new URLSearchParams(location.search).get('embed') === '1';
+const __onceLen = m => ((m === 'roar' || m === 'shell' || m === 'tumble') ? LOOP[m] : 0) || (isEat(m) ? __eatLen(m) : 0);
+function __once(t, now){
+  const L = __onceLen(move);
+  if (!L || frozen !== null || reduceMotion || t < L) return t;
+  if (!__hold) __hold = now;
+  if (now - __hold >= 1 && !EMBED){ setMove('idle'); return 0; }
+  return L - 0.001;
+}
 function frame(now, dt){
-  const t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  const t = __once(frozen !== null ? frozen : (reduceMotion ? 0 : now - t0), now);
   const p = pose(move, t);
   const k = 1 - Math.pow(0.0005, dt);
   const direct = move === 'shell' && (Math.abs(p.x - cur.x) > 0.6 || Math.abs(p.z - cur.z) > 0.6);

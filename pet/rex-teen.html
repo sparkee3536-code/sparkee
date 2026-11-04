@@ -95,7 +95,7 @@ h1{font-family:var(--f-display);font-weight:400;font-size:28px;margin:0;text-wra
 import * as THREE from 'three';
 // 3D動畫生成規範 2.1: every rotation is a quaternion (bones rotate with axis-angle quaternions in the character's own space)
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {makeEat, makeHold, phases, isEat} from './eatkit.js';
+import {makeEat, makeHold, phases, isEat, period as __eatLen} from './eatkit.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {makeParks} from './parkscenes.js';
 
@@ -580,6 +580,7 @@ async function loadPet(){
     const E = cfg.eyeC, N = cfg.eyeN;
     const mats = Array.isArray(o.material) ? o.material : [o.material];
     mats.forEach(m => {
+      if (m.map){ m.map.generateMipmaps = false; m.map.minFilter = THREE.LinearFilter; m.map.needsUpdate = true; }   // 關 mipmap（2026-11-04）：縮小時不混出拼塊邊緣的細紋
       m.onBeforeCompile = (sh) => {
         Object.assign(sh.uniforms, {uFlatE:flatEU, uFlatM:flatMU, uDizzy:dizzyU, uEar:earU, uTail:tailU, uLid:lidU, uCry:cryU, uHappy:happyU, uLove:loveU, uDbg:dbgU, uSpark:sparkU, uRoar:roarU});
         sh.fragmentShader = 'uniform float uDizzy;\nuniform float uLid;\nuniform float uCry;\nuniform float uHappy;\nuniform float uLove;\nuniform float uDbg;\nuniform float uSpark;\nuniform float uRoar;\nvarying vec3 vObj;\nvarying vec3 vFP;\n'
@@ -894,7 +895,7 @@ function setMove(name){
   if (EATK.wait(name, 'rex', setMove)) return;   // 食物載好才開始
   if (model){ for (const n in bones) snap[n] = bones[n].quaternion.clone(); snap.pos = rig.position.clone(); blendStart = performance.now()/1000; }
   PARKS.show(isEat(name) ? 'idle' : name); clearFx(); EATK.show(name, 'rex', name === 'refuse' ? 0.3 : 0.44);
-  move = name; t0 = performance.now()/1000; lastT = 0; shakeAt = -10; hitFrom = null; tossFrom = null;
+  move = name; t0 = performance.now()/1000; __hold = 0; lastT = 0; shakeAt = -10; hitFrom = null; tossFrom = null;
   document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
   statusEl.textContent = names[name];
 }
@@ -905,8 +906,18 @@ new ResizeObserver(resize).observe(stage); resize();
 
 let last = performance.now()/1000, frozen = null, yaw = 0, running = false;
 const _yq = new THREE.Quaternion();
+// 才藝、餵食播一次（2026-11-04）：時間到停在最後一格約 1 秒再回待機；App 裡（?embed=1）只停住，由 App 切回待機
+var __hold = 0, EMBED = new URLSearchParams(location.search).get('embed') === '1';
+const __onceLen = m => ((m === 'dandelion' || m === 'baseball' || m === 'apple') ? LOOP[m] : 0) || (isEat(m) ? __eatLen(m) : 0);
+function __once(t, now){
+  const L = __onceLen(move);
+  if (!L || frozen !== null || reduceMotion || t < L) return t;
+  if (!__hold) __hold = now;
+  if (now - __hold >= 1 && !EMBED){ setMove('idle'); return 0; }
+  return L - 0.001;
+}
 function frame(now, dt){
-  const t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  const t = __once(frozen !== null ? frozen : (reduceMotion ? 0 : now - t0), now);
   curT = t;
   rig.position.set(0, 0, 0); rig.scale.set(1, 1, 1); rig.quaternion.setFromAxisAngle(AX.y, yaw);
   rig.updateMatrixWorld(true);
