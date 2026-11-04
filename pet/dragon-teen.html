@@ -1,0 +1,966 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>火山小赤龍少年才藝試作</title>
+<style>
+body.embed{margin:0;background:transparent;overflow:hidden}
+body.embed .wrap{padding:0;max-width:none;gap:0}
+body.embed .wrap>*:not(.stage){display:none!important}
+body.embed .stage{position:fixed;inset:0;aspect-ratio:auto;border-radius:0;border:0}
+body.embed .status{display:none}
+</style>
+<script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('embed-doc'),addEventListener('DOMContentLoaded',()=>document.body.classList.add('embed'));</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F4F6F1; --surface:#FFFFFF; --fg:#1B2A22; --muted:#55645B; --line:#DCE3DA;
+  --grass:#C2512B; --grass-ink:#FFFFFF; --spark:#F5A524; --spark-soft:#FFF1D6;
+  --sky-top:#DCEAF7; --sky-bot:#EEF5E6;
+  --f-display:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#F0906A; --grass-ink:#2A0E05; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#F0906A; --grass-ink:#2A0E05; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:20px 40px;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--f-display);font-weight:400;font-size:26px;margin:0;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted)}
+.stage{position:relative;width:100%;aspect-ratio:4/3.9;border-radius:24px;overflow:hidden;background:linear-gradient(var(--sky-top),var(--sky-bot));border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.status{position:absolute;left:12px;top:12px;background:var(--surface);color:var(--fg);border-radius:99px;padding:4px 12px;font-size:13px;border:1px solid var(--line)}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;pointer-events:none}
+.moves{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.moves{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.moves button{min-height:56px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:15px;font-weight:700;cursor:pointer;padding:6px;line-height:1.25}
+.moves button small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.moves button[aria-pressed="true"]{background:var(--grass);color:var(--grass-ink);border-color:var(--grass)}
+.moves button[aria-pressed="true"] small{color:var(--grass-ink)}
+.moves button.sig{border-color:var(--spark)}
+.moves button:focus-visible{outline:3px solid var(--spark);outline-offset:2px}
+.toggle{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--muted)}
+.toggle input{width:20px;height:20px;accent-color:var(--grass)}
+</style>
+
+<div class="wrap">
+  
+    <h1>火山小赤龍少年</h1>
+    <p class="sub">三個才藝試作：噴火放晴、野餐烤地瓜、飛天接殺。拖曳可以轉視角。</p>
+  
+  <div class="stage" id="stage">
+    <div class="loading" id="loading">火山小赤龍少年載入中（約 8 MB）…</div>
+    <span class="status" id="status" hidden>待機</span>
+  </div>
+  <div class="moves" role="group" aria-label="動作">
+    <button data-move="idle" aria-pressed="true">待機</button>
+    <button data-move="rain" class="sig" aria-pressed="false">噴火放晴<small>12 秒</small></button>
+    <button data-move="picnic" class="sig" aria-pressed="false">野餐烤地瓜<small>12 秒</small></button>
+    <button data-move="ball" class="sig" aria-pressed="false">飛天接殺<small>12 秒</small></button>
+    <button data-move="sleep" aria-pressed="false">睡覺</button>
+    <button data-move="eat" class="feed" aria-pressed="false">開心吃<small>6 秒</small></button>
+    <button data-move="snack" class="feed" aria-pressed="false">最愛點心<small>7 秒</small></button>
+    <button data-move="refuse" class="feed" aria-pressed="false">搖頭不吃<small>5 秒</small></button>
+  </div>
+  <label class="toggle"><input type="checkbox" id="loopT"> 才藝播完自動重播</label>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+// 3D動畫生成規範 2.1: rotations are quaternions (axis-angle products), never Euler writes
+import {makeParks} from './parkscenes.js';
+import {makeEat, makeHold, phases, isEat} from './eatkit.js';
+const CAMEAT = {t:[0, 0.9, 0.3], d: 5.5, az: 0};
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+
+const TAU = Math.PI * 2;
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const AX = {x:V3(1,0,0), y:V3(0,1,0), z:V3(0,0,1)};
+const __qa = new THREE.Quaternion(), __qb = new THREE.Quaternion(), __qc = new THREE.Quaternion();
+function QYXZ(out, yaw, pitch, roll){ __qa.setFromAxisAngle(AX.y, yaw); __qb.setFromAxisAngle(AX.x, pitch); __qc.setFromAxisAngle(AX.z, roll); return out.copy(__qa).multiply(__qb).multiply(__qc); }
+
+// ---------- calibration (model space of the rigged GLB: feet at 0, height 1.65, facing +z) ----------
+const CFG = { scale: 1, eye:[0.16,1.17], eyeR:[0.054,0.062], eyeZ:0.4, eyeOut:1.25, eyeFill:[0.374,0.06,0.022], noPink:true, inkCol:[0.06,0.02,0.015], mouth:[0,1.012], mouthR:[0.115,0.04], mouthZ:0.55 };
+
+{ const q = new URLSearchParams(location.search); if (q.get('eyeR')) CFG.eyeR = q.get('eyeR').split(',').map(Number); if (q.get('eye')) CFG.eye = q.get('eye').split(',').map(Number); if (q.get('out')) CFG.eyeOut = +q.get('out'); }
+const stage = document.getElementById('stage');
+const statusEl = document.getElementById('status');
+const loadingEl = document.getElementById('loading');
+const loopEl = document.getElementById('loopT');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.localClippingEnabled = true;
+const CLIP = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1000);   /* constant 1000 = nothing clipped; -waterY clips everything under the water surface */
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+const ENVTEX = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+const hemiL = new THREE.HemisphereLight(0xffffff, 0x9fb59a, 2.0); scene.add(hemiL);
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3); scene.add(sun); const sunLight = sun;
+const PARKS = makeParks(THREE, scene, 'teen-dragon'); PARKS.show('idle');
+const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 60);
+camera.position.set(0.6, 1.5, 6.6);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.95, 0.1); controls.enablePan = false; controls.enableDamping = true;
+controls.minDistance = 2.8; controls.maxDistance = 11; controls.maxPolarAngle = Math.PI * 0.52;
+let userCam = false; controls.addEventListener('start', () => { userCam = true; });
+
+const ground = new THREE.Mesh(new THREE.CircleGeometry(3.8, 64), new THREE.MeshLambertMaterial({color:0xcfe5c4}));
+AXQ(ground, 'x', -Math.PI/2); ground.material.depthWrite = false; ground.renderOrder = -2; scene.add(ground);
+function AXQ(o, a, ang){ o.quaternion.setFromAxisAngle(AX[a], ang); }
+const shCanvas = document.createElement('canvas'); shCanvas.width = shCanvas.height = 128;
+const sctx = shCanvas.getContext('2d'); const gr = sctx.createRadialGradient(64,64,4,64,64,62);
+gr.addColorStop(0,'rgba(30,50,35,0.45)'); gr.addColorStop(1,'rgba(30,50,35,0)'); sctx.fillStyle = gr; sctx.fillRect(0,0,128,128);
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.4,1.4), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shCanvas), transparent:true, depthWrite:false}));
+AXQ(shadow, 'x', -Math.PI/2); shadow.position.y = 0.003; shadow.renderOrder = -1; scene.add(shadow);
+
+const rig = new THREE.Group(); scene.add(rig);
+const shineU = {value:0}, shineYU = {value:-1}, wetU = {value:0}, glowU = {value:0}, calmU = {value:0}, flatEU = {value:0}, flatMU = {value:0}, lidU = {value:0}, happyU = {value:0}, sadU = {value:0};
+
+// ---------- floating symbols ----------
+function makeTex(draw){ const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); draw(g); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx; }
+const heartTex = makeTex(g => { g.translate(64, 66); g.beginPath(); g.moveTo(0, 40); g.bezierCurveTo(-64, -4, -36, -56, 0, -24); g.bezierCurveTo(36, -56, 64, -4, 0, 40); g.closePath(); g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ff6f8e'; g.fill(); });
+const zTex = makeTex(g => { g.font = '900 104px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.lineJoin = 'round'; g.strokeText('Z', 64, 68); g.fillStyle = '#5a6fa8'; g.fillText('Z', 64, 68); });
+const starTex = makeTex(g => { g.translate(64, 64); g.beginPath(); for (let i = 0; i < 10; i++){ const r = i % 2 ? 22 : 54, a = -Math.PI/2 + i*Math.PI/5; g.lineTo(Math.cos(a)*r, Math.sin(a)*r); } g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#f5c24a'; g.fill(); });
+const dustTex = makeTex(g => { g.beginPath(); g.arc(64, 64, 50, 0, TAU); g.fillStyle = '#e6dcc8'; g.fill(); });
+const dropTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -52); g.bezierCurveTo(22, -18, 40, 6, 40, 22); g.arc(0, 22, 40, 0, Math.PI); g.bezierCurveTo(-40, 6, -22, -18, 0, -52); g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#6fbfee'; g.fill(); });
+const noteTex = color => makeTex(g => { const shape = () => { g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.moveTo(62, 92); g.lineTo(62, 20); g.quadraticCurveTo(92, 34, 96, 62); };
+  g.lineJoin = 'round'; g.lineCap = 'round'; shape(); g.lineWidth = 20; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ffffff'; g.fill(); shape(); g.lineWidth = 9; g.strokeStyle = color; g.stroke(); g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.fillStyle = color; g.fill(); });
+const noteTexes = [noteTex('#f5a524'), noteTex('#2b7a4b')];
+const words = {};
+function wordTex(txt, col = '#e8584a'){
+  if (words[txt]) return words[txt];
+  const c = document.createElement('canvas'); c.width = 384; c.height = 160; const g = c.getContext('2d');
+  g.font = '900 96px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  let s = 96; while (g.measureText(txt).width > 340 && s > 40){ s -= 6; g.font = `900 ${s}px "Huninn","Noto Sans TC",sans-serif`; }
+  g.lineJoin = 'round'; g.lineWidth = 18; g.strokeStyle = '#ffffff'; g.strokeText(txt, 192, 84); g.fillStyle = col; g.fillText(txt, 192, 84);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return (words[txt] = tx);
+}
+const fx = [];
+function spawn(map, pos, vel, life, size, grow = 0, extra = null){
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map, transparent:true, depthWrite:false})); sp.position.copy(pos); sp.renderOrder = 5; scene.add(sp);
+  const f = Object.assign({sp, vel, life, size, grow, age:0}, extra || {}); fx.push(f); return f;
+}
+function updateFx(dt){
+  for (let i = fx.length - 1; i >= 0; i--){
+    const f = fx[i]; f.age += dt;
+    if (f.age > f.life){ scene.remove(f.sp); f.sp.material.dispose(); fx.splice(i, 1); continue; }
+    const u = f.age / f.life; if (f.gravity) f.vel.y += f.gravity * dt;
+    if (f.follow) f.sp.position.copy(f.follow(f.age)); else f.sp.position.addScaledVector(f.vel, dt);
+    const s = f.size * (Math.min(1, f.age/0.2)*0.4 + 0.6) * (1 + f.grow*u); f.sp.scale.set(s, s, s);
+    f.sp.material.opacity = Math.min(1, f.age/0.15) * (u > 0.6 ? 1 - (u-0.6)/0.4 : 1);
+  }
+}
+function clearFx(){ fx.forEach(f => { scene.remove(f.sp); f.sp.material.dispose(); }); fx.length = 0; }
+let wordSprite = null;
+function showWord(tex, pos, scale = 0.8){
+  if (wordSprite){ scene.remove(wordSprite); wordSprite.material.dispose(); }
+  wordSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: tex, transparent: true, depthWrite: false, depthTest: false}));
+  wordSprite.renderOrder = 9; wordSprite.position.copy(pos); wordSprite.userData.age = 0; wordSprite.userData.sc = scale; scene.add(wordSprite);
+}
+function updateWord(dt){
+  if (!wordSprite) return;
+  const a = (wordSprite.userData.age += dt), pop = a < 0.18 ? 0.6 + 2.6 * a : 1.07 - 0.07 * Math.min(1, (a - 0.18) / 0.15), k = wordSprite.userData.sc;
+  wordSprite.scale.set(k * pop, k * 0.5 * pop, 1); wordSprite.material.opacity = a > 1.2 ? Math.max(0, 1 - (a - 1.2) / 0.3) : 1;
+  if (a > 1.5){ scene.remove(wordSprite); wordSprite.material.dispose(); wordSprite = null; }
+}
+function resize(){ const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage); resize();
+// ---------- face prep: when an expression is drawn, the painted eye/mouth disappears into clean skin ----------
+// For each vertex on an eye or the mouth we store the skin colour of the surrounding ring, plus an offset and
+// a normal that sink the eye/mouth bump back onto the surrounding surface, so nothing looks like a closed lid.
+function prepFace(mesh, F){
+  const g = mesh.geometry, P = g.attributes.position, UV = g.attributes.uv, N = g.attributes.normal, n = P.count;
+  const img = mesh.material.map && mesh.material.map.image;
+  const W = img.width, H = img.height, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d', {willReadFrequently: true}); cx.drawImage(img, 0, 0); const px = cx.getImageData(0, 0, W, H).data;
+  const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const colOf = i => { const u = UV.getX(i), v = UV.getY(i);
+    const x = Math.min(W - 1, Math.max(0, Math.floor(((u % 1) + 1) % 1 * W))), y = Math.min(H - 1, Math.max(0, Math.floor(((v % 1) + 1) % 1 * H)));
+    const k = (y * W + x) * 4; return [lin(px[k]), lin(px[k + 1]), lin(px[k + 2])]; };
+  const OUT = F.eyeOut || 1.35, re = new Float32Array(n), rm = new Float32Array(n), cols = new Array(n);
+  for (let i = 0; i < n; i++){
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i), s = x < 0 ? -1 : 1;
+    re[i] = z > F.eyeZ ? Math.hypot((x - F.eye[0] * s) / F.eyeR[0], (y - F.eye[1]) / F.eyeR[1]) : 99;
+    rm[i] = z > F.mouthZ ? Math.hypot((x - F.mouth[0]) / F.mouthR[0], (y - F.mouth[1]) / F.mouthR[1]) : 99;
+    if (re[i] < OUT + 0.9 || rm[i] < 2.1) cols[i] = colOf(i);
+  }
+  const lum = c => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  const ringE = [], ringM = [];
+  for (let i = 0; i < n; i++){
+    if (re[i] > OUT - 0.1 && re[i] < OUT + 0.6 && lum(cols[i]) > 0.15) ringE.push(i);
+    else if (rm[i] > 1.25 && rm[i] < 2.0 && re[i] > 1.35 && lum(cols[i]) > 0.15) ringM.push(i);
+  }
+  // centre of the head from the skin ring around the eyes (least-squares sphere)
+  const M = Array.from({length: 4}, () => [0, 0, 0, 0, 0]);
+  for (const i of ringE){ const x = P.getX(i), y = P.getY(i), z = P.getZ(i), r = [2*x, 2*y, 2*z, 1], b = x*x + y*y + z*z;
+    for (let a = 0; a < 4; a++){ for (let c = 0; c < 4; c++) M[a][c] += r[a] * r[c]; M[a][4] += r[a] * b; } }
+  for (let a = 0; a < 4; a++){ let p = a; for (let r = a + 1; r < 4; r++) if (Math.abs(M[r][a]) > Math.abs(M[p][a])) p = r; [M[a], M[p]] = [M[p], M[a]];
+    for (let r = 0; r < 4; r++){ if (r === a) continue; const f = M[r][a] / M[a][a]; for (let c = a; c < 5; c++) M[r][c] -= f * M[a][c]; } }
+  const C = [M[0][4] / M[0][0], M[1][4] / M[1][1], M[2][4] / M[2][2]];
+  // eyes are filled with the dominant skin colour around each eye (keeps a clean, even patch)
+  const domE = F.eyeFill ? [F.eyeFill, F.eyeFill] : [-1, 1].map(sd => { const sel = ringE.filter(j => (P.getX(j) < 0 ? -1 : 1) === sd && P.getY(j) > F.eye[1] && re[j] < OUT + 0.3);   // upper half: forehead fur, away from snout and blush
+    return [0, 1, 2].map(k => { const v = sel.map(j => cols[j][k]).sort((a, b) => a - b); return v.length ? v[v.length >> 1] : 0.8; }); });
+  const aSkin = new Float32Array(n * 4), aFlat = new Float32Array(n * 4), aFlatN = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++){
+    aFlatN[i*3] = N.getX(i); aFlatN[i*3+1] = N.getY(i); aFlatN[i*3+2] = N.getZ(i);
+    const own = cols[i]; if (own){ aSkin[i*4] = own[0]; aSkin[i*4+1] = own[1]; aSkin[i*4+2] = own[2]; }
+    const pinkV = !F.noPink && cols[i] && cols[i][0] - cols[i][2] > 0.15 && cols[i][1] > 0.3;   // snout & blush stay as they are
+    const isE = re[i] < OUT && !pinkV, isM = !isE && rm[i] < 1.4;
+    if (!isE && !isM) continue;
+    const ring = isE ? ringE : ringM, r = isE ? re[i] : rm[i];
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+    const near = [];
+    for (const j of ring){ const d = Math.hypot(P.getX(j) - x, P.getY(j) - y, P.getZ(j) - z); if (near.length < 18 || d < near[near.length - 1][0]){ near.push([d, j]); near.sort((a, b) => a[0] - b[0]); if (near.length > 18) near.pop(); } }
+    if (!near.length) continue;
+    // colour: take ring samples lying in the same direction from the eye/mouth centre, so the skin pattern continues across
+    const sx = x < 0 ? -1 : 1, cxE = isE ? F.eye[0] * sx : F.mouth[0], cyE = isE ? F.eye[1] : F.mouth[1], rx = isE ? F.eyeR[0] : F.mouthR[0], ry = isE ? F.eyeR[1] : F.mouthR[1];
+    const ang = Math.atan2((y - cyE) / ry, (x - cxE) / rx), dirSet = [];
+    for (const j of ring){ const jx = P.getX(j), jy = P.getY(j); if (isE && (jx < 0) !== (x < 0)) continue;
+      let da = Math.abs(Math.atan2((jy - cyE) / ry, (jx - cxE) / rx) - ang); if (da > Math.PI) da = 2 * Math.PI - da;
+      if (da < 0.4) dirSet.push([Math.hypot(jx - x, jy - y, P.getZ(j) - z), j]); }
+    dirSet.sort((a, b) => a[0] - b[0]);
+    const pick = r < 0.6 || dirSet.length < 4 ? near : dirSet.slice(0, 8);   // the very middle blends from all around
+    const med = isE ? domE[x < 0 ? 0 : 1] : [0, 1, 2].map(k => { const v = pick.map(q => cols[q[1]][k]).sort((a, b) => a - b); return v[v.length >> 1]; });
+    let wsum = 0, rad = 0, nx = 0, ny = 0, nz = 0;
+    for (const [d, j] of near.slice(0, 10)){ const w = 1 / (d + 0.01); wsum += w;
+      rad += w * Math.hypot(P.getX(j) - C[0], P.getY(j) - C[1], P.getZ(j) - C[2]); nx += w * N.getX(j); ny += w * N.getY(j); nz += w * N.getZ(j); }
+    rad /= wsum; const nl = Math.hypot(nx, ny, nz) || 1;
+    const dx = x - C[0], dy = y - C[1], dz = z - C[2], dl = Math.hypot(dx, dy, dz) || 1;
+    const fade = isE ? 1 - Math.min(1, Math.max(0, (r - (OUT - 0.3)) / 0.3)) : 1 - Math.min(1, Math.max(0, (r - 1.05) / 0.3));
+    aSkin[i*4] = med[0]; aSkin[i*4+1] = med[1]; aSkin[i*4+2] = med[2]; aSkin[i*4+3] = fade;
+    aFlat[i*4] = C[0] + dx / dl * rad - x; aFlat[i*4+1] = C[1] + dy / dl * rad - y; aFlat[i*4+2] = C[2] + dz / dl * rad - z; aFlat[i*4+3] = isE ? 1 : 2;
+    aFlatN[i*3] = nx / nl; aFlatN[i*3+1] = ny / nl; aFlatN[i*3+2] = nz / nl;
+  }
+  g.setAttribute('aSkin', new THREE.BufferAttribute(aSkin, 4));
+  g.setAttribute('aFlat', new THREE.BufferAttribute(aFlat, 4));
+  g.setAttribute('aFlatN', new THREE.BufferAttribute(aFlatN, 3));
+}
+const FLAT_VS_HEAD = 'attribute vec4 aSkin;\nattribute vec4 aFlat;\nattribute vec3 aFlatN;\nuniform float uFlatE;\nuniform float uFlatM;\nvarying vec4 vSkin;\nvarying float vFlatW;\n';
+const FLAT_VS_NORMAL = `#include <beginnormal_vertex>
+  float flatW = (aFlat.w > 0.5 && aFlat.w < 1.5 ? uFlatE : (aFlat.w > 1.5 ? uFlatM : 0.0)) * aSkin.a;
+  objectNormal = normalize(mix(objectNormal, aFlatN, flatW));
+  vSkin = aSkin; vFlatW = flatW;`;
+
+// ---------- shader: blink / closed eyes, calm closed mouth, happy eyes, ear wobble ----------
+const f = x => Number(x).toFixed(4);
+const v2 = a => `vec2(${f(a[0])}, ${f(a[1])})`;
+const v3 = a => `vec3(${f(a[0])}, ${f(a[1])}, ${f(a[2])})`;
+function patch(m){ for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap']){ const tx = m[k]; if (tx){ tx.generateMipmaps = false; tx.minFilter = THREE.LinearFilter; tx.needsUpdate = true; } }   // 模型建立規則 4.6
+  const c = CFG;
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, {uGlow:glowU, uFlatE:flatEU, uFlatM:flatMU, uLid:lidU, uCalm:calmU, uHappy:happyU, uSad:sadU, uShine:shineU, uShineY:shineYU, uWet:wetU});
+    sh.fragmentShader = 'uniform float uGlow;\nuniform float uShine;\nuniform float uShineY;\nuniform float uWet;\nuniform float uLid;\nuniform float uCalm;\nuniform float uHappy;\nuniform float uSad;\nvarying vec3 vObj;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+      if (!gl_FrontFacing && vFlatW > 0.05) discard;
+      float coverM = 0.0;
+      float inkK = 0.0;
+      float eyeK = max(max(uLid, uHappy), uSad);
+      if (eyeK > 0.01 && vObj.z > ${f(c.eyeZ)}) {
+        float side = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 e = (vObj.xy - vec2(${f(c.eye[0])} * side, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        float r = length(e);
+        if (r < ${f((c.eyeOut || 1.35) + 0.15)} && (uHappy > 0.5 || uSad > 0.5 || e.y > ${f(c.eyeOut || 1.35)} * (1.0 - 2.0 * uLid))) {
+          coverM = smoothstep(${f((c.eyeOut || 1.35) + 0.15)}, ${f((c.eyeOut || 1.35) - 0.1)}, r)${c.noPink ? '' : ' * (1.0 - step(0.15, diffuseColor.r - diffuseColor.b) * step(0.3, diffuseColor.g))'};
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, coverM);
+          if (uHappy > 0.9) {
+            vec2 tip = vec2(0.0, 0.62), a1 = vec2(-0.92, -0.38), a2 = vec2(0.92, -0.38);
+            vec2 pa = e - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = e - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.2) { diffuseColor.rgb = ${v3(c.inkCol)}; inkK = 1.0; }
+          } else if (uSad > 0.9) {
+            // 難過：「> <」眼（2026-10-18 搖頭不吃）
+            vec2 q = vec2(-e.x * side, e.y), tip = vec2(0.42, 0.0), a1 = vec2(-0.5, 0.42), a2 = vec2(-0.5, -0.42);
+            vec2 pa = q - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = q - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.12) { diffuseColor.rgb = ${v3(c.inkCol)}; inkK = 1.0; }
+          } else if (uLid > 0.9 && abs(e.x) < 1.2) {
+            float yc = -0.12 - 0.56 * (1.0 - (e.x * e.x) / 1.44);
+            if (abs(e.y - yc) < 0.17) { diffuseColor.rgb = ${v3(c.inkCol)}; inkK = 1.0; }
+          }
+        }
+      }
+      float mouthK = max(uCalm, uSad);
+      if (mouthK > 0.01 && vObj.z > ${f(c.mouthZ)}) {
+        vec2 mo = (vObj.xy - ${v2(c.mouth)}) / ${v2(c.mouthR)};
+        float r = length(mo);
+        if (r < 1.2) {
+          float mm = smoothstep(1.2, 0.95, r) * mouthK;
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, mm);
+          coverM = max(coverM, mm);
+          vec2 q = (vObj.xy - vec2(0.0, ${f(c.mouth[1] + 0.006)})) / vec2(${f(c.mouthR[0] * 0.9)}, 0.05);
+          if (mouthK > 0.9 && abs(q.x) < 1.0) {
+            float yc = (uSad > 0.5 ? 0.6 : -0.6) * (1.0 - q.x * q.x);   // 難過時嘴角往下
+            if (abs(q.y - yc) < 0.15) diffuseColor.rgb = vec3(0.1, 0.03, 0.02);
+          }
+        }
+      }
+      float scMax = max(diffuseColor.r, max(diffuseColor.g, diffuseColor.b)), scMin = min(diffuseColor.r, min(diffuseColor.g, diffuseColor.b));
+      float scaleK = 0.0 * (scMax - scMin);
+      diffuseColor.rgb *= 1.0 - 0.22 * uWet * scaleK;`).replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+      totalEmissiveRadiance += vec3(0.0) * inkK;
+      { float band = exp(-pow((vObj.y - uShineY) / 0.16, 2.0)) * uShine;
+        float tw = 0.5 + 0.5 * sin(vObj.x * 70.0 + vObj.y * 55.0 + vObj.z * 40.0);
+        totalEmissiveRadiance += vec3(1.0, 0.8, 0.45) * scaleK * (band * (0.5 + 0.9 * tw) + uWet * 0.05 * tw); }
+      if (uGlow > 0.001 && vObj.z > ${f(c.eyeZ)}) {
+        float sideG = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 eg = (vObj.xy - vec2(${f(c.eye[0])} * sideG, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        float rg = length(eg), gmask = smoothstep(1.08, 0.86, rg) * uGlow;
+        float slit = smoothstep(0.2, 0.1, abs(eg.x) / (1.0 - 0.75 * eg.y * eg.y + 0.0001)) * step(abs(eg.y), 0.82);   /* cat slit pupil */
+        diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.55, 1.0, 0.62), vec3(0.05, 0.25, 0.1), slit), gmask);
+        totalEmissiveRadiance += vec3(0.35, 1.0, 0.55) * gmask * (1.0 - 0.85 * slit) * 1.6;
+        float halo = smoothstep(1.35, 1.0, rg) * (1.0 - smoothstep(1.0, 0.86, rg)) * uGlow;   /* soft glow on the rim */
+        totalEmissiveRadiance += vec3(0.25, 0.8, 0.4) * halo * 0.5;
+      }`).replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+          roughnessFactor = mix(0.7, 0.34, scaleK) * (1.0 - 0.5 * uWet * scaleK);
+          roughnessFactor = mix(roughnessFactor, 0.85, max(coverM, vFlatW));
+`).replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+          metalnessFactor = mix(0.0, 0.5, scaleK);
+          metalnessFactor = mix(metalnessFactor, 0.0, max(coverM, vFlatW));`).replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+      normal = normalize(mix(normal, nonPerturbedNormal, max(coverM, vFlatW)));`);
+    sh.vertexShader = FLAT_VS_HEAD + 'varying vec3 vObj;\n' + sh.vertexShader.replace('#include <beginnormal_vertex>', FLAT_VS_NORMAL).replace('#include <begin_vertex>', `#include <begin_vertex>
+      transformed += aFlat.xyz * flatW;
+      vObj = position;`);
+  };
+  m.clippingPlanes = [CLIP];
+  m.customProgramCacheKey = () => 'dragonteen';
+  m.envMap = ENVTEX; m.envMapIntensity = 0.45;
+  m.needsUpdate = true;
+}
+
+
+// ---------- skeleton helpers ----------
+let model = null; const bones = {}, rest = {}, restP = {};
+const _pq = new THREE.Quaternion(), _rq = new THREE.Quaternion(), _w = new THREE.Quaternion(), _l = new THREE.Quaternion();
+function resetPose(){ for (const n in bones){ bones[n].quaternion.copy(rest[n]); bones[n].position.copy(restP[n]); } }
+// rotate a bone about an axis in the character's own space (x = his left, y = up, z = forward)
+function rot(name, axis, ang){
+  const b = bones[name]; if (!b || !ang) return;
+  b.parent.updateWorldMatrix(true, false);
+  b.parent.getWorldQuaternion(_pq); model.getWorldQuaternion(_rq);
+  _pq.premultiply(_rq.invert());
+  _w.setFromAxisAngle(AX[axis], ang);
+  _l.copy(_pq).invert().multiply(_w).multiply(_pq);
+  b.quaternion.premultiply(_l).normalize();
+}
+const FEET = ['LeftFoot','RightFoot','LeftToeBase','RightToeBase'];
+const _v = V3();
+function wpos(n, out = V3()){ return bones[n].getWorldPosition(out); }
+const tailR = {};
+function feetLow(){ let mn = Infinity; model.updateMatrixWorld(true); for (const n of FEET) mn = Math.min(mn, wpos(n, _v).y); for (const n in tailR) mn = Math.min(mn, wpos(n, _v).y - tailR[n]); return mn; }
+let restFeet = 0, skinned = null;
+const charPt = (x, y, z) => rig.localToWorld(V3(x, y, z));
+
+// ---------- tail: 7 bones, a long tail ending in a flame ----------
+const TL = ['Tail01', 'Tail02', 'Tail03', 'Tail04', 'Tail05', 'Tail06', 'Tail07'];
+function tailSway(amp, t, spd = 1.7, curl = 0){ TL.forEach((n, i) => { rot(n, 'y', amp * 0.07 * Math.sin(t * spd - 0.6 * i)); if (curl) rot(n, 'x', curl * 0.05 * Math.sin(t * spd * 1.3 - 0.5 * i)); }); }
+function tailBend(yaw, curl = 0){ TL.forEach(n => { if (yaw) rot(n, 'y', yaw / TL.length); if (curl) rot(n, 'x', curl / TL.length); }); }
+/* arms hang down and out (about 45 deg): raise = about z (armUp), swing forward in the horizontal plane = about y (wingSwing: left -a, right +a), twist = about x */
+function wingSwing(sd, a){ const s = sd === 'Left' ? -1 : 1; rot(sd + 'Arm', 'y', s * a * 0.6); rot(sd + 'ForeArm', 'y', s * a * 0.4); }
+function wingTwist(sd, a){ rot(sd + 'Shoulder', 'x', a * 0.3); rot(sd + 'Arm', 'x', a * 0.3); rot(sd + 'ForeArm', 'x', a * 0.25); rot(sd + 'Hand', 'x', a * 0.15); }
+const ARM_CAP = +(new URLSearchParams(location.search).get('armcap') || 0.85);
+function armUp(sd, a){ a = Math.min(a, ARM_CAP); const s = sd === 'Left' ? 1 : -1; rot(sd + 'Shoulder', 'z', s * a * 0.25); rot(sd + 'Arm', 'z', s * a * 0.55); rot(sd + 'ForeArm', 'z', s * a * 0.2); }
+function armsUp(a, aR = a){ armUp('Left', a); armUp('Right', aR); }
+/* arm pitched forward/back about x (negative = forward and up when the arm hangs) */
+function armFwd(sd, a){ rot(sd + 'Arm', 'x', -a * 0.65); rot(sd + 'ForeArm', 'x', -a * 0.35); }
+/* hoof centres and head points, measured on the skin (set after the model is loaded) */
+const SUB_HOOF = {Left: [], Right: []}; const _hv = V3();
+function hoofPos(sd, out = V3()){ rig.updateMatrixWorld(true); skinned.skeleton.update(); out.set(0, 0, 0); const L = SUB_HOOF[sd]; for (const i of L){ skinned.getVertexPosition(i, _hv); _hv.applyMatrix4(skinned.matrixWorld); out.add(_hv); } return out.multiplyScalar(1 / Math.max(1, L.length)); }
+let hornLocal = null, noseLocal = null, crownLocal = null, mouthLocal = null;
+function headPt(loc, out = V3()){ bones.Head.updateWorldMatrix(true, false); return out.copy(loc).applyMatrix4(bones.Head.matrixWorld); }
+const hornTip = out => headPt(hornLocal, out), noseTip = out => headPt(noseLocal, out);
+function clampTo(n, lim){ const b = bones[n]; if (!b) return; const a = b.quaternion.angleTo(rest[n]); if (a > lim){ _l.copy(rest[n]).slerp(b.quaternion, lim / a); b.quaternion.copy(_l); } }
+async function fetchModel(file){
+  const res = await fetch(file); if (!res.ok) throw new Error('fetch ' + res.status);
+  const j = await res.json(); const raw = atob(j._bin); delete j._bin;
+  const bin = new Uint8Array(raw.length); for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
+  delete j.buffers[0].uri; j.buffers[0].byteLength = bin.length;
+  const jb = new TextEncoder().encode(JSON.stringify(j)); const jLen = Math.ceil(jb.length/4)*4, bLen = Math.ceil(bin.length/4)*4;
+  const buf = new ArrayBuffer(28 + jLen + bLen), dv = new DataView(buf), u8 = new Uint8Array(buf);
+  dv.setUint32(0, 0x46546C67, true); dv.setUint32(4, 2, true); dv.setUint32(8, buf.byteLength, true);
+  dv.setUint32(12, jLen, true); dv.setUint32(16, 0x4E4F534A, true); u8.fill(0x20, 20, 20 + jLen); u8.set(jb, 20);
+  const o = 20 + jLen; dv.setUint32(o, bLen, true); dv.setUint32(o + 4, 0x004E4942, true); u8.set(bin, o + 8);
+  return new Promise((ok, fail) => new GLTFLoader().parse(buf, './', ok, fail));
+}
+
+// ---------- prop helpers ----------
+const mat = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({color: c, roughness: 0.75}, o));
+const SPH = new THREE.SphereGeometry(1, 20, 14), CYL = new THREE.CylinderGeometry(1, 1, 1, 20), CONE = new THREE.ConeGeometry(1, 1, 12), BOX = new THREE.BoxGeometry(1, 1, 1), ICO = new THREE.IcosahedronGeometry(1, 1);
+function mesh(p, geo, m, pos, s){ const o = new THREE.Mesh(geo, m); o.position.set(...pos); if (Array.isArray(s)) o.scale.set(...s); else o.scale.setScalar(s); p.add(o); return o; }
+const ease = x => x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const span = (t, a, b) => clamp01((t - a) / (b - a));
+const bell = x => Math.sin(Math.PI * clamp01(x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const backOut = x => { const c1 = 1.70158, c3 = c1 + 1; return x <= 0 ? 0 : 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+
+/* wings: Wing1 (root) and Wing2 (outer half) hang off the spine at shoulder height. a > 0 raises the wing, f > 0 sweeps it forward, fold > 0 tucks it back and down */
+function wingSet(sd, a, f = 0, fold = 0){ const s = sd === 'Left' ? 1 : -1;
+  rot(sd + 'Wing1', 'z', s * a * 0.65); rot(sd + 'Wing2', 'z', s * a * 0.35);
+  if (f) { rot(sd + 'Wing1', 'y', -s * f * 0.7); rot(sd + 'Wing2', 'y', -s * f * 0.3); }
+  if (fold) { rot(sd + 'Wing1', 'y', s * fold * 0.5); rot(sd + 'Wing1', 'z', -s * fold * 0.35); rot(sd + 'Wing2', 'y', s * fold * 0.5); } }
+function wings(a, f = 0, aR = a, fR = f){ wingSet('Left', a, f); wingSet('Right', aR, fR); }
+const Z0 = 0.1;
+
+// ---------- extra textures ----------
+const RB = [0xe8484a, 0xf6892f, 0xf6c445, 0x4cb35a, 0x4aa3df, 0x5a5fcf, 0xa660c8];   /* rainbow colours, red to violet */
+const hex = c => '#' + c.toString(16).padStart(6, '0');
+const glowCache = {};
+function glowTexC(c){ return glowCache[c] || (glowCache[c] = makeTex(g => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 62); gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.25, hex(c)); gr.addColorStop(0.6, hex(c) + '55'); gr.addColorStop(1, hex(c) + '00'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); })); }
+const sparkCache = {};
+function sparkTexC(c){ return sparkCache[c] || (sparkCache[c] = makeTex(g => { g.translate(64, 64); g.beginPath(); for (let i = 0; i < 8; i++){ const r = i % 2 ? 12 : 56, a = -Math.PI / 2 + i * Math.PI / 4; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.lineWidth = 9; g.strokeStyle = '#ffffff'; g.lineJoin = 'round'; g.stroke(); g.fillStyle = hex(c); g.fill(); })); }
+const steamTex = makeTex(g => { const gr = g.createRadialGradient(64, 64, 0, 64, 64, 60); gr.addColorStop(0, 'rgba(255,255,255,0.9)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); });
+const flameTex = makeTex(g => { g.translate(64, 70); g.beginPath(); g.moveTo(0, -62); g.bezierCurveTo(30, -26, 46, 4, 38, 26); g.bezierCurveTo(30, 52, -30, 52, -38, 26); g.bezierCurveTo(-46, 4, -30, -26, 0, -62); g.closePath(); g.fillStyle = '#ff8a2a'; g.fill();
+  g.beginPath(); g.moveTo(0, -30); g.bezierCurveTo(18, -8, 24, 10, 20, 26); g.bezierCurveTo(14, 42, -14, 42, -20, 26); g.bezierCurveTo(-24, 10, -18, -8, 0, -30); g.closePath(); g.fillStyle = '#ffd84a'; g.fill(); });
+const tealGlow = glowTexC(0xfff08a);
+
+// ---------- 1. 噴火放晴 (rain): rain, grey clouds, a sun, a rainbow ----------
+const rainG = new THREE.Group(); scene.add(rainG); rainG.visible = false;
+const RAIN = {z: -3.6, R: 3.0};
+const rainMats = RB.map(c => new THREE.MeshBasicMaterial({color: c, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide}));
+RB.forEach((c, i) => { const m = new THREE.Mesh(new THREE.TorusGeometry(RAIN.R - i * 0.17, 0.085, 8, 56, Math.PI), rainMats[i]); m.position.set(0, 0.0, RAIN.z); rainG.add(m); });
+const NR = 240, RBOX = {x0: -5.5, x1: 5.5, z0: -6, z1: 2.5, h: 5.2};
+const rainGeo = new THREE.BufferGeometry(), rainArr = new Float32Array(NR * 6), rainD = [];
+{ let seed = 5; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647; for (let i = 0; i < NR; i++) rainD.push({x: RBOX.x0 + rnd() * (RBOX.x1 - RBOX.x0), z: RBOX.z0 + rnd() * (RBOX.z1 - RBOX.z0), y0: rnd() * RBOX.h, sp: 6.5 + rnd() * 2.5, k: rnd()}); }
+rainGeo.setAttribute('position', new THREE.BufferAttribute(rainArr, 3));
+const rainLines = new THREE.LineSegments(rainGeo, new THREE.LineBasicMaterial({color: 0xcfe2f5, transparent: true, opacity: 0.75, depthWrite: false})); rainLines.frustumCulled = false; rainLines.renderOrder = 6; rainG.add(rainLines);
+const dome = new THREE.Mesh(new THREE.SphereGeometry(44, 24, 12), new THREE.MeshBasicMaterial({color: 0x69737f, side: THREE.BackSide, transparent: true, opacity: 0, depthWrite: false, fog: false})); dome.renderOrder = -3; rainG.add(dome);
+const CLOUDS = [];
+{ const cm = [-3.2, -1.6, 0.0, 1.7, 3.3].map((x, i) => { const g = new THREE.Group(); g.position.set(x, 3.7 + (i % 2) * 0.35, -2.2 - (i % 3) * 0.6); rainG.add(g);
+    const m = new THREE.MeshLambertMaterial({color: 0x808994, transparent: true}); [[0, 0, 0, 0.8], [0.7, -0.1, 0.1, 0.6], [-0.7, -0.05, 0, 0.62], [0.3, 0.25, -0.1, 0.55]].forEach(([a, b, c, r]) => mesh(g, SPH, m, [a, b, c], [r * 1.25, r * 0.8, r])); CLOUDS.push({g, m, x0: x, i}); return g; }); }
+const sunG = new THREE.Group(); rainG.add(sunG); sunG.position.set(-2.3, 3.3, -4.5);
+const sunDiscM = new THREE.MeshBasicMaterial({color: 0xffd84a, transparent: true, fog: false}); mesh(sunG, SPH, sunDiscM, [0, 0, 0], 0.5);
+const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTexC(0xffe27a), transparent: true, depthWrite: false})); sunGlow.scale.setScalar(2.6); sunG.add(sunGlow);
+for (let i = 0; i < 12; i++){ const r = mesh(sunG, BOX, sunDiscM, [Math.cos(i / 12 * TAU) * 0.82, Math.sin(i / 12 * TAU) * 0.82, 0], [0.22, 0.06, 0.02]); r.rotation.z = i / 12 * TAU; }
+
+// ---------- 2. 野餐烤地瓜 (picnic): blanket, basket, sweet potato (whole, then two halves), palm flame ----------
+const picG = new THREE.Group(); scene.add(picG); picG.visible = false;
+const BLK = {x: 0.1, z: Z0 + 0.05, w: 2.0, d: 1.5};
+{ const tx = makeTex(g => { for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++){ g.fillStyle = (i + j) % 2 ? '#ffffff' : '#e8584a'; g.fillRect(i * 16, j * 16, 16, 16); } });
+  tx.wrapS = tx.wrapT = THREE.RepeatWrapping; tx.repeat.set(3, 2); tx.magFilter = THREE.NearestFilter;
+  const b = new THREE.Mesh(new THREE.PlaneGeometry(BLK.w, BLK.d), new THREE.MeshLambertMaterial({map: tx})); b.rotation.x = -Math.PI / 2; b.position.set(BLK.x, 0.006, BLK.z); b.renderOrder = -1; picG.add(b);
+  const rim = new THREE.Mesh(new THREE.PlaneGeometry(BLK.w + 0.08, BLK.d + 0.08), new THREE.MeshLambertMaterial({color: 0xb8352e})); rim.rotation.x = -Math.PI / 2; rim.position.set(BLK.x, 0.004, BLK.z); rim.renderOrder = -1.5; picG.add(rim); }
+const BASK = V3(BLK.x - 0.95, 0, BLK.z + 0.55);   /* the basket sits at the blanket's near left corner */
+{ const g = new THREE.Group(); g.position.copy(BASK); picG.add(g);
+  const wk = mat(0xc99a5b, {roughness: 0.9}); mesh(g, CYL, wk, [0, 0.11, 0], [0.2, 0.22, 0.2]); mesh(g, new THREE.TorusGeometry(1, 0.06, 8, 24), wk, [0, 0.22, 0], [0.2, 0.2, 0.2]).rotation.x = Math.PI / 2;
+  mesh(g, new THREE.TorusGeometry(1, 0.04, 8, 20, Math.PI), wk, [0, 0.22, 0], [0.2, 0.26, 0.2]);
+  mesh(g, CYL, mat(0xffffff), [0, 0.2, 0], [0.19, 0.02, 0.19]);
+  for (let i = 0; i < 2; i++){ const s = mesh(g, SPH, mat(0x7a3a6a, {roughness: 0.7}), [i ? 0.06 : -0.06, 0.25, i ? 0.03 : -0.02], [0.11, 0.06, 0.06]); s.rotation.y = i ? 0.5 : -0.4; } }
+const potMat = new THREE.MeshStandardMaterial({color: 0x7a3a6a, roughness: 0.72});
+const potCut = mat(0xffcf5a, {roughness: 0.6});
+const potato = new THREE.Group(); picG.add(potato);   /* origin = centre of the sweet potato, long axis along x */
+{ const s = mesh(potato, SPH, potMat, [0, 0, 0], [0.12, 0.062, 0.062]); s.scale.set(0.12, 0.062, 0.062); mesh(potato, SPH, potMat, [0.1, 0, 0], [0.04, 0.034, 0.034]); mesh(potato, SPH, potMat, [-0.11, 0, 0], [0.03, 0.026, 0.026]); }
+const halfs = [0, 1].map(i => { const g = new THREE.Group(); picG.add(g); const s = mesh(g, SPH, potMat, [i ? 0.045 : -0.045, 0, 0], [0.065, 0.062, 0.062]); s.scale.set(0.065, 0.062, 0.062);
+  const cut = mesh(g, CYL, potCut, [0, 0, 0], [0.058, 0.004, 0.058]); cut.rotation.z = Math.PI / 2; cut.position.x = i ? -0.0 : 0.0; g.userData.cut = cut; g.visible = false; return g; });
+const palmFlame = new THREE.Sprite(new THREE.SpriteMaterial({map: flameTex, transparent: true, depthWrite: false, depthTest: false})); palmFlame.renderOrder = 7; palmFlame.visible = false; picG.add(palmFlame);
+const palmGlow = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTexC(0xffa040), transparent: true, depthWrite: false, depthTest: false, opacity: 0.8})); palmGlow.renderOrder = 6; palmGlow.visible = false; picG.add(palmGlow);
+
+// ---------- 3. 飛天接殺 (ball): home plate, bat, ball, a big NICE PLAY! banner ----------
+const ballG = new THREE.Group(); scene.add(ballG); ballG.visible = false;
+const BB = {rx: -2.1, rz: 0.35, dx: 1.2, dz: -1.3};
+{ const sh = new THREE.Shape(); sh.moveTo(-0.17, -0.1); sh.lineTo(0.17, -0.1); sh.lineTo(0.17, 0.05); sh.lineTo(0, 0.2); sh.lineTo(-0.17, 0.05); sh.closePath();
+  const hp = new THREE.Mesh(new THREE.ShapeGeometry(sh), new THREE.MeshLambertMaterial({color: 0xffffff, side: THREE.DoubleSide})); hp.rotation.x = -Math.PI / 2; hp.position.set(BB.rx + 0.25, 0.012, BB.rz); hp.rotation.z = Math.PI / 2; ballG.add(hp);
+  const box = new THREE.Mesh(new THREE.RingGeometry(0.7, 0.75, 4, 1, Math.PI / 4), new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8})); box.rotation.x = -Math.PI / 2; box.position.set(BB.rx, 0.01, BB.rz); ballG.add(box); }
+const batG = new THREE.Group(); ballG.add(batG);   /* origin = the knob (grip end); the barrel grows along +y */
+{ const wood = mat(0xd9a55a, {roughness: 0.6}); mesh(batG, CYL, wood, [0, 0.42, 0], [0.025, 0.84, 0.025]); mesh(batG, CYL, wood, [0, 0.72, 0], [0.042, 0.34, 0.042]); mesh(batG, SPH, wood, [0, 0.9, 0], [0.045, 0.045, 0.045]); mesh(batG, SPH, mat(0x8a5a2a), [0, -0.01, 0], [0.035, 0.02, 0.035]); mesh(batG, CYL, mat(0x2a2a2a), [0, 0.12, 0], [0.028, 0.18, 0.028]); }
+const ballM = new THREE.Group(); ballG.add(ballM);
+{ mesh(ballM, SPH, mat(0xffffff, {roughness: 0.5}), [0, 0, 0], 0.075); [-1, 1].forEach(s => { const t = mesh(ballM, new THREE.TorusGeometry(1, 0.06, 6, 20), mat(0xd6342c), [s * 0.05, 0, 0], [0.065, 0.065, 0.065]); t.rotation.y = Math.PI / 2; t.scale.set(0.065, 0.065, 0.065); }); }
+const niceMap = (() => { const c = document.createElement('canvas'); c.width = 640; c.height = 220; const g = c.getContext('2d'); g.font = '900 104px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round'; g.lineWidth = 22; g.strokeStyle = '#ffffff'; g.strokeText('NICE PLAY!', 320, 118);
+  const gr = g.createLinearGradient(0, 40, 0, 190); gr.addColorStop(0, '#ffcf3a'); gr.addColorStop(1, '#e8584a'); g.fillStyle = gr; g.fillText('NICE PLAY!', 320, 118); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx; })();
+const niceS = new THREE.Sprite(new THREE.SpriteMaterial({map: niceMap, transparent: true, depthWrite: false, depthTest: false})); niceS.renderOrder = 10; niceS.visible = false; scene.add(niceS);
+// ---------- motions ----------
+const names = {idle:'待機', rain:'噴火放晴', picnic:'野餐烤地瓜', ball:'飛天接殺', sleep:'睡覺', eat:'開心吃', snack:'最愛點心', refuse:'搖頭不吃'};
+const LEN = {idle:8, rain:12, picnic:12, ball:12, sleep:8, eat:6, snack:7, refuse:5};
+let move = 'idle', t0 = performance.now()/1000, frozen = null, __dE = 0.016;
+const hitT = (T, X) => T >= X && T - __dE < X;
+let __hold = 0; const EMBED = new URLSearchParams(location.search).get('embed') === '1';   // 才藝、餵食播一次：停在最後一格約 1 秒再回待機（App 裡只停住，由 App 切回待機）
+const blinkAt = (t, off = 0) => { const b = ((t + off) % 4.6) / 0.2; return b < 1 ? Math.sin(Math.PI * b) : 0; };
+const sides = ['Left', 'Right'];
+
+const PRM = window.__PRM = {};
+function place(p){
+  for (const n of [...TL, 'Head', 'neck', 'Spine', 'Spine01', 'Spine02']) clampTo(n, 0.5);
+  clampTo('LeftForeArm', 0.8); clampTo('RightForeArm', 0.8);   /* forearm total bend <= 0.8 rad (user rule) */
+  if (p.q) rig.quaternion.copy(p.q); else QYXZ(rig.quaternion, p.ry, p.pitch, p.roll);
+  rig.position.set(p.x, p.yAbs + (p.surf == null ? p.hop : 0), p.z);
+  rig.scale.set(1 / Math.sqrt(p.sy), p.sy, 1 / Math.sqrt(p.sy)); rig.updateMatrixWorld(true);
+}
+/* legs */
+function squat(a){ for (const sd of sides){ rot(sd + 'UpLeg', 'x', -0.55 * a); rot(sd + 'Leg', 'x', 1.0 * a); rot(sd + 'Foot', 'x', -0.45 * a); } }
+function spineLean(a){ rot('Spine02', 'x', a * 0.4); rot('Spine01', 'x', a * 0.35); rot('Spine', 'x', a * 0.25); }
+function headTurn(yaw, pitch = 0){ rot('neck', 'y', yaw * 0.4); rot('Head', 'y', yaw * 0.6); rot('neck', 'x', pitch * 0.4); rot('Head', 'x', pitch * 0.6); }
+function legLift(sd, a){ rot(sd + 'UpLeg', 'x', -0.5 * a); rot(sd + 'Leg', 'x', 0.75 * a); rot(sd + 'Foot', 'x', -0.35 * a); }
+/* bear walk: tied to distance, legs alternate, arms swing a little */
+function gaitB(p, ph, amt){
+  if (amt <= 0) return;
+  for (const [sd, off] of [['Left', 0], ['Right', Math.PI]]){
+    const s = Math.sin(ph + off), c = Math.cos(ph + off), knee = amt * (0.12 + 0.5 * Math.max(0, c)), thigh = -0.35 * amt * s;
+    rot(sd + 'UpLeg', 'x', thigh); rot(sd + 'Leg', 'x', knee); rot(sd + 'Foot', 'x', -0.8 * (thigh + knee));
+    rot(sd + 'Arm', 'x', 0.28 * amt * s);
+  }
+  p.roll += 0.04 * amt * Math.sin(ph); rot('Spine02', 'y', 0.05 * amt * Math.sin(ph)); spineLean(0.04 * amt); p.hop = Math.max(p.hop, 0.012 * amt * (0.5 - 0.5 * Math.cos(2 * ph)));
+}
+function life(p, t, k = 1){
+  const br = Math.sin(TAU * t / 3.6);
+  rot('Spine02', 'x', 0.012 * br * k); rot('Spine01', 'x', 0.012 * br * k);
+  rot('Head', 'y', 0.1 * Math.sin(t * 0.55) * k); rot('Head', 'x', 0.03 * Math.sin(t * 0.9) * k);
+  tailSway(0.5 * k, t, 1.3, 0.3);
+  wings(0.03 * Math.sin(t * 1.6) * k, 0, 0.03 * Math.sin(t * 1.6 + 0.8) * k);
+  p.lid = Math.max(p.lid, blinkAt(t));
+}
+const _fwd = V3();
+const fwdOf = ry => _fwd.set(Math.sin(ry), 0, Math.cos(ry));
+function jumpLegs(pre, air, land, lead = 1){
+  const c = Math.max(pre, land);
+  for (const sd of sides){ const L = sd === 'Left' ? lead : 1 - lead * 0.6;
+    const th = -0.5 * c - 0.5 * air * (0.5 + 0.5 * L), kn = 0.9 * c + 0.7 * air * (1.2 - 0.6 * L);
+    rot(sd + 'UpLeg', 'x', th); rot(sd + 'Leg', 'x', kn); rot(sd + 'Foot', 'x', -0.8 * (th + kn)); }
+  spineLean(0.25 * c - 0.05 * air);
+}
+const walkPh = (x, x0, stride = 0.5) => (x - x0) * 2 * Math.PI / stride;
+
+function poseIdle(p, t, T){
+  p.surf = 0; p.free = true; p.ry = 0.3; p.z = Z0;
+  life(p, t);
+  headTurn(0.35 * Math.sin(t * 0.45));
+  armsUp(0.04 * Math.sin(t * 1.1), 0.04 * Math.sin(t * 1.1 + 1));
+  const wv = bell(span(T, 3.4, 5.2));
+  if (wv > 0){ armUp('Right', 0.85 * wv); rot('RightForeArm', 'z', -0.25 * wv * Math.sin(t * 9)); p.happy = ease(wv); wings(0.35 * wv + 0.1 * wv * Math.sin(t * 7)); }
+  if (hitT(T, 3.9)) p.events.push('hello');
+  place(p);
+}
+function poseSleep(p, t, T){
+  p.surf = 0; p.free = true; p.ry = 0.3; p.z = Z0;
+  const br = Math.sin(TAU * t / 4.4);
+  spineLean(0.1 + 0.02 * br); rot('neck', 'x', 0.45); rot('Head', 'x', 0.5 + 0.02 * br); rot('Head', 'z', 0.15);
+  armsUp(-0.1, -0.1); wings(-0.25 + 0.03 * br); tailBend(0, -0.2); tailSway(0.1, t, 0.8); p.roll = 0.03 * Math.sin(t * 0.7); p.lid = 1;
+  place(p);
+}
+
+// ---------- 噴火放晴 ----------
+/* it rains and he droops; he looks up, breathes in, blasts fire at the clouds; they melt away, the sun comes out, a rainbow appears, he cheers */
+const rainAmtAt = T => 1 - ease(span(T, 4.6, 7.0));
+function poseRain(p, t, T){
+  p.free = true; p.surf = 0; p.ry = 0.3; p.z = Z0; p.x = 0;
+  life(p, t, 0.4);
+  const sadK = ease(span(T, 0.3, 0.7)) * (1 - ease(span(T, 2.3, 2.6)));
+  rot('neck', 'x', 0.25 * sadK); rot('Head', 'x', 0.2 * sadK); wings(-0.45 * sadK); p.sad = Math.max(p.sad, sadK); armsUp(-0.05 * sadK); p.roll += 0.02 * Math.sin(t * 22) * sadK; spineLean(0.1 * sadK); squat(0.06 * sadK);
+  const insp = ease(span(T, 2.4, 3.1)) * (1 - ease(span(T, 6.1, 6.7))), blast = ease(span(T, 3.0, 3.4)) * (1 - ease(span(T, 6.0, 6.5)));
+  rot('neck', 'x', -0.1 * insp - 0.2 * blast); rot('Head', 'x', -0.1 * insp - 0.22 * blast); spineLean(-0.18 * insp - 0.06 * blast); wings(0.5 * insp + 0.08 * blast * Math.sin(t * 9)); armsUp(0.35 * insp); armFwd('Left', 0.25 * blast); armFwd('Right', 0.25 * blast);
+  p.fire = blast;
+  const cheer = ease(span(T, 6.6, 7.1)) * (1 - ease(span(T, 11.0, 11.8)));
+  armsUp(0.85 * cheer); wings(0.55 * cheer + 0.25 * cheer * Math.sin(t * 8)); tailBend(0, 0.2 * cheer); tailSway(0.4 * cheer, t, 5, 0.3); rot('Head', 'z', 0.1 * Math.sin(t * 3) * cheer);
+  const hp = span(T, 7.4, 10.4); if (hp > 0 && hp < 1){ const hh = Math.abs(Math.sin(hp * 3 * Math.PI)); p.hop = Math.max(p.hop, 0.15 * hh); jumpLegs(0, 0.5 * hh, 0); }
+  p.happy = Math.max(p.happy, ease(span(T, 6.4, 6.8)) * (1 - ease(span(T, 11.2, 11.9))));
+  if (hitT(T, 0.5)) p.events.push('rainw'); if (hitT(T, 2.5)) p.events.push('inhale'); if (hitT(T, 3.2)) p.events.push('fire'); if (hitT(T, 5.5)) p.events.push('sun'); if (hitT(T, 7.0)) p.events.push('rainbow'); if (hitT(T, 8.0)) p.events.push('win');
+  place(p);
+}
+
+// ---------- 野餐烤地瓜 ----------
+/* walk to the blanket and sit; the sweet potato pops from the basket into his hands, a puff of fire bakes it golden, he breaks it in two, gives one half to his rabbit friend and eats the other */
+const PK = {x0: -2.4, xs: -0.2, zs: Z0 - 0.05};
+const picX = T => T < 1.3 ? lerp(PK.x0, PK.xs, ease(T / 1.3)) : PK.xs;
+const SITK = T => ease(span(T, 1.4, 2.0)) * (1 - ease(span(T, 11.2, 11.8)));
+function sit(a){ for (const sd of sides){ rot(sd + 'UpLeg', 'x', -(PRM.sU ?? 0.75) * a); rot(sd + 'Leg', 'x', (PRM.sL ?? 0.25) * a); rot(sd + 'Foot', 'x', (PRM.sF ?? 0.1) * a); } spineLean(-0.04 * a); }
+function holdArm(sd, k, fwd = PRM.hF ?? 0.65, inw = PRM.hI ?? 1.06, up = PRM.hU ?? 0.1){ if (!k) return; armFwd(sd, fwd * k); wingSwing(sd, inw * k); armUp(sd, up * k); }
+function posePicnic(p, t, T){
+  p.free = true; p.surf = 0; p.z = PK.zs; p.x = picX(T);
+  p.ry = T < 1.0 ? Math.PI / 2 : lerp(Math.PI / 2, 0.3, ease(span(T, 1.0, 1.6)));
+  gaitB(p, walkPh(p.x, PK.x0, 0.5), T < 1.4 ? 0.55 * (1 - 0.7 * ease(span(T, 0.9, 1.4))) : 0);
+  life(p, t, 0.5);
+  sit(SITK(T));
+  const reach = bell(span(T, 1.7, 2.7)), hold = ease(span(T, 2.2, 2.6)) * (1 - ease(span(T, 11.4, 11.9)));
+  const offer = bell(span(T, 5.7, 7.2)), eat = bell(span(T, 7.2, 10.8));
+  holdArm('Left', Math.max(reach * 0.8, hold) * (1 - offer)); holdArm('Right', Math.max(reach * 0.8, hold) * (1 - eat));
+  armUp('Left', (PRM.oU ?? 0.5) * offer); armFwd('Left', (PRM.oF ?? 0.15) * offer); wingSwing('Left', (PRM.oS ?? -0.2) * offer);
+  armFwd('Right', (PRM.eF ?? 0.9) * eat); armUp('Right', (PRM.eU ?? 0.6) * eat); wingSwing('Right', (PRM.eS ?? 1.0) * eat);
+  const brt = bell(span(T, 2.6, 4.3)), sn = bell(span(T, 4.4, 5.0));
+  spineLean(0.1 * brt + 0.08 * sn); rot('neck', 'x', 0.35 * brt + 0.25 * sn); rot('Head', 'x', 0.3 * brt + 0.2 * sn);
+  const chew = bell(span(T, 8.0, 10.6)); rot('Head', 'x', 0.05 * chew * Math.sin(t * 11)); rot('Head', 'z', 0.08 * chew * Math.sin(t * 5.5));
+  rot('Head', 'y', -0.5 * offer);
+  tailSway(0.6, t, 2.2, 0.3); wings(0.04 * Math.sin(t * 2.4) + 0.2 * bell(span(T, 4.4, 5.6)) + 0.18 * chew * Math.sin(t * 5.5));
+  p.happy = Math.max(p.happy, ease(span(T, 4.5, 4.8)) * (1 - ease(span(T, 5.6, 5.9))), ease(span(T, 6.0, 6.4)) * (1 - ease(span(T, 7.2, 7.5))), ease(span(T, 7.7, 8.0)) * (1 - ease(span(T, 11.4, 11.9))));
+  if (hitT(T, 1.2)) p.events.push('hello'); if (hitT(T, 1.75)) p.events.push('pop'); if (hitT(T, 2.35)) p.events.push('catch'); if (hitT(T, 2.7)) p.events.push('breath'); if (hitT(T, 4.6)) p.events.push('ding');
+  if (hitT(T, 5.1)) p.events.push('split'); if (hitT(T, 5.9)) p.events.push('offer'); if (hitT(T, 6.7)) p.events.push('thanks'); if (hitT(T, 7.8)) p.events.push('yum'); if (hitT(T, 10.0)) p.events.push('sweet');
+  place(p);
+}
+/* the rabbit friend (sits at the right edge of the blanket; waves, receives half a potato, nibbles) */
+function rabPicnic(T, t){
+  rabReset(); rabG.position.set(BLK.x + 0.95, 0, BLK.z + 0.2); rabG.rotation.y = -1.15;
+  for (const sd of sides){ rrot(sd + 'UpLeg', 'x', -1.45); rrot(sd + 'Leg', 'x', 0.1); }
+  rrot('Spine', 'x', -0.05);
+  const wv = bell(span(T, 1.2, 2.6)); rrot('RightArm', 'z', -2.2 * wv); rrot('RightForeArm', 'z', -0.4 * wv * Math.sin(t * 9));
+  const recv = ease(span(T, 6.2, 6.7)) * (1 - ease(span(T, 10.6, 11.2)));
+  for (const sd of sides){ rrot(sd + 'Arm', 'x', -(PRM.rA ?? 1.0) * recv); rrot(sd + 'ForeArm', 'x', -(PRM.rF ?? 1.6) * recv); }
+  const nib = bell(span(T, 6.8, 10.6)); rrot('Head', 'x', 0.07 * nib * Math.sin(t * 14) + 0.1 * recv); rrot('Head', 'y', 0.5 * (1 - recv) * bell(span(T, 0.4, 6.0)) * 0);
+  rabG.updateMatrixWorld(true); const hy = rab.bones.Hips.getWorldPosition(_o2).y; rabG.position.y = -(hy - (PRM.rH ?? 0.17));
+  rabG.updateMatrixWorld(true);
+}
+
+// ---------- 飛天接殺 ----------
+/* the teen rabbit smacks a high fly ball; the dragon flaps up into the air, catches it for the out, the banner reads NICE PLAY! */
+const HIT_T = 1.9, CATCH_T = 5.0, BALL_APEX = 4.2;
+const ballFace = () => Math.atan2(BB.rx - BB.dx, BB.rz - BB.dz);
+const ballH = T => 1.15 * ease(span(T, 3.5, 4.7)) * (1 - ease(span(T, 5.5, 6.5)));
+function poseBall(p, t, T){
+  p.free = true; p.surf = 0; p.x = BB.dx; p.z = BB.dz;
+  p.ry = T < 6.3 ? ballFace() : lerp(ballFace(), 0.3, ease(span(T, 6.3, 7.2)));
+  life(p, t, 0.4);
+  const rdy = ease(span(T, 0.3, 0.8)) * (1 - ease(span(T, 2.2, 2.8)));
+  squat(0.2 * rdy); spineLean(0.12 * rdy); for (const sd of sides){ armFwd(sd, 0.6 * rdy); armUp(sd, 0.1 * rdy); }
+  const tr = ease(span(T, 1.9, 2.4)) * (1 - ease(span(T, 5.2, 5.6))); rot('neck', 'x', -0.28 * tr); rot('Head', 'x', -0.22 * tr);
+  const cr = bell(span(T, 3.0, 3.7)); squat(0.4 * cr); spineLean(0.15 * cr);
+  const fly = ease(span(T, 3.3, 3.8)) * (1 - ease(span(T, 5.9, 6.6))); wings(fly * (0.15 + 0.8 * Math.sin(TAU * 2.6 * t)) - 0.35 * cr);
+  jumpLegs(0, 0.3 * fly, 0); p.hop = ballH(T);
+  const rc = ease(span(T, 4.2, 4.9)) * (1 - ease(span(T, 5.6, 6.2)));
+  armsUp(0.85 * rc); for (const sd of sides){ armFwd(sd, (PRM.bF ?? 0.3) * rc); wingSwing(sd, (PRM.bI ?? 1.0) * rc); }
+  const land = bell(span(T, 6.2, 6.9)); squat(0.3 * land); spineLean(0.1 * land);
+  const cheer = ease(span(T, 6.9, 7.4)) * (1 - ease(span(T, 11.3, 11.9)));
+  armUp('Left', 0.85 * cheer); armUp('Right', 0.85 * cheer); wings(0.55 * cheer + 0.25 * cheer * Math.sin(t * 8)); tailSway(0.4 * cheer, t, 5, 0.3); rot('Head', 'z', 0.1 * Math.sin(t * 3) * cheer);
+  const hp = span(T, 7.6, 10.4); if (hp > 0 && hp < 1){ const hh = Math.abs(Math.sin(hp * 3 * Math.PI)); p.hop = Math.max(p.hop, 0.13 * hh); jumpLegs(0, 0.45 * hh, 0); }
+  p.happy = Math.max(p.happy, ease(span(T, 5.0, 5.3)) * (1 - ease(span(T, 11.5, 12))));
+  p.fly = fly;
+  if (hitT(T, HIT_T)) p.events.push('crack'); if (hitT(T, 2.5)) p.events.push('wow'); if (hitT(T, 3.5)) p.events.push('go'); if (hitT(T, CATCH_T)) p.events.push('catch'); if (hitT(T, 5.9)) p.events.push('out'); if (hitT(T, 6.9)) p.events.push('nice'); if (hitT(T, 7.4)) p.events.push('cheerb');
+  place(p);
+}
+const BAT_S = 0.8, _bd = V3(), _bg = V3(), _bq = new THREE.Quaternion(), _bq2 = new THREE.Quaternion();
+/* the rabbit batter: returns nothing; leaves the pose on the rabbit, fills RB_BAT = {grip, dir} (world) */
+const RB_BAT = {grip: V3(), dir: V3(0, 1, 0), yaw: 0, e: 1.2};
+function rabBall(T, t){
+  rabReset(); rabG.position.set(BB.rx, 0, BB.rz); rabG.rotation.y = Math.PI / 2;
+  const stance = ease(span(T, 0.2, 0.7)) * (1 - ease(span(T, 2.6, 3.4)));
+  const cock = ease(span(T, 0.9, 1.5)), swing = ease(span(T, 1.5, 2.1));
+  const yaw = lerp(lerp(0, -0.6, cock), 0.9, swing) * (1 - ease(span(T, 2.6, 3.4)));
+  const e = lerp(1.2, 0.05, ease(span(T, 1.5, 1.9))) + 0.05 * Math.sin(t * 6) * (1 - cock);
+  for (const sd of sides){ rrot(sd + 'Arm', 'x', -(PRM.zA ?? 1.1) * stance); rrot(sd + 'ForeArm', 'x', -(PRM.zF ?? 1.2) * stance); }
+  rrot('Spine', 'y', yaw * 0.3); rrot('Spine1', 'y', yaw * 0.35); rrot('Spine2', 'y', yaw * 0.35);
+  /* watch the ball go, slump after the out, cheer at the end */
+  const watch = ease(span(T, 1.9, 2.4)) * (1 - ease(span(T, 5.1, 5.5))); rrot('Head', 'x', -0.5 * watch);
+  const slump = ease(span(T, 5.3, 5.9)) * (1 - ease(span(T, 6.8, 7.3))); rrot('Head', 'x', 0.45 * slump); rrot('Spine', 'x', 0.18 * slump); rrot('Spine1', 'x', 0.15 * slump);
+  const ch = ease(span(T, 7.1, 7.6)); for (const sd of sides){ const s = sd === 'Left' ? 1 : -1; rrot(sd + 'Arm', 'z', s * 2.3 * ch * (0.85 + 0.15 * Math.sin(t * 9))); }
+  const hop = ch * Math.max(0, Math.sin(t * 7)) * 0.07; 
+  rabG.updateMatrixWorld(true); rabG.position.y = hop; rabG.updateMatrixWorld(true);
+  rab.bones.LeftHand.getWorldPosition(_o1); rab.bones.RightHand.getWorldPosition(_o2); RB_BAT.grip.copy(_o1).add(_o2).multiplyScalar(0.5);
+  _bq.setFromAxisAngle(AX.y, yaw * 0.9); rabG.getWorldQuaternion(_bq2); _bq.premultiply(_bq2);
+  RB_BAT.dir.set(0, Math.sin(e), Math.cos(e)).applyQuaternion(_bq).normalize(); RB_BAT.yaw = yaw; RB_BAT.e = e;
+}
+const SUB_FEET = [], SUB_TAIL = [], SUB_ALL = [];   /* SUB_FEET = legs, feet and the seat (hips): the lowest of these is put on the ground; SUB_ALL = every 11th vertex (belly-slide guard) */
+const _gv = V3(), _tw = V3();
+function groundFix(p){
+  rig.updateMatrixWorld(true); skinned.skeleton.update();
+  let mn = Infinity; for (const i of SUB_FEET){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn) mn = _gv.y; }
+  rig.position.y += -mn + 0.004 + (p.gl || 0) + (p.hop || 0); rig.updateMatrixWorld(true);
+}
+function allMinY(){ rig.updateMatrixWorld(true); skinned.skeleton.update(); let mn = Infinity; for (const i of SUB_ALL){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn) mn = _gv.y; } return mn; }
+/* whole-body guard for the belly slide: never below the water surface level, exactly on it while sliding */
+function bodyGuard(p, level = 0.03){ if (!(p.slide || p.pitch > 0.2)) return; const mn = allMinY(); if (p.slide || mn < level){ rig.position.y += level - mn; rig.updateMatrixWorld(true); } }
+let TAIL_UP = 1;
+function tailMinY(){ skinned.skeleton.update(); let mn = Infinity, mi = -1; for (const i of SUB_TAIL){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn){ mn = _gv.y; mi = i; } } return [mn, mi]; }
+function tailGuard(gl = 0){
+  for (let it = 0; it < 5; it++){
+    rig.updateMatrixWorld(true); const [mn, mi] = tailMinY(); if (mn >= gl + 0.012) return;
+    skinned.getVertexPosition(mi, _gv); _gv.applyMatrix4(skinned.matrixWorld); bones.Tail01.getWorldPosition(_tw);
+    const d = Math.max(0.2, Math.hypot(_gv.x - _tw.x, _gv.z - _tw.z)), ang = (gl + 0.012 - mn) / d * 1.15;
+    for (const n of TL) rot(n, 'x', TAU_UP(ang / TL.length));
+  }
+}
+const TAU_UP = a => TAIL_UP * a;
+const newP = () => ({T: 0, x: 0, z: 0, ry: 0, pitch: 0, roll: 0, hop: 0, yAbs: 0, gl: 0, sy: 1, lid: 0, happy: 0, sad: 0, events: [], free: true, surf: 0, q: null, slide: false});
+const CAL = {}, HPF = {};
+const SUB_WTIP = {Left: [], Right: []}, SUB_TTIP = [];
+const _wt = V3();
+function vertAvg(L, out = V3()){ rig.updateMatrixWorld(true); skinned.skeleton.update(); out.set(0, 0, 0); for (const i of L){ skinned.getVertexPosition(i, _wt); _wt.applyMatrix4(skinned.matrixWorld); out.add(_wt); } return out.multiplyScalar(1 / Math.max(1, L.length)); }
+const wingTip = (sd, out) => vertAvg(SUB_WTIP[sd], out), tailTip = out => vertAvg(SUB_TTIP, out);
+const SUB_BODY = [];
+let mouthLocal2 = null;   /* non-arm skin vertices (every 5th): used to keep the tree trunk off the body */
+const _hmid = V3(), _ha = V3(), _hb = V3();
+function handMid(out = _hmid){ hoofPos('Left', _ha); hoofPos('Right', _hb); return out.copy(_ha).add(_hb).multiplyScalar(0.5); }
+function handMinY(){ let mn = Infinity; rig.updateMatrixWorld(true); skinned.skeleton.update(); for (const sd of sides) for (const i of SUB_HOOF[sd]){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn) mn = _gv.y; } return mn; }
+function bodyMaxX(){ let mx = -Infinity; rig.updateMatrixWorld(true); skinned.skeleton.update(); for (const i of SUB_BODY){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.x > mx) mx = _gv.x; } return mx; }
+function settle(name, T){ const p = pose(name, T); if (p.surf != null) groundFix(p); rig.updateMatrixWorld(true); return p; }
+function calibrate(){
+  rig.position.set(0, 0, 0); rig.quaternion.identity(); rig.scale.set(1, 1, 1); resetPose(); rig.updateMatrixWorld(true);
+  /* picnic: where his hands are when the potato lands in them */
+  { settle('picnic', 2.35); handMid(HPF.c = V3()); CAL.holdHand = HPF.c.toArray(); }
+  /* ball: where his raised hands are at the catch */
+  { settle('ball', CATCH_T); handMid(HPF.k = V3()); CAL.catchHand = HPF.k.toArray(); }
+  window.__calib = CAL;
+  resetPose(); rig.position.set(0, 0, 0); rig.quaternion.identity(); rig.updateMatrixWorld(true);
+}
+function calibrateBall(){
+  if (!rab.model) return; rabBall(HIT_T, 0); BB.C = RB_BAT.grip.clone().addScaledVector(RB_BAT.dir, 0.62 * BAT_S + 0.1); CAL.hitPoint = BB.C.toArray();
+}
+const mouthPt = out => headPt(mouthLocal2, out);
+// ---------- load the model ----------
+
+// =====================================================================================================
+// 餵食（2026-11-02）：開心吃 / 最愛點心 / 搖頭不吃（雙手捧到嘴前、低頭咬三口；搖頭不吃＝湊近聞、搖頭難過、雙手推開）
+// =====================================================================================================
+const FK = makeEat(THREE, GLTFLoader, scene, makeTex, spawn, fx);
+window.__eatWrong = window.__eatWrong || 'chili';   // 搖頭不吃：少年固定紅辣椒、成年固定苦瓜（App 會自己放玩家給的食物）
+FK.preload(["sweetpotato", "bubbletea", "chili"]); window.__eatPreload = n => FK.preload(n);
+/* ---- two-bone arm IK (world space). The bone lengths are measured once at the bind pose. pole = the way the elbow should point.
+   k blends from the pose the page already set (0) to the full IK pose (1). */
+let armLen = null;
+function measureArms(){ armLen = {}; model.updateMatrixWorld(true); for (const sd of ['Left', 'Right']){ const S = wpos(sd + 'Arm', V3()), E = wpos(sd + 'ForeArm', V3()), H = wpos(sd + 'Hand', V3()); armLen[sd] = [S.distanceTo(E), E.distanceTo(H)]; } }
+const _aq = new THREE.Quaternion();
+function aimBone(b, cur, tgt){ _aq.setFromUnitVectors(cur, tgt); b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pq); _l.copy(_pq).invert().multiply(_aq).multiply(_pq); b.quaternion.premultiply(_l).normalize(); b.updateMatrixWorld(true); }
+const _qa0 = new THREE.Quaternion(), _qf0 = new THREE.Quaternion();
+function elbowPole(sd, up = -0.8, out = 0.6, back = 0.2){ const s = sd === 'Left' ? 1 : -1, o = V3(s, 0, 0).applyQuaternion(rig.quaternion), f = V3(0, 0, 1).applyQuaternion(rig.quaternion); return o.multiplyScalar(out).add(V3(0, up, 0)).addScaledVector(f, -back); }
+function ikArm(sd, X, pole, k = 1){
+  if (k <= 0.001 || !armLen) return;
+  const A = bones[sd + 'Arm'], F = bones[sd + 'ForeArm'], Hd = bones[sd + 'Hand'], l = armLen[sd] || [0.29, 0.24];
+  model.updateMatrixWorld(true);
+  const S = A.getWorldPosition(V3()); let d = X.distanceTo(S); const dmax = l[0] + l[1] - 0.012, dmin = Math.max(Math.abs(l[0] - l[1]) + 0.03, 0.36);   /* never fold the elbow past ~110 deg */ d = Math.max(dmin, Math.min(dmax, d));
+  const dir = X.clone().sub(S).normalize(); const a = (l[0] * l[0] - l[1] * l[1] + d * d) / (2 * d), h = Math.sqrt(Math.max(0, l[0] * l[0] - a * a));
+  const perp = pole.clone().sub(dir.clone().multiplyScalar(pole.dot(dir))).normalize();
+  const E = S.clone().addScaledVector(dir, a).addScaledVector(perp, h);
+  _qa0.copy(A.quaternion); _qf0.copy(F.quaternion);
+  const E0 = F.getWorldPosition(V3()); aimBone(A, E0.sub(S).normalize(), E.clone().sub(S).normalize());
+  F.updateWorldMatrix(true, false); const Ec = F.getWorldPosition(V3()), H0 = Hd.getWorldPosition(V3()); aimBone(F, H0.sub(Ec).normalize(), X.clone().sub(Ec).normalize().multiplyScalar(1));
+  if (k < 0.999){ const qa1 = A.quaternion.clone(), qf1 = F.quaternion.clone(); A.quaternion.slerpQuaternions(_qa0, qa1, k); F.quaternion.slerpQuaternions(_qf0, qf1, k); }
+  A.updateMatrixWorld(true);
+}
+
+const FH = makeHold(THREE, { EATK: FK, rig, get model(){ return model; }, skin: () => skinned,
+  reach: (sd, tg, w) => { if (!armLen) measureArms(); ikArm(sd, tg, elbowPole(sd, -0.8, 0.5, 0.1), w); }, grip: (sd, out) => out.copy(wpos(sd + 'Hand')),
+  armRe: /(Left|Right)(Shoulder|Arm|ForeArm|Hand)/, S: 1, size: 0.3, chestY: 0.79, mouthY: 0.99, follow: 1 });
+function feedLean(a){ rot('Spine02', 'x', a * 0.4); rot('Spine01', 'x', a * 0.35); rot('Spine', 'x', a * 0.25); }
+function feedYaw(yaw){ rot('neck', 'y', yaw * 0.4); rot('Head', 'y', yaw * 0.6); }
+function poseEat(p, t, name){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const P = phases(name, t); p.eat = P; if (!FH.m) FH.measure();
+  const br = Math.sin(TAU * t / 3.6); rot('Spine02', 'x', 0.012 * br * 0.4); rot('Spine01', 'x', 0.012 * br * 0.4);
+  if (typeof tailSway === 'function') tailSway(0.15, t, 1.3);
+  
+  p.lid = Math.max(p.lid || 0, blinkAt(t));
+  if (name === 'refuse'){
+    const sn = ease(P.sniff) * (1 - ease(P.shake));
+    feedLean(0.14 * sn); rot('neck', 'x', 0.1 * sn); rot('Head', 'x', 0.12 * sn);
+    if (P.shake > 0 && P.shake < 1){ const k = Math.sin(Math.PI * P.shake); feedYaw(0.55 * Math.sin(TAU * P.shake * 3) * k); rot('Head', 'z', -0.06 * k); }
+    p.sad = P.sad; if (P.sad) p.lid = 0;
+  } else {
+    const nod = P.biting ? P.lunge : 0;
+    feedLean(0.1 * nod + 0.04 * P.hold); rot('neck', 'x', 0.14 * nod); rot('Head', 'x', 0.18 * nod + 0.06 * P.hold);
+    p.happy = P.happy && !P.chew ? 1 : 0; p.lid = P.chew ? 1 : (p.happy ? 0 : p.lid);
+    p.hop = 0.08 * P.hop;
+  }
+  p.ry = 0.1 + (name === 'snack' ? TAU * P.spin : 0); place(p);
+}
+fetchModel('dragonteen_model.json').then(gltf => {
+  model = gltf.scene; model.scale.setScalar(CFG.scale);
+  model.traverse(o => {
+    if (o.isBone){ bones[o.name] = o; rest[o.name] = o.quaternion.clone(); restP[o.name] = o.position.clone(); }
+    if (o.isMesh){ skinned = o; o.frustumCulled = false; prepFace(o, {eye:CFG.eye, eyeR:CFG.eyeR, eyeZ:CFG.eyeZ, eyeOut:CFG.eyeOut, eyeFill:CFG.eyeFill, mouth:CFG.mouth, mouthR:CFG.mouthR, mouthZ:CFG.mouthZ, noPink:CFG.noPink}); (Array.isArray(o.material) ? o.material : [o.material]).forEach(patch); }
+  });
+  rig.add(model); rig.updateMatrixWorld(true); restFeet = feetLow();
+  { const g = skinned.geometry, n = g.attributes.position.count, SI = g.attributes.skinIndex, SW = g.attributes.skinWeight, BN = skinned.skeleton.bones.map(b => b.name), PO = g.attributes.position;
+    const wl = {Left: [], Right: []}, tl = [];
+    for (let i = 0; i < n; i += 1){ let best = 0, bw = -1; for (let c = 0; c < 4; c++){ const w = SW.getComponent(i, c); if (w > bw){ bw = w; best = SI.getComponent(i, c); } }
+      const bn = BN[best]; if (/Leg|Foot|Toe|^Hips|^Spine02/.test(bn)) SUB_FEET.push(i); if (/^Tail/.test(bn) && i % 3 === 0) SUB_TAIL.push(i); if (!/Arm|Hand|Shoulder|Wing/.test(bn) && i % 5 === 0) SUB_BODY.push(i); if (/^LeftHand/.test(bn)) SUB_HOOF.Left.push(i); if (/^RightHand/.test(bn)) SUB_HOOF.Right.push(i);
+      if (/^LeftWing/.test(bn)) wl.Left.push([PO.getX(i), i]); if (/^RightWing/.test(bn)) wl.Right.push([PO.getX(i), i]); if (/^Tail0[567]/.test(bn)) tl.push([PO.getZ(i), i]);
+      if (i % 11 === 0) SUB_ALL.push(i); }
+    wl.Left.sort((a, b) => b[0] - a[0]); wl.Right.sort((a, b) => a[0] - b[0]); tl.sort((a, b) => a[0] - b[0]);
+    SUB_WTIP.Left = wl.Left.slice(0, 40).map(a => a[1]); SUB_WTIP.Right = wl.Right.slice(0, 40).map(a => a[1]); SUB_TTIP.push(...tl.slice(0, 25).map(a => a[1])); }
+  mouthLocal2 = bones.Head.worldToLocal(V3(0, 1.0, 0.72)); rig.updateMatrixWorld(true);
+  { resetPose(); rig.updateMatrixWorld(true); const a = tailMinY()[0]; rot('Tail01', 'x', 0.2); rig.updateMatrixWorld(true); const b = tailMinY()[0]; TAIL_UP = b > a ? 1 : -1; resetPose(); }
+  calibrate(); calibrated = true; if (rabReady) calibrateBall();
+  loadingEl.hidden = true; statusEl.hidden = false;
+  setMove('idle'); requestAnimationFrame(loop);
+}).catch(e => { console.error(e); loadingEl.textContent = '模型載入失敗，請重新整理頁面。'; });
+
+// ---------- the teen rabbit (a second character used as a friend / batter) ----------
+const rabG = new THREE.Group(); scene.add(rabG); rabG.visible = false;
+let rabReady = false, calibrated = false;
+const rab = {model: null, bones: {}, rest: {}, restP: {}, skinned: null, S: 0.62};
+fetchModel('teen_model.json').then(gl => {
+  rab.model = gl.scene; rab.model.scale.setScalar(rab.S);
+  rab.model.traverse(o => { if (o.isBone){ rab.bones[o.name.replace('mixamorig', '')] = o; rab.rest[o.name.replace('mixamorig', '')] = o.quaternion.clone(); rab.restP[o.name.replace('mixamorig', '')] = o.position.clone(); }
+    if (o.isMesh){ rab.skinned = o; o.frustumCulled = false; (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.envMap = ENVTEX; m.envMapIntensity = 0.45; m.side = THREE.DoubleSide; m.clippingPlanes = [CLIP]; }); } });
+  rabG.add(rab.model); rabG.updateMatrixWorld(true); window.__rab = rab; rabReady = true; if (calibrated) calibrateBall();
+}).catch(e => console.error('rabbit', e));
+function rabReset(){ for (const n in rab.bones){ rab.bones[n].quaternion.copy(rab.rest[n]); rab.bones[n].position.copy(rab.restP[n]); } }
+const _rpq = new THREE.Quaternion(), _rrq = new THREE.Quaternion(), _rw = new THREE.Quaternion(), _rl = new THREE.Quaternion();
+/* rotate a rabbit bone about an axis of the rabbit's own space (x = his left, y up, z forward) */
+function rrot(name, axis, ang){ const b = rab.bones[name]; if (!b || !ang) return; b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_rpq); rabG.getWorldQuaternion(_rrq); _rpq.premultiply(_rrq.invert());
+  _rw.setFromAxisAngle(AX[axis], ang); _rl.copy(_rpq).invert().multiply(_rw).multiply(_rpq); b.quaternion.premultiply(_rl).normalize(); }
+
+// ---------- effects ----------
+const confTex = [0xe8584a, 0xf6c445, 0x4aa3df, 0x3e7b4f].map(c => makeTex(g => { g.fillStyle = '#' + c.toString(16).padStart(6, '0'); g.fillRect(34, 20, 60, 88); }));
+function confetti(x, y, z, n){ for (let i = 0; i < n; i++){ const a = Math.random() * TAU, r = Math.random(); spawn(confTex[i % 4], V3(x, y, z), V3(Math.cos(a) * (0.3 + r * 0.6), 0.8 + Math.random() * 0.6, Math.sin(a) * 0.3), 1.2 + r * 0.4, 0.07, 0, {gravity: -1.6}); } }
+function hearts(pos, n = 3, sz = 0.15){ for (let i = 0; i < n; i++) spawn(heartTex, pos.clone().add(V3((i - (n - 1) / 2) * 0.3, 0.1, 0.1)), V3((i - (n - 1) / 2) * 0.12, 0.45, 0), 1.1, sz); }
+function stars(pos, n = 5, sz = 0.13, sp = 0.6, tex = starTex){ for (let i = 0; i < n; i++){ const a = i / n * TAU; spawn(tex, pos.clone(), V3(Math.cos(a) * sp, 0.5 + Math.random() * 0.3, Math.sin(a) * sp * 0.5), 0.8, sz); } }
+function dustRing(x, y, z, n = 6, r = 0.3, tex = dustTex){ for (let i = 0; i < n; i++){ const a = i / n * TAU; spawn(tex, V3(x + Math.cos(a) * r * 0.5, y, z + Math.sin(a) * r * 0.5), V3(Math.cos(a) * 0.5, 0.3, Math.sin(a) * 0.5), 0.7, 0.16, 0.8); } }
+const W = {hello: wordTex('嗨～野餐！', '#c2512b'), rainw: wordTex('下雨了…', '#5a6f8a'), inhale: wordTex('呼～深呼吸', '#e8a23a'), fire: wordTex('噴火！', '#e8584a'), sun: wordTex('出太陽了！', '#e8a23a'), rainbow: wordTex('彩虹！', '#a660c8'), win: wordTex('放晴啦！', '#e8584a'),
+  pop: wordTex('地瓜來囉', '#a05a3a'), catch: wordTex('接住！', '#e8584a'), breath: wordTex('呼～', '#f6892f'), ding: wordTex('烤好了！', '#e8a23a'), split: wordTex('掰開～', '#a05a3a'), offer: wordTex('給你一半', '#d9467a'), thanks: wordTex('謝謝～', '#4a8a3a'), yum: wordTex('好吃！', '#e8584a'), sweet: wordTex('好甜～', '#d9467a'),
+  crack: wordTex('啪！', '#e8584a'), wow: wordTex('好高！', '#2f8fc8'), go: wordTex('飛起來！', '#e8584a'), out: wordTex('OUT!', '#d6342c')};
+function events(p){
+  if (reduceMotion) return;
+  for (const e of p.events){
+    const head = wpos('Head', V3()).add(V3(0, 0.35, 0));
+    if (e === 'hello'){ hearts(head.clone().add(V3(0, 0.45, 0)), 3); stars(head.clone(), 5, 0.1, 0.5); }
+    if (e === 'crack'){ showWord(W.crack, BB.C ? BB.C.clone().add(V3(0, 0.5, 0.3)) : head, 0.85); stars(BB.C || head, 6, 0.1, 0.6, sparkTexC(0xf6c445)); }
+    else if (e === 'thanks'){ const rh = rab.bones.Head.getWorldPosition(V3()).add(V3(0, 0.45, 0.2)); showWord(W.thanks, rh, 0.85); hearts(rh.clone().add(V3(0, 0.25, 0)), 2); }
+    else if (W[e]) showWord(W[e], head.clone().add(V3(0, 0.5, 0.2)), e === 'out' ? 1.3 : 0.85);
+    if (e === 'go') dustRing(rig.position.x, 0.03, rig.position.z, 8, 0.6);
+    if (e === 'win' && move === 'rain') { confetti(head.x, head.y + 0.4, head.z, 18); hearts(head.clone().add(V3(0, 0.25, 0.2)), 3); }
+    if (e === 'cheerb') { confetti(head.x, head.y + 0.6, head.z, 24); hearts(head.clone().add(V3(0, 0.3, 0.2)), 3); }
+    if (e === 'sweet') { confetti(head.x, head.y + 0.2, head.z, 8); hearts(head.clone().add(V3(0, 0.25, 0.2)), 3); }
+    if (e === 'catch' && move === 'picnic') stars(handMid(V3()), 4, 0.08, 0.4, sparkTexC(0xf6c445));
+    if (e === 'catch' && move === 'ball') { const hm = handMid(V3()); stars(hm, 8, 0.12, 0.7, sparkTexC(0xffffff)); stars(hm, 6, 0.1, 0.5, sparkTexC(0xf6c445)); }
+    if (e === 'ding') stars(handMid(V3()).add(V3(0, 0.1, 0)), 6, 0.1, 0.5, sparkTexC(0xf6c445));
+    if (e === 'offer' || e === 'yum') hearts(head.clone().add(V3(0, 0.3, 0.2)), 2);
+    if (e === 'nice') stars(V3(0, 2.6, 0), 10, 0.14, 1.2, sparkTexC(0xf6c445));
+  }
+}
+
+// ---------- placing the props (after the final rig pose of the frame) ----------
+let emitT = 0, steamT = 0, flameT = 0;
+const _o1 = V3(), _o2 = V3(), _p1 = V3(), _p2 = V3(), _p3 = V3();
+const _rh = V3(), _dir = V3(), _hm = V3(), _mp = V3(), _hl = V3(), _hr = V3(), _rm = V3(), _qy = new THREE.Quaternion().setFromAxisAngle(AX.y, Math.PI / 2), _pq2 = new THREE.Quaternion();
+const RAWC = new THREE.Color(0x7a3a6a), BAKC = new THREE.Color(0xb8762f);
+const COLD = new THREE.Color(0x69737f), SUNL = new THREE.Color(0xffffff), RC = new THREE.Color(0xdfe6ee), CLG = new THREE.Color(0x808994), CLH = new THREE.Color(0xffb070);
+function placeRain(p, t, dt){
+  const T = p.T; rainG.visible = true; const ra = rainAmtAt(T), dry = 1 - ra;
+  rainLines.visible = ra > 0.01; rainGeo.setDrawRange(0, Math.floor(NR * ra) * 2);
+  for (let i = 0; i < NR; i++){ const d = rainD[i], y = RBOX.h - ((d.y0 + d.sp * t) % RBOX.h); rainArr.set([d.x, y, d.z, d.x - 0.04, y + 0.3, d.z], i * 6); }
+  rainGeo.attributes.position.needsUpdate = true;
+  dome.material.opacity = 0.7 * ra * ra; dome.visible = ra > 0.01;
+  CLOUDS.forEach((c, i) => { const m = ease(span(T, 3.7 + 0.2 * i, 6.0 + 0.2 * i)); c.g.visible = m < 0.995; c.g.scale.setScalar(Math.max(0.01, 1 - 0.9 * m)); c.g.position.x = c.x0 + Math.sign(c.x0 || 1) * m * 1.6; c.g.position.y = 3.7 + (c.i % 2) * 0.35 + m * 0.6;
+    c.m.opacity = 1 - m; c.m.color.copy(CLG).lerp(CLH, Math.min(1, m * 3) * (1 - m)); });
+  hemiL.intensity = 2.0 * (0.62 + 0.38 * dry); sunLight.intensity = 1.6 * (0.4 + 0.6 * dry); hemiL.color.copy(RC).lerp(SUNL, dry); sunLight.color.copy(RC).lerp(SUNL, dry);
+  const sc = ease(span(T, 5.2, 6.4)); sunG.visible = sc > 0.01; sunG.scale.setScalar(Math.max(0.01, sc)); sunG.rotation.z = t * 0.3;
+  const rb = ease(span(T, 6.7, 8.3)); rainMats.forEach((m, i) => { m.opacity = 0.85 * ease(span(rb * 1.4 - i * 0.06, 0, 1)); });
+  if (frozen === null && !reduceMotion && p.fire > 0.05){ flameT += dt; while (flameT > 0.025){ flameT -= 0.025; mouthPt(_mp);
+      spawn(flameTex, _mp.clone(), V3((Math.random() - 0.5) * 0.5, 4.2 + Math.random() * 1.2, 0.8 + (Math.random() - 0.5) * 0.4), 0.8, 0.3, 0.8);
+      if (Math.random() < 0.4) spawn(glowTexC(0xffa040), _mp.clone(), V3((Math.random() - 0.5) * 0.4, 3.5, 0.6), 0.7, 0.35, 0.6); } }
+  if (frozen !== null && p.fire > 0.05){ mouthPt(_mp); for (let i = 0; i < 10; i++){ const u = i / 10; spawn(flameTex, _mp.clone().add(V3(0.0, 0.5 + 3.4 * u, 0.15 + 0.6 * u)), V3(0, 0, 0), 0.01, 0.22 + 0.25 * u, 0); } }
+}
+function placePicnic(p, t, dt){
+  const T = p.T; picG.visible = true; rabG.visible = true; rabPicnic(T, t);
+  potMat.color.copy(RAWC).lerp(BAKC, ease(span(T, 2.8, 4.5)));
+  handMid(_hm); hoofPos('Left', _hl); hoofPos('Right', _hr); mouthPt(_mp);
+  if (rab.bones.LeftHand){ rab.bones.LeftHand.getWorldPosition(_rm); rab.bones.RightHand.getWorldPosition(_rh); _rm.add(_rh).multiplyScalar(0.5); } else _rm.set(0, 0, 0); rabG.getWorldQuaternion(_pq2); _rm.add(V3(0, 0.03, 0.04 * (PRM.pF ?? 1)).applyQuaternion(_pq2));
+  let whole = false;
+  if (T < 1.75){ whole = true; potato.position.set(BASK.x, 0.31, BASK.z); potato.quaternion.setFromAxisAngle(AX.y, 0.5); potato.scale.setScalar(1); }
+  else if (T < 2.35){ const u = (T - 1.75) / 0.6; whole = true; potato.position.set(lerp(BASK.x, HPF.c.x, u), lerp(0.31, HPF.c.y, u) + 0.7 * 4 * u * (1 - u), lerp(BASK.z, HPF.c.z, u)); potato.quaternion.setFromAxisAngle(AX.z, u * TAU * 1.5).premultiply(rig.quaternion); potato.scale.setScalar(1); }
+  else if (T < 5.1){ whole = true; potato.position.copy(_hm); potato.quaternion.copy(rig.quaternion).multiply(_qy); const sh = bell(span(T, 4.7, 5.1)); potato.position.x += 0.01 * Math.sin(t * 40) * sh; potato.scale.setScalar(1 + 0.04 * bell(span(T, 4.3, 4.6))); }
+  potato.visible = whole;
+  halfs[0].visible = halfs[1].visible = T >= 5.1 && T < 11.8;
+  if (halfs[0].visible){ halfs.forEach(h => h.quaternion.copy(rig.quaternion));
+    halfs[1].position.copy(_hl); halfs[0].position.copy(_hr);
+    const fl = span(T, 6.2, 6.6); if (fl > 0){ const u = ease(fl); halfs[1].position.lerpVectors(_hl, _rm, u); halfs[1].position.y += 0.15 * 4 * u * (1 - u) * (fl < 1 ? 1 : 0); }
+    const nib = span(T, 6.9, 10.4); halfs[1].scale.setScalar(Math.max(0.001, 1 - 0.9 * ease(nib))); if (T > 10.5) halfs[1].visible = false;
+    const eb = bell(span(T, 7.2, 10.8)); halfs[0].position.lerp(_mp, 0.5 * Math.min(1, eb * 2.5));
+    const bite = span(T, 8.0, 10.6); halfs[0].scale.setScalar(Math.max(0.001, 1 - 0.85 * ease(bite))); if (T > 10.65) halfs[0].visible = false; }
+  const brt = span(T, 2.7, 4.3), on = brt > 0 && brt < 1;
+  palmFlame.visible = palmGlow.visible = on;
+  if (on){ const fl = 1 + 0.15 * Math.sin(t * 25); palmFlame.position.copy(_hm).add(V3(0, 0.1, 0)); palmFlame.scale.set(0.09 * fl * bell(brt * 1.2), 0.13 * fl * bell(brt * 1.2), 1); palmGlow.position.copy(palmFlame.position); palmGlow.scale.setScalar(0.3 * bell(brt)); }
+  if (frozen === null && !reduceMotion){
+    flameT += dt; if (on && flameT > 0.05){ flameT = 0; _dir.copy(_hm).sub(_mp); spawn(flameTex, _mp.clone(), _dir.clone().multiplyScalar(2.4), 0.4, 0.13, -0.3); }
+    steamT += dt; if (T > 3.6 && T < 10.5 && steamT > 0.22){ steamT = 0; const src = T < 5.1 ? _hm : _hr; spawn(steamTex, src.clone().add(V3((Math.random() - 0.5) * 0.06, 0.08, 0)), V3(0, 0.22, 0), 1.1, 0.12, 1.4); }
+  }
+}
+function placeBall(p, t, dt){
+  const T = p.T; ballG.visible = true; rabG.visible = true; rabBall(T, t); handMid(_hm); hoofPos('Right', _hr);
+  const C = BB.C || V3(BB.rx + 0.7, 1.0, BB.rz);
+  /* bat: grip at the rabbit's hands, falls to the ground after the swing */
+  batG.scale.setScalar(BAT_S);
+  if (T < 2.35){ batG.position.copy(RB_BAT.grip); _bq.setFromUnitVectors(AX.y, RB_BAT.dir); batG.quaternion.copy(_bq); HPF.bat = {p: batG.position.clone(), q: batG.quaternion.clone()}; }
+  else { const u = span(T, 2.35, 2.9); const B0 = HPF.bat || {p: batG.position.clone(), q: batG.quaternion.clone()}; batG.position.set(lerp(B0.p.x, BB.rx + 0.8, ease(u)), lerp(B0.p.y, 0.05, u * u), lerp(B0.p.z, BB.rz + 0.6, ease(u))); batG.quaternion.copy(B0.q).slerp(_bq.setFromAxisAngle(AX.z, Math.PI / 2 * 0.98).multiply(_bq2.setFromAxisAngle(AX.y, 0.5)), ease(u)); }
+  /* ball: pitched in from the right (1.2-1.9), launched at 1.9, lands in his hands at 5.0, then held up */
+  ballM.visible = T >= 1.2;
+  if (T < HIT_T){ const u = (T - 1.2) / (HIT_T - 1.2); ballM.position.set(C.x + 2.4 * (1 - u), lerp(C.y + 0.15, C.y, u), C.z); }
+  else if (T < CATCH_T){ const u = (T - HIT_T) / (CATCH_T - HIT_T), K = HPF.k; ballM.position.set(lerp(C.x, K.x, u), lerp(C.y, K.y, u) + BALL_APEX * 4 * u * (1 - u), lerp(C.z, K.z, u)); }
+  else { ballM.position.copy(T < 6.5 ? _hm : _hr).add(V3(0, 0.0, 0)); }
+  ballM.rotation.set(t * 9, t * 6, 0);
+  /* NICE PLAY! banner */
+  const nb = span(T, 6.9, 7.5); niceS.visible = nb > 0; if (nb > 0){ const k = backOut(nb) * (1 + 0.04 * Math.sin(t * 5)); niceS.position.set(-0.35, 3.3 + 0.05 * Math.sin(t * 3), 0.2); niceS.scale.set(3.0 * k, 3.0 * 0.343 * k, 1); niceS.material.opacity = 1 - ease(span(T, 11.5, 12)); }
+  if (frozen === null && !reduceMotion && p.fly > 0.4){ emitT += dt; while (emitT > 0.06){ emitT -= 0.06; wingTip(Math.random() < 0.5 ? 'Left' : 'Right', _p1); spawn(sparkTexC(RB[Math.floor(Math.random() * 7)]), _p1.clone(), V3(0, -0.1, 0), 0.9, 0.12, -0.3); } }
+}
+function placeProps(p, t, dt){
+  rainG.visible = move === 'rain'; picG.visible = move === 'picnic'; ballG.visible = move === 'ball'; rabG.visible = move === 'picnic' || move === 'ball'; if (move !== 'ball') niceS.visible = false;
+  if (move === 'rain') placeRain(p, t, dt); if (move === 'picnic') placePicnic(p, t, dt); if (move === 'ball') placeBall(p, t, dt);
+}
+
+// ---------- buttons, camera, loop ----------
+const snap = {}; let blendStart = -10;
+function setMove(name){
+  if (FK.wait(name, 'dragon', setMove)) return;   // 食物載好才開始
+  if (model){ for (const n in bones) snap[n] = bones[n].quaternion.clone(); snap.rp = rig.position.clone(); snap.rq = rig.quaternion.clone(); blendStart = performance.now() / 1000; }
+  clearFx(); userCam = false;
+  PARKS.show(isEat(name) ? 'idle' : name); FK.show(name, 'dragon', 0.3);
+  move = name; t0 = performance.now() / 1000; frozen = null; __hold = 0;
+  document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
+  statusEl.textContent = names[name];
+}
+document.querySelectorAll('.moves button').forEach(b => b.addEventListener('click', () => setMove(b.dataset.move)));
+const CAMS = { eat:CAMEAT, snack:CAMEAT, refuse:CAMEAT,idle:{t:[0, 0.95, 0.1], d:6.4, az:0.09}, rain:{t:[0, 1.5, -0.2], d:9.0, az:0.05}, picnic:{t:[0.1, 0.8, 0.2], d:6.8, az:0.09}, ball:{t:[-0.35, 1.7, -0.7], d:9.2, az:0.1}, sleep:{t:[0, 0.7, 0.1], d:5.4, az:0.1}};
+function camFor(p){ return CAMS[move]; }
+const COM_L = V3(0, 0.8, 0.1);
+const _ct = V3(), _cpp = V3();
+let zTimer = 0, last = performance.now() / 1000;
+function loop(){
+  const now = performance.now() / 1000, rawDt = Math.max(0, now - last), dt = Math.min(rawDt, 0.05); last = now; if (__hold && loopEl.checked) __hold = 0;
+  let t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  if (frozen === null && !loopEl.checked && (/^(eat|snack|refuse)$/.test(move) || (move === 'rain' || move === 'picnic' || move === 'ball') ) && t >= LEN[move]){ if (!__hold) __hold = now; t = LEN[move] - 0.001; if (now - __hold >= 1 && !EMBED){ setMove('idle'); t = 0; } }
+  __dE = (frozen !== null || __hold) ? 1e-4 : Math.min(0.5, Math.max(0.001, rawDt));   // 字卡用真實經過時間判斷（上限 0.5 秒），慢手機不會漏
+  let p = pose(move, t);
+  const bw = frozen !== null ? 1 : Math.min(1, (now - blendStart) / 0.35);
+  if (bw < 1){ const e = ease(bw); for (const n in bones){ if (!snap[n]) continue; bones[n].quaternion.slerpQuaternions(snap[n], bones[n].quaternion.clone(), e); }
+    rig.position.lerpVectors(snap.rp, rig.position.clone(), e); rig.quaternion.slerpQuaternions(snap.rq, rig.quaternion.clone(), e); }
+  if (p.surf != null && skinned) groundFix(p);
+  SAFEOPT.groundY = Math.min(0, p.gl || 0);
+  if (skinned) bodyGuard(p);
+  if (skinned) tailGuard(p.gl || 0);
+  rig.updateMatrixWorld(true);
+  placeProps(p, t, dt);
+  if (p.eat){ FH.arms(p.eat, move); FH.place(p.eat, move, dt, wpos('Head', V3()), reduceMotion); } else FK.food.visible = false;
+  lidU.value = move === 'sleep' ? lidU.value + (1 - lidU.value) * (1 - Math.pow(0.02, dt)) : p.lid;
+  happyU.value = p.happy; sadU.value = p.sad;
+  flatEU.value = Math.max(lidU.value, p.happy, p.sad); flatMU.value = 0;
+  if (move === 'sleep' && !reduceMotion){ zTimer -= dt; if (zTimer <= 0){ zTimer = 1.1; spawn(zTex, wpos('Head', V3()).add(V3(0.3, 0.5, 0.3)), V3(0.14, 0.24, 0), 2.6, 0.15, 1.3); } }
+  if (frozen === null && !__hold) events(p);
+  updateFx(dt); updateWord(dt);
+  const com = rig.localToWorld(COM_L.clone()), gl = p.gl || 0, hgt = Math.max(0, com.y - 0.8 - gl);
+  const s = 1 / (1 + hgt * 0.9); shadow.scale.set(s, s, s); shadow.position.set(com.x, 0.003 + gl, com.z); shadow.visible = !(p.pitch > 0.5) && gl > -0.05;
+  if (!userCam){
+    const c = camFor(p); _ct.set(c.t[0], c.t[1], c.t[2]);
+    const k = 1 - Math.pow(0.04, dt);
+    controls.target.lerp(_ct, k);
+    _cpp.set(controls.target.x + Math.sin(c.az) * c.d, controls.target.y + 0.45 + c.d * 0.04, controls.target.z + Math.cos(c.az) * c.d); camera.position.lerp(_cpp, k);
+  }
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+// pose dispatcher
+function pose(name, t){
+  const T = t % LEN[name];
+  const p = newP(); p.T = T;
+  resetPose();
+  if (isEat(name)){ poseEat(p, t, name); return p; }
+  if (name === 'idle') poseIdle(p, t, T); else if (name === 'sleep') poseSleep(p, t, T);
+  else if (name === 'rain') poseRain(p, t, T); else if (name === 'picnic') posePicnic(p, t, T); else if (name === 'ball') poseBall(p, t, T);
+  return p;
+}
+window.__m = {pose, rot, resetPose, newP, place, groundFix, bodyGuard, allMinY, THREE, rest, setMove, camera, controls, bones, rig, freeze(x){ frozen = x; }, setT(x){ frozen = null; t0 = performance.now()/1000 - x; },
+  setUser(v){ userCam = v; }, HOLD: FH, EATK: FK, get model(){ return model; }, get skinned(){ return skinned; }, wpos, hoofPos, headPt, wingTip, tailTip, mouthPt, SUB_FEET, SUB_TAIL, SUB_ALL, SUB_BODY, CAL, CFG, CLIP, handMid, handMinY, calibrate, PRM, HOOF: SUB_HOOF, rab, rabG, rrot, rabReset, potato, halfs,
+  minY(){ let mn = Infinity; const v = V3(); skinned.updateMatrixWorld(true); skinned.skeleton.update(); for (let i = 0; i < skinned.geometry.attributes.position.count; i += 3){ skinned.getVertexPosition(i, v); v.applyMatrix4(skinned.matrixWorld); mn = Math.min(mn, v.y); } return mn; }};
+
+// 3D動畫生成規範 safety layer (meshysafe.js)
+const SAFEOPT = {groundY: 0};
+window.__armClear = 0;
+const __sh = /nosafe/.test(location.search) ? 0 : setInterval(() => { if (model && bones.Head){ clearInterval(__sh); import('./meshysafe-760fbbac.js').then(m => { window.__SAFE = m.installSafety(THREE, () => model, bones, rig, scene, Object.assign(SAFEOPT, { clock: () => (frozen !== null ? frozen : performance.now() / 1000 - t0) })); }); } }, 300);
+</script>
+
+
+</body></html>

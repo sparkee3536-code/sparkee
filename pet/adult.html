@@ -106,7 +106,7 @@ import {makeParks} from './parkscenes.js';
 import {startBar, fetchJSON, endBar} from './loadbar.js';
 import {makeSfx} from './sparkee-sfx.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {makeEat, phases, isEat} from './eatkit.js';
+import {makeEat, phases, isEat, period as __eatLen} from './eatkit.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
 // ---------- calibration of the two rabbit models (model space: feet at 0, height 1.7, facing +z, x = her left) ----------
@@ -272,6 +272,7 @@ function prepFace(mesh, F){
 const f = x => Number(x).toFixed(4);
 const v2 = a => `vec2(${f(a[0])}, ${f(a[1])})`;
 function patch(m, c){
+  if (m.map){ m.map.generateMipmaps = false; m.map.minFilter = THREE.LinearFilter; m.map.needsUpdate = true; }   // 關 mipmap（2026-11-04）：縮小時不混出拼塊邊緣的細紋
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, {uFlatE:flatEU, uLid:lidU, uHappy:happyU, uEar:earU, uSad:sadU});
     sh.fragmentShader = 'uniform float uLid;\nuniform float uHappy;\nuniform float uSad;\nvarying vec3 vObj;\nvarying vec4 vSkin;\nvarying float vFlatW;\nvarying float vEye;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
@@ -1332,7 +1333,7 @@ function setMove(name){
   if (EATK.wait(name, 'bunny', setMove)) return;   // 食物載好才開始
   PARKS.show(isEat(name) ? 'idle' : name); SFX.move(name, PARKS.key); EATK.show(name, 'bunny', 0.3);
   if (model){ for (const n in bones){ snap[n] = [bones[n].quaternion.clone(), bones[n].position.clone(), bones[n].scale.clone()]; } snap.rigY = rig.position.y; snap.rigQ = rig.quaternion.clone(); snapChar = charName; blendStart = performance.now()/1000; }
-  move = name; t0 = performance.now()/1000; prevT = -0.001; curT = 0;
+  move = name; t0 = performance.now()/1000; __hold = 0; prevT = -0.001; curT = 0;
   document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
   statusEl.textContent = names[name];
 }
@@ -1362,9 +1363,19 @@ function standY(p){
   if (p.lie) return 0.12 - lieLow();
   return (restFeet - feetLow()) + p.hop;
 }
+// 才藝、餵食播一次（2026-11-04）：時間到停在最後一格約 1 秒再回待機；App 裡（?embed=1）只停住，由 App 切回待機
+var __hold = 0, EMBED = new URLSearchParams(location.search).get('embed') === '1';
+const __onceLen = m => (({magic: MAGIC_T, garden: GARDEN_T, rescue: RESCUE_T})[m] || 0) || (isEat(m) ? __eatLen(m) : 0);
+function __once(t, now){
+  const L = __onceLen(move);
+  if (!L || frozen !== null || reduceMotion || t < L) return t;
+  if (!__hold) __hold = now;
+  if (now - __hold >= 1 && !EMBED){ setMove('idle'); return 0; }
+  return L - 0.001;
+}
 function loop(){
   const now = performance.now()/1000, dt = Math.max(0, Math.min(now - last, 0.05)); last = now;
-  const t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  const t = __once(frozen !== null ? frozen : (reduceMotion ? 0 : now - t0), now);
   rig.position.set(0, 0, 0); QR(rig, 0, ry, 0); rig.scale.set(1, 1, 1);
   curT = t; if (frozen !== null) prevT = t;
   const p = pose(move, t);

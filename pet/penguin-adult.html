@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>企鵝船長成年才藝試作</title>
+<style>
+body.embed{margin:0;background:transparent;overflow:hidden}
+body.embed .wrap{padding:0;max-width:none;gap:0}
+body.embed .wrap>*:not(.stage){display:none!important}
+body.embed .stage{position:fixed;inset:0;aspect-ratio:auto;border-radius:0;border:0}
+body.embed .status{display:none}
+</style>
+<script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('embed-doc'),addEventListener('DOMContentLoaded',()=>document.body.classList.add('embed'));</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F4F6F1; --surface:#FFFFFF; --fg:#1B2A22; --muted:#55645B; --line:#DCE3DA;
+  --grass:#2F63B8; --grass-ink:#FFFFFF; --spark:#F5A524; --spark-soft:#FFF1D6;
+  --sky-top:#DCEAF7; --sky-bot:#EEF5E6;
+  --f-display:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#8FB4F0; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#8FB4F0; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:20px 40px;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--f-display);font-weight:400;font-size:30px;margin:0;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted)}
+.stage{position:relative;width:100%;aspect-ratio:4/3.9;border-radius:24px;overflow:hidden;background:linear-gradient(var(--sky-top),var(--sky-bot));border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.status{position:absolute;left:12px;top:12px;background:var(--surface);color:var(--fg);border-radius:99px;padding:6px 16px;font-size:17px;font-weight:700;border:1px solid var(--line)}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:17px;pointer-events:none}
+.moves{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.moves{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.moves button{min-height:64px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:18px;font-weight:700;cursor:pointer;padding:6px;line-height:1.25}
+.moves button small{display:block;font-weight:400;font-size:14px;color:var(--muted)}
+.moves button[aria-pressed="true"]{background:var(--grass);color:var(--grass-ink);border-color:var(--grass)}
+.moves button[aria-pressed="true"] small{color:var(--grass-ink)}
+.moves button.sig{border-color:var(--spark)}
+.moves button:focus-visible{outline:3px solid var(--spark);outline-offset:2px}
+.toggle{display:flex;gap:10px;align-items:center;font-size:17px;color:var(--muted)}
+.toggle input{width:20px;height:20px;accent-color:var(--grass)}
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <h1>企鵝船長成年</h1>
+    <p class="sub">三個才藝試作：星空導航、踩踩天鵝船、小小船員出航（兔寶寶、乳牛寶寶來互動）。拖曳可以轉視角。</p>
+  </header>
+  <div class="stage" id="stage">
+    <div class="loading" id="loading">企鵝船長成年載入中（約 9 MB）…</div>
+    <span class="status" id="status" hidden>待機</span>
+  </div>
+  <div class="moves" role="group" aria-label="動作">
+    <button data-move="idle" aria-pressed="true">待機</button>
+    <button data-move="star" class="sig" aria-pressed="false">星空導航<small>13 秒</small></button>
+    <button data-move="swan" class="sig" aria-pressed="false">踩踩天鵝船<small>13 秒</small></button>
+    <button data-move="crew" class="sig" aria-pressed="false">小小船員出航<small>13 秒</small></button>
+    <button data-move="sleep" aria-pressed="false">睡覺</button>
+    <button data-move="eat" class="feed" aria-pressed="false">開心吃<small>6 秒</small></button>
+    <button data-move="snack" class="feed" aria-pressed="false">最愛點心<small>7 秒</small></button>
+    <button data-move="refuse" class="feed" aria-pressed="false">搖頭不吃<small>5 秒</small></button>
+  </div>
+  <label class="toggle"><input type="checkbox" id="loopT"> 才藝播完自動重播</label>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+// 3D動畫生成規範 2.1: rotations are quaternions (axis-angle products), never Euler writes
+import {makeParks} from './parkscenes.js';
+import {makeEat, makeHold, phases, isEat} from './eatkit.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+const TAU = Math.PI * 2;
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const AX = {x:V3(1,0,0), y:V3(0,1,0), z:V3(0,0,1)};
+const __qa = new THREE.Quaternion(), __qb = new THREE.Quaternion(), __qc = new THREE.Quaternion();
+function QYXZ(out, yaw, pitch, roll){ __qa.setFromAxisAngle(AX.y, yaw); __qb.setFromAxisAngle(AX.x, pitch); __qc.setFromAxisAngle(AX.z, roll); return out.copy(__qa).multiply(__qb).multiply(__qc); }
+
+// ---------- calibration (model space of the rigged GLB: feet at 0, height 1.65, facing +z) ----------
+const CFG = { scale:1, eye:[0.117,1.245], eyeR:[0.042,0.047], eyeZ:0.2, eyeOut:1.3, eyeFill:[0.86,0.85,0.82], noPink:true, ink:true, mouth:[0,1.2], mouthR:[0.05,0.03], mouthZ:9 };
+
+{ const q = new URLSearchParams(location.search); if (q.get('eyeR')) CFG.eyeR = q.get('eyeR').split(',').map(Number); if (q.get('eye')) CFG.eye = q.get('eye').split(',').map(Number); }
+const stage = document.getElementById('stage');
+const statusEl = document.getElementById('status');
+const loadingEl = document.getElementById('loading');
+const loopEl = document.getElementById('loopT');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb59a, 2.0));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3); scene.add(sun);
+const PARKS = makeParks(THREE, scene, 'adult-penguin'); PARKS.show('idle');
+const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 400);
+camera.position.set(0.6, 1.5, 6.6);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.95, 0.1); controls.enablePan = false; controls.enableDamping = true;
+controls.minDistance = 2.8; controls.maxDistance = 18; controls.maxPolarAngle = Math.PI * 0.8;
+let userCam = false; controls.addEventListener('start', () => { userCam = true; });
+
+const ground = new THREE.Mesh(new THREE.CircleGeometry(3.8, 64), new THREE.MeshLambertMaterial({color:0xcfe5c4}));
+AXQ(ground, 'x', -Math.PI/2); ground.material.depthWrite = false; ground.renderOrder = -2; scene.add(ground);
+function AXQ(o, a, ang){ o.quaternion.setFromAxisAngle(AX[a], ang); }
+const shCanvas = document.createElement('canvas'); shCanvas.width = shCanvas.height = 128;
+const sctx = shCanvas.getContext('2d'); const gr = sctx.createRadialGradient(64,64,4,64,64,62);
+gr.addColorStop(0,'rgba(30,50,35,0.45)'); gr.addColorStop(1,'rgba(30,50,35,0)'); sctx.fillStyle = gr; sctx.fillRect(0,0,128,128);
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.4,1.4), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shCanvas), transparent:true, depthWrite:false}));
+AXQ(shadow, 'x', -Math.PI/2); shadow.position.y = 0.003; shadow.renderOrder = -1; scene.add(shadow);
+
+const rig = new THREE.Group(); scene.add(rig);
+const glowU = {value:0}, calmU = {value:0}, flatEU = {value:0}, flatMU = {value:0}, lidU = {value:0}, happyU = {value:0}, sadU = {value:0};
+
+// ---------- floating symbols ----------
+function makeTex(draw){ const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); draw(g); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx; }
+const heartTex = makeTex(g => { g.translate(64, 66); g.beginPath(); g.moveTo(0, 40); g.bezierCurveTo(-64, -4, -36, -56, 0, -24); g.bezierCurveTo(36, -56, 64, -4, 0, 40); g.closePath(); g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ff6f8e'; g.fill(); });
+const zTex = makeTex(g => { g.font = '900 104px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.lineJoin = 'round'; g.strokeText('Z', 64, 68); g.fillStyle = '#5a6fa8'; g.fillText('Z', 64, 68); });
+const starTex = makeTex(g => { g.translate(64, 64); g.beginPath(); for (let i = 0; i < 10; i++){ const r = i % 2 ? 22 : 54, a = -Math.PI/2 + i*Math.PI/5; g.lineTo(Math.cos(a)*r, Math.sin(a)*r); } g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#f5c24a'; g.fill(); });
+const dustTex = makeTex(g => { g.beginPath(); g.arc(64, 64, 50, 0, TAU); g.fillStyle = '#e6dcc8'; g.fill(); });
+const dropTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -52); g.bezierCurveTo(22, -18, 40, 6, 40, 22); g.arc(0, 22, 40, 0, Math.PI); g.bezierCurveTo(-40, 6, -22, -18, 0, -52); g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#6fbfee'; g.fill(); });
+const noteTex = color => makeTex(g => { const shape = () => { g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.moveTo(62, 92); g.lineTo(62, 20); g.quadraticCurveTo(92, 34, 96, 62); };
+  g.lineJoin = 'round'; g.lineCap = 'round'; shape(); g.lineWidth = 20; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ffffff'; g.fill(); shape(); g.lineWidth = 9; g.strokeStyle = color; g.stroke(); g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.fillStyle = color; g.fill(); });
+const noteTexes = [noteTex('#f5a524'), noteTex('#2b7a4b')];
+const words = {};
+function wordTex(txt, col = '#e8584a'){
+  if (words[txt]) return words[txt];
+  const c = document.createElement('canvas'); c.width = 384; c.height = 160; const g = c.getContext('2d');
+  g.font = '900 96px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  let s = 96; while (g.measureText(txt).width > 340 && s > 40){ s -= 6; g.font = `900 ${s}px "Huninn","Noto Sans TC",sans-serif`; }
+  g.lineJoin = 'round'; g.lineWidth = 18; g.strokeStyle = '#ffffff'; g.strokeText(txt, 192, 84); g.fillStyle = col; g.fillText(txt, 192, 84);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return (words[txt] = tx);
+}
+const fx = [];
+function spawn(map, pos, vel, life, size, grow = 0, extra = null){
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map, transparent:true, depthWrite:false})); sp.position.copy(pos); sp.renderOrder = 5; scene.add(sp);
+  const f = Object.assign({sp, vel, life, size, grow, age:0}, extra || {}); fx.push(f); return f;
+}
+function updateFx(dt){
+  for (let i = fx.length - 1; i >= 0; i--){
+    const f = fx[i]; f.age += dt;
+    if (f.age > f.life){ scene.remove(f.sp); f.sp.material.dispose(); fx.splice(i, 1); continue; }
+    const u = f.age / f.life; if (f.gravity) f.vel.y += f.gravity * dt;
+    if (f.follow) f.sp.position.copy(f.follow(f.age)); else f.sp.position.addScaledVector(f.vel, dt);
+    const s = f.size * (Math.min(1, f.age/0.2)*0.4 + 0.6) * (1 + f.grow*u); f.sp.scale.set(s, s, s);
+    f.sp.material.opacity = Math.min(1, f.age/0.15) * (u > 0.6 ? 1 - (u-0.6)/0.4 : 1);
+  }
+}
+function clearFx(){ fx.forEach(f => { scene.remove(f.sp); f.sp.material.dispose(); }); fx.length = 0; }
+let wordSprite = null;
+function showWord(tex, pos, scale = 0.8){
+  if (wordSprite){ scene.remove(wordSprite); wordSprite.material.dispose(); }
+  wordSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: tex, transparent: true, depthWrite: false, depthTest: false}));
+  wordSprite.renderOrder = 9; wordSprite.position.copy(pos); wordSprite.userData.age = 0; wordSprite.userData.sc = scale; scene.add(wordSprite);
+}
+function updateWord(dt){
+  if (!wordSprite) return;
+  const a = (wordSprite.userData.age += dt), pop = a < 0.18 ? 0.6 + 2.6 * a : 1.07 - 0.07 * Math.min(1, (a - 0.18) / 0.15), k = wordSprite.userData.sc;
+  wordSprite.scale.set(k * pop, k * 0.5 * pop, 1); wordSprite.material.opacity = a > 1.2 ? Math.max(0, 1 - (a - 1.2) / 0.3) : 1;
+  if (a > 1.5){ scene.remove(wordSprite); wordSprite.material.dispose(); wordSprite = null; }
+}
+function resize(){ const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage); resize();
+// ---------- face prep: when an expression is drawn, the painted eye/mouth disappears into clean skin ----------
+// For each vertex on an eye or the mouth we store the skin colour of the surrounding ring, plus an offset and
+// a normal that sink the eye/mouth bump back onto the surrounding surface, so nothing looks like a closed lid.
+function prepFace(mesh, F){
+  const g = mesh.geometry, P = g.attributes.position, UV = g.attributes.uv, N = g.attributes.normal, n = P.count;
+  const img = mesh.material.map && mesh.material.map.image;
+  const W = img.width, H = img.height, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d', {willReadFrequently: true}); cx.drawImage(img, 0, 0); const px = cx.getImageData(0, 0, W, H).data;
+  const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const colOf = i => { const u = UV.getX(i), v = UV.getY(i);
+    const x = Math.min(W - 1, Math.max(0, Math.floor(((u % 1) + 1) % 1 * W))), y = Math.min(H - 1, Math.max(0, Math.floor(((v % 1) + 1) % 1 * H)));
+    const k = (y * W + x) * 4; return [lin(px[k]), lin(px[k + 1]), lin(px[k + 2])]; };
+  const OUT = F.eyeOut || 1.35, re = new Float32Array(n), rm = new Float32Array(n), cols = new Array(n);
+  for (let i = 0; i < n; i++){
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i), s = x < 0 ? -1 : 1;
+    re[i] = z > F.eyeZ ? Math.hypot((x - F.eye[0] * s) / F.eyeR[0], (y - F.eye[1]) / F.eyeR[1]) : 99;
+    rm[i] = z > F.mouthZ ? Math.hypot((x - F.mouth[0]) / F.mouthR[0], (y - F.mouth[1]) / F.mouthR[1]) : 99;
+    if (re[i] < OUT + 0.9 || rm[i] < 2.1) cols[i] = colOf(i);
+  }
+  const lum = c => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  const ringE = [], ringM = [];
+  for (let i = 0; i < n; i++){
+    if (re[i] > OUT - 0.1 && re[i] < OUT + 0.6 && lum(cols[i]) > 0.15) ringE.push(i);
+    else if (rm[i] > 1.25 && rm[i] < 2.0 && re[i] > 1.35 && lum(cols[i]) > 0.15) ringM.push(i);
+  }
+  // centre of the head from the skin ring around the eyes (least-squares sphere)
+  const M = Array.from({length: 4}, () => [0, 0, 0, 0, 0]);
+  for (const i of ringE){ const x = P.getX(i), y = P.getY(i), z = P.getZ(i), r = [2*x, 2*y, 2*z, 1], b = x*x + y*y + z*z;
+    for (let a = 0; a < 4; a++){ for (let c = 0; c < 4; c++) M[a][c] += r[a] * r[c]; M[a][4] += r[a] * b; } }
+  for (let a = 0; a < 4; a++){ let p = a; for (let r = a + 1; r < 4; r++) if (Math.abs(M[r][a]) > Math.abs(M[p][a])) p = r; [M[a], M[p]] = [M[p], M[a]];
+    for (let r = 0; r < 4; r++){ if (r === a) continue; const f = M[r][a] / M[a][a]; for (let c = a; c < 5; c++) M[r][c] -= f * M[a][c]; } }
+  const C = [M[0][4] / M[0][0], M[1][4] / M[1][1], M[2][4] / M[2][2]];
+  // eyes are filled with the dominant skin colour around each eye (keeps a clean, even patch)
+  const domE = F.eyeFill ? [F.eyeFill, F.eyeFill] : [-1, 1].map(sd => { const sel = ringE.filter(j => (P.getX(j) < 0 ? -1 : 1) === sd && P.getY(j) > F.eye[1] && re[j] < OUT + 0.3);   // upper half: forehead fur, away from snout and blush
+    return [0, 1, 2].map(k => { const v = sel.map(j => cols[j][k]).sort((a, b) => a - b); return v.length ? v[v.length >> 1] : 0.8; }); });
+  const aSkin = new Float32Array(n * 4), aFlat = new Float32Array(n * 4), aFlatN = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++){
+    aFlatN[i*3] = N.getX(i); aFlatN[i*3+1] = N.getY(i); aFlatN[i*3+2] = N.getZ(i);
+    const own = cols[i]; if (own){ aSkin[i*4] = own[0]; aSkin[i*4+1] = own[1]; aSkin[i*4+2] = own[2]; }
+    const pinkV = !F.noPink && cols[i] && cols[i][0] - cols[i][2] > 0.15 && cols[i][1] > 0.3;   // snout & blush stay as they are
+    const isE = re[i] < OUT && !pinkV, isM = !isE && rm[i] < 1.4;
+    if (!isE && !isM) continue;
+    const ring = isE ? ringE : ringM, r = isE ? re[i] : rm[i];
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+    const near = [];
+    for (const j of ring){ const d = Math.hypot(P.getX(j) - x, P.getY(j) - y, P.getZ(j) - z); if (near.length < 18 || d < near[near.length - 1][0]){ near.push([d, j]); near.sort((a, b) => a[0] - b[0]); if (near.length > 18) near.pop(); } }
+    if (!near.length) continue;
+    // colour: take ring samples lying in the same direction from the eye/mouth centre, so the skin pattern continues across
+    const sx = x < 0 ? -1 : 1, cxE = isE ? F.eye[0] * sx : F.mouth[0], cyE = isE ? F.eye[1] : F.mouth[1], rx = isE ? F.eyeR[0] : F.mouthR[0], ry = isE ? F.eyeR[1] : F.mouthR[1];
+    const ang = Math.atan2((y - cyE) / ry, (x - cxE) / rx), dirSet = [];
+    for (const j of ring){ const jx = P.getX(j), jy = P.getY(j); if (isE && (jx < 0) !== (x < 0)) continue;
+      let da = Math.abs(Math.atan2((jy - cyE) / ry, (jx - cxE) / rx) - ang); if (da > Math.PI) da = 2 * Math.PI - da;
+      if (da < 0.4) dirSet.push([Math.hypot(jx - x, jy - y, P.getZ(j) - z), j]); }
+    dirSet.sort((a, b) => a[0] - b[0]);
+    const pick = r < 0.6 || dirSet.length < 4 ? near : dirSet.slice(0, 8);   // the very middle blends from all around
+    const med = isE ? domE[x < 0 ? 0 : 1] : [0, 1, 2].map(k => { const v = pick.map(q => cols[q[1]][k]).sort((a, b) => a - b); return v[v.length >> 1]; });
+    let wsum = 0, rad = 0, nx = 0, ny = 0, nz = 0;
+    for (const [d, j] of near.slice(0, 10)){ const w = 1 / (d + 0.01); wsum += w;
+      rad += w * Math.hypot(P.getX(j) - C[0], P.getY(j) - C[1], P.getZ(j) - C[2]); nx += w * N.getX(j); ny += w * N.getY(j); nz += w * N.getZ(j); }
+    rad /= wsum; const nl = Math.hypot(nx, ny, nz) || 1;
+    const dx = x - C[0], dy = y - C[1], dz = z - C[2], dl = Math.hypot(dx, dy, dz) || 1;
+    const fade = isE ? 1 - Math.min(1, Math.max(0, (r - (OUT - 0.3)) / 0.3)) : 1 - Math.min(1, Math.max(0, (r - 1.05) / 0.3));
+    aSkin[i*4] = med[0]; aSkin[i*4+1] = med[1]; aSkin[i*4+2] = med[2]; aSkin[i*4+3] = fade;
+    aFlat[i*4] = C[0] + dx / dl * rad - x; aFlat[i*4+1] = C[1] + dy / dl * rad - y; aFlat[i*4+2] = C[2] + dz / dl * rad - z; aFlat[i*4+3] = isE ? 1 : 2;
+    aFlatN[i*3] = nx / nl; aFlatN[i*3+1] = ny / nl; aFlatN[i*3+2] = nz / nl;
+  }
+  g.setAttribute('aSkin', new THREE.BufferAttribute(aSkin, 4));
+  g.setAttribute('aFlat', new THREE.BufferAttribute(aFlat, 4));
+  g.setAttribute('aFlatN', new THREE.BufferAttribute(aFlatN, 3));
+}
+const FLAT_VS_HEAD = 'attribute vec4 aSkin;\nattribute vec4 aFlat;\nattribute vec3 aFlatN;\nuniform float uFlatE;\nuniform float uFlatM;\nvarying vec4 vSkin;\nvarying float vFlatW;\n';
+const FLAT_VS_NORMAL = `#include <beginnormal_vertex>
+  float flatW = (aFlat.w > 0.5 && aFlat.w < 1.5 ? uFlatE : (aFlat.w > 1.5 ? uFlatM : 0.0)) * aSkin.a;
+  objectNormal = normalize(mix(objectNormal, aFlatN, flatW));
+  vSkin = aSkin; vFlatW = flatW;`;
+
+// ---------- shader: blink / closed eyes, calm closed mouth, happy eyes, ear wobble ----------
+const f = x => Number(x).toFixed(4);
+const v2 = a => `vec2(${f(a[0])}, ${f(a[1])})`;
+const v3 = a => `vec3(${f(a[0])}, ${f(a[1])}, ${f(a[2])})`;
+function patch(m){ for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap']){ const tx = m[k]; if (tx){ tx.generateMipmaps = false; tx.minFilter = THREE.LinearFilter; tx.needsUpdate = true; } }   // 模型建立規則 4.6
+  
+  const c = CFG;
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, {uGlow:glowU, uFlatE:flatEU, uFlatM:flatMU, uLid:lidU, uCalm:calmU, uHappy:happyU, uSad:sadU});
+    sh.fragmentShader = 'uniform float uGlow;\nuniform float uLid;\nuniform float uCalm;\nuniform float uHappy;\nuniform float uSad;\nvarying vec3 vObj;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+      if (!gl_FrontFacing && vFlatW > 0.05) discard;
+      float coverM = 0.0;
+      float inkK = 0.0;
+      float eyeK = max(max(uLid, uHappy), uSad);
+      if (eyeK > 0.01 && vObj.z > ${f(c.eyeZ)}) {
+        float side = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 e = (vObj.xy - vec2(${f(c.eye[0])} * side, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        float r = length(e);
+        if (r < ${f((c.eyeOut || 1.35) + 0.15)} && (uHappy > 0.5 || uSad > 0.5 || e.y > ${f(c.eyeOut || 1.35)} * (1.0 - 2.0 * uLid))) {
+          coverM = smoothstep(${f((c.eyeOut || 1.35) + 0.15)}, ${f((c.eyeOut || 1.35) - 0.1)}, r)${c.noPink ? '' : ' * (1.0 - step(0.15, diffuseColor.r - diffuseColor.b) * step(0.3, diffuseColor.g))'};
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, coverM);
+          if (uHappy > 0.9) {
+            vec2 tip = vec2(0.0, 0.62), a1 = vec2(-0.92, -0.38), a2 = vec2(0.92, -0.38);
+            vec2 pa = e - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = e - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.2) { diffuseColor.rgb = vec3(0.045, 0.025, 0.03); inkK = 1.0; }
+          } else if (uSad > 0.9) {
+            // 難過：「> <」眼（2026-10-18 搖頭不吃）
+            vec2 q = vec2(-e.x * side, e.y), tip = vec2(0.42, 0.0), a1 = vec2(-0.5, 0.42), a2 = vec2(-0.5, -0.42);
+            vec2 pa = q - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = q - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.12) { diffuseColor.rgb = vec3(0.045, 0.025, 0.03); inkK = 1.0; }
+          } else if (uLid > 0.9 && abs(e.x) < 1.2) {
+            float yc = -0.12 - 0.56 * (1.0 - (e.x * e.x) / 1.44);
+            if (abs(e.y - yc) < 0.17) { diffuseColor.rgb = vec3(0.045, 0.025, 0.03); inkK = 1.0; }
+          }
+        }
+      }
+      float mouthK = max(uCalm, uSad);
+      if (mouthK > 0.01 && vObj.z > ${f(c.mouthZ)}) {
+        vec2 mo = (vObj.xy - ${v2(c.mouth)}) / ${v2(c.mouthR)};
+        float r = length(mo);
+        if (r < 1.2) {
+          float mm = smoothstep(1.2, 0.95, r) * mouthK;
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, mm);
+          coverM = max(coverM, mm);
+          vec2 q = (vObj.xy - vec2(0.0, ${f(c.mouth[1] + 0.01)})) / vec2(0.045, 0.02);
+          if (mouthK > 0.9 && abs(q.x) < 1.0) {
+            float yc = (uSad > 0.5 ? 0.6 : -0.6) * (1.0 - q.x * q.x);   // 難過時嘴角往下
+            if (abs(q.y - yc) < 0.38) diffuseColor.rgb = vec3(0.36, 0.2, 0.22);
+          }
+        }
+      }`).replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+      totalEmissiveRadiance += vec3(0.0) * inkK;
+      if (uGlow > 0.001 && vObj.z > ${f(c.eyeZ)}) {
+        float sideG = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 eg = (vObj.xy - vec2(${f(c.eye[0])} * sideG, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        float rg = length(eg), gmask = smoothstep(1.08, 0.86, rg) * uGlow;
+        float slit = smoothstep(0.2, 0.1, abs(eg.x) / (1.0 - 0.75 * eg.y * eg.y + 0.0001)) * step(abs(eg.y), 0.82);   /* cat slit pupil */
+        diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.55, 1.0, 0.62), vec3(0.05, 0.25, 0.1), slit), gmask);
+        totalEmissiveRadiance += vec3(0.35, 1.0, 0.55) * gmask * (1.0 - 0.85 * slit) * 1.6;
+        float halo = smoothstep(1.35, 1.0, rg) * (1.0 - smoothstep(1.0, 0.86, rg)) * uGlow;   /* soft glow on the rim */
+        totalEmissiveRadiance += vec3(0.25, 0.8, 0.4) * halo * 0.5;
+      }`).replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+          roughnessFactor = mix(roughnessFactor, 0.85, max(coverM, vFlatW));
+`).replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+          metalnessFactor = mix(metalnessFactor, 0.0, max(coverM, vFlatW));`).replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+      normal = normalize(mix(normal, nonPerturbedNormal, max(coverM, vFlatW)));`);
+    sh.vertexShader = FLAT_VS_HEAD + 'varying vec3 vObj;\n' + sh.vertexShader.replace('#include <beginnormal_vertex>', FLAT_VS_NORMAL).replace('#include <begin_vertex>', `#include <begin_vertex>
+      transformed += aFlat.xyz * flatW;
+      vObj = position;`);
+  };
+  m.customProgramCacheKey = () => 'penguinadult';
+  m.needsUpdate = true;
+}
+
+
+// ---------- skeleton helpers ----------
+let model = null; const bones = {}, rest = {}, restP = {};
+const _pq = new THREE.Quaternion(), _rq = new THREE.Quaternion(), _w = new THREE.Quaternion(), _l = new THREE.Quaternion();
+function resetPose(){ for (const n in bones){ bones[n].quaternion.copy(rest[n]); bones[n].position.copy(restP[n]); } }
+// rotate a bone about an axis in the character's own space (x = his left, y = up, z = forward)
+function rot(name, axis, ang){
+  const b = bones[name]; if (!b || !ang) return;
+  b.parent.updateWorldMatrix(true, false);
+  b.parent.getWorldQuaternion(_pq); model.getWorldQuaternion(_rq);
+  _pq.premultiply(_rq.invert());
+  _w.setFromAxisAngle(AX[axis], ang);
+  _l.copy(_pq).invert().multiply(_w).multiply(_pq);
+  b.quaternion.premultiply(_l).normalize();
+}
+function rotWorld(b, axis, ang){
+  b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pq);
+  _w.setFromAxisAngle(axis, ang); _l.copy(_pq).invert().multiply(_w).multiply(_pq); b.quaternion.premultiply(_l);
+}
+const FEET = ['LeftFoot','RightFoot','LeftToeBase','RightToeBase'];
+const _v = V3();
+function wpos(n, out = V3()){ return bones[n].getWorldPosition(out); }
+const tailR = {};
+function feetLow(){ let mn = Infinity; model.updateMatrixWorld(true); for (const n of FEET) mn = Math.min(mn, wpos(n, _v).y); for (const n in tailR) mn = Math.min(mn, wpos(n, _v).y - tailR[n]); return mn; }
+let restFeet = 0, skinned = null;
+const charPt = (x, y, z) => rig.localToWorld(V3(x, y, z));
+
+// ---------- tail (3 feather bones) and flipper wings ----------
+const TL = ['Tail01', 'Tail02', 'Tail03'];
+function tailSway(amp, t, spd = 1.7, curl = 0){ TL.forEach((n, i) => { rot(n, 'y', amp * 0.2 * Math.sin(t * spd - 0.7 * i)); if (curl) rot(n, 'x', curl * 0.15); }); }
+function tailBend(yaw, curl = 0){ TL.forEach(n => { rot(n, 'y', yaw / TL.length); if (curl) rot(n, 'x', curl / TL.length); }); }
+/* flipper: lift > 0 raises it from its hanging pose (shared over shoulder / arm / forearm); f > 0 swings it forward; tw twists it */
+let ARM_DROP = 0.5;
+function wingSet(sd, lift, f = 0, tw = 0){ const s = sd === 'Left' ? 1 : -1, a = lift - ARM_DROP;
+  rot(sd + 'Shoulder', 'z', s * a * 0.22); rot(sd + 'Arm', 'z', s * a * 0.5); rot(sd + 'ForeArm', 'z', s * a * 0.28);
+  if (f){ rot(sd + 'Shoulder', 'y', -s * f * 0.2); rot(sd + 'Arm', 'y', -s * f * 0.5); rot(sd + 'ForeArm', 'y', -s * f * 0.3); }
+  if (tw){ rot(sd + 'Arm', 'x', tw * 0.5); rot(sd + 'ForeArm', 'x', tw * 0.5); } }
+function wings(lift, f = 0, liftR = lift, fR = f, tw = 0, twR = tw){ wingSet('Left', lift, f, tw); wingSet('Right', liftR, fR, twR); }
+function clampTo(n, lim){ const b = bones[n]; if (!b) return; const a = b.quaternion.angleTo(rest[n]); if (a > lim){ _l.copy(rest[n]).slerp(b.quaternion, lim / a); b.quaternion.copy(_l); } }
+async function fetchModel(file){
+  const res = await fetch(file); if (!res.ok) throw new Error('fetch ' + res.status);
+  const j = await res.json(); const raw = atob(j._bin); delete j._bin;
+  const bin = new Uint8Array(raw.length); for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
+  delete j.buffers[0].uri; j.buffers[0].byteLength = bin.length;
+  const jb = new TextEncoder().encode(JSON.stringify(j)); const jLen = Math.ceil(jb.length/4)*4, bLen = Math.ceil(bin.length/4)*4;
+  const buf = new ArrayBuffer(28 + jLen + bLen), dv = new DataView(buf), u8 = new Uint8Array(buf);
+  dv.setUint32(0, 0x46546C67, true); dv.setUint32(4, 2, true); dv.setUint32(8, buf.byteLength, true);
+  dv.setUint32(12, jLen, true); dv.setUint32(16, 0x4E4F534A, true); u8.fill(0x20, 20, 20 + jLen); u8.set(jb, 20);
+  const o = 20 + jLen; dv.setUint32(o, bLen, true); dv.setUint32(o + 4, 0x004E4942, true); u8.set(bin, o + 8);
+  return new Promise((ok, fail) => new GLTFLoader().parse(buf, './', ok, fail));
+}
+
+// ---------- prop helpers ----------
+const mat = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({color: c, roughness: 0.75}, o));
+const SPH = new THREE.SphereGeometry(1, 20, 14), CYL = new THREE.CylinderGeometry(1, 1, 1, 14), CONE = new THREE.ConeGeometry(1, 1, 12), BOX = new THREE.BoxGeometry(1, 1, 1);
+function mesh(p, geo, m, pos, s){ const o = new THREE.Mesh(geo, m); o.position.set(...pos); if (Array.isArray(s)) o.scale.set(...s); else o.scale.setScalar(s); p.add(o); return o; }
+function placeStick(o, A, B, r){ const d = _d1.subVectors(B, A); const L = d.length() || 1e-4; o.position.copy(A).addScaledVector(d, 0.5); o.scale.set(r, L, r); o.quaternion.setFromUnitVectors(AX.y, d.multiplyScalar(1 / L)); }
+const _d1 = V3();
+function stick(p, a, b, r, m){ const o = new THREE.Mesh(CYL, m); placeStick(o, V3(...a), V3(...b), r); p.add(o); return o; }
+const ease = x => x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const span = (t, a, b) => clamp01((t - a) / (b - a));
+const bell = x => Math.sin(Math.PI * clamp01(x));
+const backOut = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, t) => a + (b - a) * t;
+const glowTexB = makeTex(g => { const r = g.createRadialGradient(64, 64, 2, 64, 64, 62); r.addColorStop(0, 'rgba(255,255,255,0.9)'); r.addColorStop(0.35, 'rgba(190,225,255,0.45)'); r.addColorStop(1, 'rgba(160,200,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+const popS = (T, a, b, c, d) => Math.max(0.001, backOut(span(T, a, b)) * (1 - ease(span(T, c, d))));
+const _bp = V3();
+const sparkTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -56); g.quadraticCurveTo(6, -6, 56, 0); g.quadraticCurveTo(6, 6, 0, 56); g.quadraticCurveTo(-6, 6, -56, 0); g.quadraticCurveTo(-6, -6, 0, -56); g.closePath(); g.fillStyle = '#fff6b8'; g.fill(); g.lineWidth = 6; g.strokeStyle = '#ffffff'; g.stroke(); });
+const tearTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -46); g.bezierCurveTo(26, -10, 38, 10, 38, 24); g.arc(0, 24, 38, 0, Math.PI); g.bezierCurveTo(-38, 10, -26, -10, 0, -46); g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#7ec8f5'; g.fill(); });
+
+// the cow baby (real 3D model, rigid), same loader as the other adult pages
+function makeBaby(file, H){
+  const B = {root: new THREE.Group(), body: new THREE.Group(), ready: false}; B.root.add(B.body); B.root.visible = false; scene.add(B.root);
+  fetchModel(file).then(gl => {
+    const m = gl.scene; m.scale.setScalar(H / 1.89); m.position.y = 0.945 * H / 1.89;
+    m.traverse(o => { if (o.isMesh){ o.frustumCulled = false; (Array.isArray(o.material) ? o.material : [o.material]).forEach(mm => { mm.roughness = Math.max(mm.roughness || 0, 0.7); mm.metalness = 0; }); } });
+    B.body.add(m); m.updateMatrixWorld(true); { const bb = new THREE.Box3().setFromObject(m); m.position.y -= bb.min.y; }
+    B.sh = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), new THREE.MeshBasicMaterial({map: shadow.material.map, transparent: true, depthWrite: false})); AXQ(B.sh, 'x', -Math.PI / 2); B.sh.position.y = 0.004; B.sh.renderOrder = -1; scene.add(B.sh); B.ready = true;
+  }).catch(err => console.error(file, err));
+  return B;
+}
+
+// =====================================================================================================
+// props for the three talents: boats, telescope, stars, babies with sailor caps, the crew wagon-ship
+// =====================================================================================================
+const RAB = makeBaby('rabbitbaby_model.json', 0.72), COW = makeBaby('cow_model.json', 0.76);
+function placeBaby(B, s){
+  if (!B.ready) return;
+  B.root.position.set(s.x, s.y, s.z); QYXZ(B.root.quaternion, s.yaw, s.pitch || 0, s.roll || 0);
+  B.body.scale.set(1 / Math.sqrt(s.sq || 1), s.sq || 1, 1 / Math.sqrt(s.sq || 1));
+  B.sh.visible = s.y < 0.06 && s.shadow !== false; B.sh.position.set(s.x, 0.004, s.z); B.sh.scale.setScalar(0.9 - 0.4 * Math.min(1, s.y / 0.06));
+}
+/* a small white sailor cap that sits on a baby's head (child of the baby's body group, so it follows every hop) */
+function makeCap(){
+  const g = new THREE.Group(), wh = mat(0xffffff, {roughness: 0.9}), nv = mat(0x1f2f5a, {roughness: 0.9});
+  mesh(g, SPH, wh, [0, 0.03, 0], [0.15, 0.065, 0.15]); mesh(g, CYL, nv, [0, -0.02, 0], [0.145, 0.03, 0.145]); const br = mesh(g, SPH, nv, [0, -0.03, 0.12], [0.07, 0.012, 0.05]); mesh(g, SPH, mat(0xf2c14e), [0, 0.035, 0.145], 0.018);
+  g.visible = false; return g;
+}
+const CAPS = [RAB, COW].map(B => { const c = makeCap(); B.body.add(c); return c; });
+const CAP_Y = {rab: 0.6, cow: 0.6};
+// ---- hollow lens-shaped hull: forward is +z, the floor top is at y = 0.05 ----
+function lensShape(L, W, n = 40){ const sh = new THREE.Shape(); const f = x => W * Math.pow(Math.max(0, 1 - (x / L) * (x / L)), 0.8);
+  for (let i = 0; i <= n; i++){ const x = -L + 2 * L * i / n, y = f(x); i ? sh.lineTo(x, y) : sh.moveTo(x, y); }
+  for (let i = n; i >= 0; i--){ const x = -L + 2 * L * i / n; sh.lineTo(x, -f(x)); } return sh; }
+function makeHull(L, W, wallH, thick, cWall, cFloor){
+  const g = new THREE.Group(), outer = lensShape(L, W); outer.holes.push(lensShape(L - thick * 1.6, W - thick));
+  const geoW = new THREE.ExtrudeGeometry(outer, {depth: wallH, bevelEnabled: false, curveSegments: 1}); geoW.rotateX(-Math.PI / 2); geoW.rotateY(-Math.PI / 2);
+  const geoF = new THREE.ExtrudeGeometry(lensShape(L - thick * 0.8, W - thick * 0.5), {depth: 0.05, bevelEnabled: false, curveSegments: 1}); geoF.rotateX(-Math.PI / 2); geoF.rotateY(-Math.PI / 2);
+  g.add(new THREE.Mesh(geoW, mat(cWall, {roughness: 0.7, side: THREE.DoubleSide}))); g.add(new THREE.Mesh(geoF, mat(cFloor, {roughness: 0.9})));
+  return g;
+}
+// ---- the small wooden boat of 星空導航 ----
+const boatG = new THREE.Group(); boatG.visible = false; scene.add(boatG);
+{ const h = makeHull(1.0, 0.46, 0.34, 0.06, 0x9a6a3e, 0x7a5030); boatG.add(h);
+  mesh(boatG, BOX, mat(0x8a5a30), [0, 0.2, -0.12], [0.8, 0.045, 0.26]);   /* the seat plank */
+  mesh(boatG, BOX, mat(0xe8584a), [0, 0.25, 0.97], [0.04, 0.4, 0.04]); mesh(boatG, BOX, mat(0xe8584a), [0.07, 0.4, 0.97], [0.14, 0.09, 0.012]);   /* bow flag */
+  for (const sx of [-1, 1]) mesh(boatG, SPH, mat(0x3a2a20), [sx * 0.43, 0.3, 0.1], [0.03, 0.03, 0.05]);   /* oar locks */
+}
+const gangG = new THREE.Group(); gangG.visible = false; scene.add(gangG);
+// ---- the swan paddle boat ----
+const swanG = new THREE.Group(); swanG.visible = false; scene.add(swanG);
+const swanNeck = new THREE.Group(); swanG.add(swanNeck);
+{ const h = makeHull(1.2, 0.58, 0.4, 0.07, 0xffffff, 0xf3e6c4); swanG.add(h);
+  mesh(swanG, BOX, mat(0xf6c445), [0, 0.12, 0], [1.15, 0.05, 0.12]);                                  /* a yellow stripe on the floor */
+  mesh(swanG, BOX, mat(0xf2e6c8), [0, 0.2, -0.18], [0.85, 0.045, 0.26]);                               /* seat */
+  const wm = mat(0xffffff, {roughness: 0.6}); for (const sx of [-1, 1]){ const w = mesh(swanG, SPH, wm, [sx * 0.55, 0.38, -0.3], [0.1, 0.22, 0.52]); w.rotation.z = -sx * 0.45; w.rotation.x = -0.25; }
+  const tail = mesh(swanG, CONE, wm, [0, 0.55, -1.05], [0.13, 0.5, 0.13]); tail.rotation.x = -0.9;
+  const pts = [[0, 0.3, 1.05], [0, 0.5, 1.4], [0, 0.95, 1.5], [0, 1.3, 1.35], [0, 1.42, 1.2]].map(p => V3(...p));
+  const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.1, 10), wm); swanNeck.add(tube);
+  const head = new THREE.Group(); head.position.set(0, 1.45, 1.18); swanNeck.add(head);
+  mesh(head, SPH, wm, [0, 0, 0], 0.15); const bk = mesh(head, CONE, mat(0xe86a3a, {roughness: 0.6}), [0, -0.03, 0.17], [0.06, 0.2, 0.06]); bk.rotation.x = Math.PI / 2 + 0.25;
+  for (const sx of [-1, 1]) mesh(head, SPH, mat(0x101216), [sx * 0.08, 0.04, 0.1], 0.028);
+  swanNeck.userData.head = head; }
+// ---- ripples under the boats ----
+const ripples = [0, 1].map(i => { const m = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.0, 48), new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false})); AXQ(m, 'x', -Math.PI / 2); m.visible = false; m.renderOrder = 2; scene.add(m); return m; });
+// ---- telescope ----
+const scopeG = new THREE.Group(); scopeG.visible = false; scene.add(scopeG);
+{ const br = mat(0xc99a3c, {roughness: 0.35, metalness: 0.6}), nv = mat(0x1f2f5a, {roughness: 0.6});
+  const a = mesh(scopeG, CYL, br, [0, 0, 0], [0.04, 0.5, 0.04]); a.rotation.x = Math.PI / 2;
+  const b = mesh(scopeG, CYL, nv, [0, 0, 0.3], [0.058, 0.2, 0.058]); b.rotation.x = Math.PI / 2;
+  const c = mesh(scopeG, CYL, br, [0, 0, -0.3], [0.03, 0.1, 0.03]); c.rotation.x = Math.PI / 2;
+  const lens = mesh(scopeG, SPH, mat(0x9fd8f5, {roughness: 0.1}), [0, 0, 0.405], [0.05, 0.05, 0.012]); }
+// ---- the Big Dipper and the pole star ----
+const DIP = [[0, 0], [1.0, 0.05], [1.05, 0.65], [0.05, 0.8], [1.65, 0.9], [2.3, 0.75], [3.0, 0.35]];   /* Merak, Phecda, Megrez, Dubhe, Alioth, Mizar, Alkaid */
+const DIP_LINES = [[0, 1], [1, 2], [2, 3], [3, 0], [2, 4], [4, 5], [5, 6]];
+const SKY_R = 60, SKY_AZ = -0.74, SKY_EL = 0.46, SKY_U = 0.072, SKY_O = V3(-1.0, 1.3, 0.0);   /* the sky is far away: a sphere of 60 m around the boat; azimuth is measured from -z towards -x, elevation above the horizon */
+const skyDir = (az, el) => V3(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el));
+const skyPos = (az, el) => skyDir(az, el).multiplyScalar(SKY_R).add(SKY_O);
+const dipPos = DIP.map(([x, y]) => skyPos(SKY_AZ + x * SKY_U / Math.cos(SKY_EL), SKY_EL + y * SKY_U));
+const polePos = skyPos(SKY_AZ + 0.02, SKY_EL + 0.8 * SKY_U + 2.5 * SKY_U);
+const SKY_YAW = Math.atan2(skyDir(SKY_AZ, SKY_EL).x, skyDir(SKY_AZ, SKY_EL).z);
+const starG = new THREE.Group(); starG.visible = false; scene.add(starG);
+const starSprites = [...dipPos, polePos].map((p, i) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({map: starTex, transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0})); s.position.copy(p); s.renderOrder = 7; s.scale.setScalar(0.001); starG.add(s);
+  const gl = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTexB, transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false, opacity: 0})); gl.position.copy(p); gl.renderOrder = 6; gl.scale.setScalar(0.001); starG.add(gl); return {s, gl, p}; });
+const starLines = DIP_LINES.map(([a, b]) => { const g = new THREE.BufferGeometry().setFromPoints([dipPos[a], dipPos[b]]); const l = new THREE.Line(g, new THREE.LineBasicMaterial({color: 0xfff2b0, transparent: true, opacity: 0, depthTest: false, fog: false})); l.renderOrder = 6; starG.add(l); return l; });
+const poleLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([dipPos[0], dipPos[3], polePos]), new THREE.LineDashedMaterial({color: 0x9fe0ff, dashSize: 0.9, gapSize: 0.6, transparent: true, opacity: 0, depthTest: false, fog: false})); poleLine.computeLineDistances(); poleLine.renderOrder = 6; starG.add(poleLine);
+const twinkle = []; for (let i = 0; i < 30; i++){ const s = new THREE.Sprite(new THREE.SpriteMaterial({map: starTex, transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0})); s.position.copy(skyPos(-1.3 + Math.random() * 1.15, 0.15 + Math.random() * 0.95).multiplyScalar(1.02)); s.renderOrder = 5; s.scale.setScalar(0.001); starG.add(s); twinkle.push({s, ph: Math.random() * TAU, t0: 7.6 + Math.random() * 3.4, sz: SKY_R * (0.0045 + Math.random() * 0.005)}); }
+// ---- the crew wagon-ship: wooden hull on four wheels, a mast with a sail, a ship's wheel at the stern ----
+const shipG = new THREE.Group(); shipG.visible = false; scene.add(shipG);
+const SHIP = {floor: 0.2, helm: 0.3};   /* the captain stands on a raised stern deck (floor + helm), higher than the babies */
+{ const hl = makeHull(1.5, 0.62, 0.32, 0.07, 0xa66b3a, 0x8a5a30); hl.position.y = 0.15; shipG.add(hl);
+  mesh(shipG, BOX, mat(0xe8584a), [0, 0.22, 0.2], [1.2, 0.02, 0.1]);
+  const wm = mat(0x5a3a22, {roughness: 0.9}); for (const [x, z] of [[0.52, 0.8], [-0.52, 0.8], [0.52, -0.8], [-0.52, -0.8]]){ const w = mesh(shipG, CYL, wm, [x, 0.17, z], [0.17, 0.08, 0.17]); w.rotation.z = Math.PI / 2; }
+  /* raised helm deck at the stern */
+  mesh(shipG, BOX, mat(0x8a5a30), [0, 0.2 + SHIP.helm / 2 - 0.02, -0.95], [1.0, SHIP.helm, 0.9]); mesh(shipG, BOX, mat(0x9a6a3e), [0, 0.2 + SHIP.helm, -0.95], [1.04, 0.03, 0.94]);
+  mesh(shipG, CYL, mat(0x7a5030), [0, 1.3, -0.12], [0.035, 2.2, 0.035]);   /* the mast stands midships */
+  const sail = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.95), new THREE.MeshStandardMaterial({color: 0xffffff, side: THREE.DoubleSide, roughness: 0.9})); sail.position.set(0, 1.78, 0.4); sail.rotation.y = Math.PI / 2; shipG.add(sail); shipG.userData.sail = sail;   /* its lower edge is 1.3 m up, above the babies */
+  mesh(shipG, BOX, mat(0xe8584a), [0, 2.34, -0.02], [0.02, 0.18, 0.32]);
+  const post = mesh(shipG, CYL, mat(0x7a5030), [0, 0.2 + SHIP.helm + 0.34, -0.6], [0.03, 0.62, 0.03]);
+  const wheel = new THREE.Group(); wheel.position.set(0, 0.2 + SHIP.helm + 0.78, -0.6); shipG.add(wheel);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.03, 8, 20), mat(0x6a4426)); wheel.add(ring); shipG.userData.wheel = wheel;
+  for (let i = 0; i < 4; i++){ const sp = mesh(wheel, CYL, mat(0x6a4426), [0, 0, 0], [0.012, 0.4, 0.012]); sp.rotation.z = i * Math.PI / 4; }
+  mesh(shipG, SPH, mat(0xf6c445), [0, 0.45, 1.5], [0.07, 0.07, 0.07]); }
+// ---------- motions ----------
+const names = {idle:'待機', star:'星空導航', swan:'踩踩天鵝船', crew:'小小船員出航', sleep:'睡覺', eat:'開心吃', snack:'最愛點心', refuse:'搖頭不吃'};
+const LEN = {idle:8, star:12.8, swan:12.8, crew:12.8, sleep:8, eat:6, snack:7, refuse:5};
+let move = 'idle', t0 = performance.now()/1000, frozen = null, gY = 0, __dE = 0.016;
+const hitT = (T, X) => T >= X && T - __dE < X;
+let __hold = 0; const EMBED = new URLSearchParams(location.search).get('embed') === '1';   // 才藝、餵食播一次：停在最後一格約 1 秒再回待機（App 裡只停住，由 App 切回待機）
+const blinkAt = (t, off = 0) => { const b = ((t + off) % 4.6) / 0.2; return b < 1 ? Math.sin(Math.PI * b) : 0; };
+const wrapA = a => Math.atan2(Math.sin(a), Math.cos(a));
+const angLerp = (a, b, u) => a + wrapA(b - a) * u;
+const hp = x => (x > 0.1 ? 1 : 0);
+const ss = x => { x = clamp01(x); return x * x * (3 - 2 * x); };
+const trap = (u, a = 0.2) => { u = clamp01(u); return u < a ? u * u / (2 * a * (1 - a)) : u > 1 - a ? 1 - (1 - u) * (1 - u) / (2 * a * (1 - a)) : (u - a / 2) / (1 - a); };
+function place(p){
+  for (const n of [...TL, 'Head', 'neck', 'Spine', 'Spine01', 'Spine02']) clampTo(n, 0.5);
+  QYXZ(rig.quaternion, p.ry, p.pitch, p.roll);
+  rig.position.set(p.x, (p.yAbs != null ? p.yAbs : gY) + (p.surf == null ? p.hop : 0), p.z);
+  rig.scale.set(1 / Math.sqrt(p.sy), p.sy, 1 / Math.sqrt(p.sy)); rig.updateMatrixWorld(true);
+}
+/* waddle: phase in radians (advance it by distance so the feet never slide). returns the wing swing -1..1 */
+function sWalk(ph, amt, p){
+  if (amt <= 0) return 0;
+  const s = Math.sin(ph);
+  rot('LeftUpLeg', 'x', -0.38 * amt * s); rot('RightUpLeg', 'x', 0.38 * amt * s);
+  rot('LeftLeg', 'x', 0.5 * amt * Math.max(0, -s)); rot('RightLeg', 'x', 0.5 * amt * Math.max(0, s));
+  rot('LeftFoot', 'x', 0.3 * amt * s - 0.3 * amt * Math.max(0, -s)); rot('RightFoot', 'x', -0.3 * amt * s - 0.3 * amt * Math.max(0, s));
+  rot('Spine02', 'y', 0.05 * amt * s); rot('Head', 'y', -0.04 * amt * s); tailBend(0.3 * amt * Math.sin(ph + 0.8), 0.05 * amt * Math.cos(2 * ph));
+  p.roll += 0.07 * amt * s;
+  return s * amt;
+}
+/* sitting on a bench: thighs forward, shins down */
+function sit(k){ for (const sd of ['Left', 'Right']){ rot(sd + 'UpLeg', 'x', -1.3 * k); rot(sd + 'Leg', 'x', 1.25 * k); rot(sd + 'Foot', 'x', 0.05 * k); } }
+function headTurn(yaw, pitch = 0){ rot('neck', 'y', yaw * 0.4); rot('Head', 'y', yaw * 0.6); rot('neck', 'x', pitch * 0.4); rot('Head', 'x', pitch * 0.6); }
+function life(p, t, k = 1){
+  const br = Math.sin(TAU * t / 3.6);
+  rot('Spine02', 'x', 0.012 * br * k); rot('Spine01', 'x', 0.012 * br * k);
+  rot('Head', 'y', 0.1 * Math.sin(t * 0.55) * k); rot('Head', 'x', 0.03 * Math.sin(t * 0.9) * k);
+  tailSway(0.4 * k, t, 1.3);
+  p.lid = Math.max(p.lid, blinkAt(t));
+}
+const fwdOf = ry => V3(Math.sin(ry), 0, Math.cos(ry));
+
+function poseIdle(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  life(p, t);
+  headTurn(0.35 * Math.sin(t * 0.45));
+  const wv = bell(span(T, 3.4, 5.2));
+  wings(0.1, 0, 0.1 + 1.6 * wv, 0.3 * wv, 0, 0.4 * Math.sin(t * 9) * wv);
+  if (wv > 0.1) p.happy = ((wv) > 0.1 ? 1 : 0);
+  p.ry = 0.1; place(p);
+}
+function poseSleep(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const br = Math.sin(TAU * t / 4.4);
+  rot('Head', 'x', 0.45 + 0.02 * br); rot('neck', 'x', 0.4); spineLean(0.1 + 0.02 * br); wings(-0.15, 0); tailSway(0.1, t, 0.8);
+  p.ry = 0.2; p.lid = 1; place(p);
+}
+function spineLean(a){ rot('Spine02', 'x', a * 0.4); rot('Spine01', 'x', a * 0.35); rot('Spine', 'x', a * 0.25); }
+
+// =====================================================================================================
+// boarding helpers shared by 星空導航 and 踩踩天鵝船 (a pond, a bank, a plank, a boat that faces -x)
+// =====================================================================================================
+const BANK_Z = 1.2, BOAT_C = V3(-1.0, 0, 0.0), PLANK = {x: -1.0, z0: 1.25, z1: 0.5, y: 0.1};
+const boatBob = T => 0.012 * Math.sin(T * 2.2);
+
+// =====================================================================================================
+// 1. 星空導航
+// =====================================================================================================
+const ST = {w1:[0.1, 2.0], turn:[2.0, 2.4], w2:[2.4, 3.5], hop:[3.5, 4.2], face:[4.2, 4.8], up:[4.6, 5.6], scan:[5.6, 7.1], down:[6.9, 7.5], point:[7.3, 11.2], fin:[11.0, 12.8]};
+const S_X0 = -2.9, S_Z0 = 1.75, S_SEAT = V3(-0.95, 0, -0.12), S_SKYYAW = SKY_YAW;
+const starState = T => {
+  const s = {x: S_X0, z: S_Z0, ry: Math.PI / 2, floor: 0, hop: 0, walk: 0, dist: 0, sit: 0};
+  if (T < ST.w1[1]){ const u = trap(span(T, ...ST.w1)); s.x = lerp(S_X0, -1.0, u); s.dist = s.x - S_X0; s.walk = T > ST.w1[0] ? 1 : 0; }
+  else if (T < ST.w2[0]){ s.x = -1.0; s.dist = 2.0; s.ry = angLerp(Math.PI / 2, Math.PI, ease(span(T, ...ST.turn))); }
+  else if (T < ST.hop[0]){ const u = trap(span(T, ...ST.w2)); s.x = -1.0; s.z = lerp(S_Z0, 0.62, u); s.ry = Math.PI; s.dist = 2.0 + (S_Z0 - s.z); s.walk = 1; s.floor = PLANK.y * ss((1.3 - s.z) / 0.2); }
+  else { const u = ease(span(T, ...ST.hop)), tr = span(T, ...ST.hop);
+    s.x = lerp(-1.0, S_SEAT.x, u); s.z = lerp(0.62, S_SEAT.z, u); s.floor = lerp(PLANK.y, 0.07, ss((tr - 0.3) / 0.7)); s.hop = 0.38 * bell(tr);
+    s.ry = angLerp(Math.PI, S_SKYYAW, ease(span(T, 3.9, 4.8))); s.sit = ease(span(T, 3.9, 4.4)); s.dist = 3.2 + (T < ST.hop[1] ? 0 : 0); }
+  if (T >= ST.hop[1]){ s.floor = 0.07 + boatBob(T); s.sit = ease(span(T, 3.9, 4.4)); s.x = S_SEAT.x; s.z = S_SEAT.z; s.ry = angLerp(Math.PI, S_SKYYAW, ease(span(T, 3.9, 4.8))); s.walk = 0; }
+  return s;
+};
+const _sg = V3();
+const gazeNow = () => { bones.Head.updateWorldMatrix(true, false); const b = beakLocal.clone().applyMatrix4(bones.Head.matrixWorld); const c = bones.Head.getWorldPosition(V3()).add(V3(0, 0.14, 0)); return {pos: b, dir: b.clone().sub(c).normalize()}; };
+function poseStar(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const s = starState(T);
+  p.x = s.x; p.z = s.z; p.ry = s.ry; p.floor = s.floor; p.hop = s.hop;
+  const wam = s.walk ? ease(span(T, 0.1, 0.4)) * (T < ST.w1[1] ? 1 : 1) : 0;
+  const walkAmt = (T < ST.hop[0] - 0.05 ? 1 : 0) * (T > 0.1 ? 1 : 0) * (T > ST.w1[1] && T < ST.w2[0] ? 0 : 1);
+  const amt = Math.min(ease(span(T, 0.1, 0.35)) * (1 - ease(span(T, 1.8, 2.0))), 1) + Math.min(ease(span(T, 2.4, 2.6)) * (1 - ease(span(T, 3.3, 3.5))), 1);
+  const sw = sWalk(s.dist * (TAU / 0.7), Math.min(1, amt), p);
+  life(p, t, 0.6);
+  sit(s.sit);
+  /* telescope up, a scan across the sky, then lower it and point with one flipper */
+  const up = ease(span(T, ...ST.up)) * (1 - ease(span(T, ...ST.down)));
+  const pt = ease(span(T, 7.3, 8.0)) * (1 - ease(span(T, 11.0, 11.6)));
+  const scan = ease(span(T, ...ST.scan));
+  rot('Head', 'x', -0.5 * up); rot('neck', 'x', -0.3 * up); spineLean(-0.22 * up);
+  headTurn(0.55 * Math.sin(scan * Math.PI * 2) * up * 0.0 + (-0.35 + 0.8 * scan) * up);
+  headTurn(0, -0.2 * pt);
+  wings(0.1 + 1.7 * up + 1.7 * pt + 0.2 * sw, 1.1 * up + 0.2 * pt - 0.3 * sw, 0.1 + 1.7 * up - 0.2 * sw, 1.1 * up + 0.3 * sw, 0, 0);
+  p.glow = pt * 0.0;
+  p.happy = hp(ease(span(T, 10.4, 11.0))) * (T < 12.8 ? 1 : 0) + hp(bell(span(T, 7.2, 7.8)));
+  const celeb = ease(span(T, ...ST.fin));
+  if (celeb > 0){ rot('Head', 'z', 0.1 * Math.sin(T * 7) * celeb); }
+  if (hitT(T, 1.0)) p.events.push('hum'); if (hitT(T, 3.8)) p.events.push('hup'); if (hitT(T, 5.0)) p.events.push('scope'); if (hitT(T, 7.2)) p.events.push('look'); if (hitT(T, 7.9)) p.events.push('there');
+  if (hitT(T, 10.2)) p.events.push('dipper'); if (hitT(T, 10.9)) p.events.push('pole'); if (hitT(T, 11.6)) p.events.push('yay');
+  place(p);
+}
+
+// =====================================================================================================
+// 2. 踩踩天鵝船
+// =====================================================================================================
+const SW = {c: V3(-1.0, 0, -2.55), rx: 1.5, rz: 2.6, s: 0.8};
+const SWT = {w1:[0.1, 0.9], turn:[0.9, 1.25], w2:[1.25, 1.95], hop:[1.95, 2.55], sail:[2.7, 10.8], out:[10.8, 11.4], w3:[11.4, 12.2], bow:[12.2, 12.8]};
+const SWAN_RAB = V3(-1.9, 0, -7.9), SWAN_COW = V3(-0.2, 0, -7.9), SWAN_MID = (SWT.sail[0] + SWT.sail[1]) / 2;
+const swanPose = T => {  /* boat position, heading, and the pedal phase */
+  if (T < SWT.sail[0] || T >= SWT.sail[1]) return {x: SW.c.x, z: SW.c.z + SW.rz, yaw: -Math.PI / 2, ph: 0, v: 0};
+  const u = trap(span(T, ...SWT.sail), 0.16), th = Math.PI / 2 + TAU * u;
+  const x = SW.c.x + SW.rx * Math.cos(th), z = SW.c.z + SW.rz * Math.sin(th);
+  const vx = -SW.rx * Math.sin(th), vz = SW.rz * Math.cos(th);
+  return {x, z, yaw: Math.atan2(vx, vz), ph: u * 42, v: 1};
+};
+const swanBob = T => 0.014 * Math.sin(T * 2.4);
+function poseSwan(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const sp = swanPose(T), sx = -1.0, X0 = -1.8, Z0 = 1.6;
+  let x, z, ry, floor, hop = 0, sitK = 0, walkAmt = 0, dist = 0;
+  if (T < SWT.hop[0]){
+    ry = Math.PI / 2; x = X0; z = Z0; floor = 0;
+    if (T < SWT.turn[0]){ const u = trap(span(T, ...SWT.w1)); x = lerp(X0, sx, u); dist = x - X0; walkAmt = ease(span(T, 0.1, 0.25)) * (1 - ease(span(T, 0.8, 0.9))); }
+    else if (T < SWT.w2[0]){ x = sx; dist = sx - X0; ry = angLerp(Math.PI / 2, Math.PI, ease(span(T, ...SWT.turn))); }
+    else { const u = trap(span(T, ...SWT.w2)); x = sx; z = lerp(Z0, 0.66, u); ry = Math.PI; dist = (sx - X0) + (Z0 - z); walkAmt = ease(span(T, 1.25, 1.4)) * (1 - ease(span(T, 1.8, 1.95))); floor = PLANK.y * ss((1.3 - z) / 0.2); }
+  } else if (T < SWT.sail[1]){
+    const tr = span(T, ...SWT.hop);
+    x = lerp(sx, sp.x, ease(tr)); z = lerp(0.66, sp.z, ease(tr));
+    floor = lerp(PLANK.y, 0.07 + swanBob(T), ss((tr - 0.3) / 0.7)); hop = 0.38 * bell(tr); sitK = ease(span(T, 2.1, 2.7));
+    ry = angLerp(Math.PI, sp.yaw, ease(span(T, 2.0, 2.6)));
+    if (T >= SWT.hop[1]){ floor = 0.07 + swanBob(T); x = sp.x - Math.sin(sp.yaw) * 0.08; z = sp.z - Math.cos(sp.yaw) * 0.08; ry = sp.yaw; sitK = 1; hop = 0; }
+  } else if (T < SWT.w3[0]){
+    const tr = span(T, ...SWT.out), u = ease(tr);
+    x = lerp(SW.c.x, sx, u); z = lerp(SW.c.z + SW.rz, 0.66, u); ry = angLerp(-Math.PI / 2, 0, ease(span(T, SWT.out[0], SWT.out[0] + 0.5)));
+    floor = lerp(0.07 + swanBob(T), PLANK.y, ss((tr - 0.4) / 0.6)); hop = 0.38 * bell(tr); sitK = 1 - ease(span(T, SWT.out[0] + 0.05, SWT.out[0] + 0.5));
+  } else { const u = trap(span(T, ...SWT.w3)); x = sx; z = lerp(0.66, 1.6, u); ry = 0; dist = (z - 0.66); walkAmt = ease(span(T, SWT.w3[0], SWT.w3[0] + 0.15)) * (1 - ease(span(T, SWT.w3[1] - 0.15, SWT.w3[1]))); floor = PLANK.y * ss((1.3 - z) / 0.2); }
+  p.x = x; p.z = z; p.ry = ry; p.floor = floor; p.hop = hop;
+  sWalk(dist * (TAU / 0.7), walkAmt, p);
+  life(p, t, 0.6); sit(sitK);
+  /* pedalling: the thighs rock one after the other */
+  const ped = ease(span(T, SWT.sail[0] + 0.2, SWT.sail[0] + 0.7)) * (1 - ease(span(T, SWT.sail[1] - 0.5, SWT.sail[1] - 0.1))) * (T >= SWT.hop[1] && T < SWT.out[0] ? 1 : 0), pf = sp.ph;
+  const pa = 0.38 * ped * Math.sin(pf), pb = 0.38 * ped * Math.sin(pf + Math.PI);
+  rot('LeftUpLeg', 'x', pa); rot('RightUpLeg', 'x', pb); rot('LeftLeg', 'x', -pa * 0.9); rot('RightLeg', 'x', -pb * 0.9); rot('LeftFoot', 'x', pa * 0.3); rot('RightFoot', 'x', pb * 0.3);
+  /* at the far end of the lake the babies stand on the shore: turn the head to them and wave the flipper on that side */
+  const wv = bell(span(T, SWAN_MID - 1.6, SWAN_MID + 1.6)) * ped;
+  const toB = wrapA(Math.atan2(SWAN_RAB.x - 0.8 - sp.x, SWAN_RAB.z - sp.z) - sp.yaw);
+  rot('Head', 'y', 0.2 * Math.sin(T * 1.1) * ped * (1 - wv)); rot('Head', 'x', 0.05 * Math.sin(T * 4.8) * ped);
+  headTurn(0.9 * Math.sin(toB) * wv, 0);
+  const waveS = 0.4 * Math.sin(T * 8.5) * wv;
+  wings(0.15 + 0.2 * ped + 1.6 * wv + waveS, 0.7 * ped * (1 - wv) + 0.2 * wv, 0.15 + 0.2 * ped, 0.7 * ped, 0, 0);
+  const fin = bell(span(T, SWT.w3[0] + 0.3, SWT.bow[1]));
+  p.happy = hp(wv) + hp(fin);
+  if (hitT(T, 0.5)) p.events.push('hum'); if (hitT(T, SWT.sail[0] + 0.5)) p.events.push('pedal'); if (hitT(T, SWAN_MID - 1.4)) p.events.push('hello'); if (hitT(T, SWAN_MID + 0.2)) p.events.push('hello2'); if (hitT(T, SWAN_MID + 2.2)) p.events.push('honk'); if (hitT(T, SWT.out[0])) p.events.push('arrive'); if (hitT(T, SWT.bow[0])) p.events.push('thanks');
+  place(p);
+}
+const swanBabies = (T, which) => {
+  const P0 = which === 'rab' ? SWAN_RAB : SWAN_COW, ph = which === 'rab' ? 0 : 0.35, a = SWAN_MID - 1.5 + ph, u = span(T, a, a + 3.0);
+  const jump = bell(u * 3 % 1) * (u > 0 && u < 1 ? 1 : 0);
+  return {x: P0.x, y: 0.26 * jump, z: P0.z, yaw: 0.05 * (which === 'rab' ? 1 : -1) + 0.0, pitch: 0, roll: 0.08 * Math.sin(T * 9) * (u > 0 && u < 1 ? 1 : 0), sq: 1 + 0.06 * Math.sin(T * 18) * jump, shadow: true};
+};
+
+// =====================================================================================================
+// 3. 小小船員出航
+// =====================================================================================================
+const CT = {enter:[0.1, 1.6], call:[1.8, 3.8], caps:[4.0, 5.0], run:[5.0, 6.3], walkA:[5.0, 7.4], hop:[7.4, 8.1], helm:[7.9, 8.5], sail:[8.5, 11.7], fin:[11.7, 12.8]};
+const SHIPP = {x: -0.4, z: -0.9, yaw: Math.PI / 2};
+const shipNow = T => { const u = ease(span(T, ...CT.sail)), x = SHIPP.x + 3.4 * trap(span(T, ...CT.sail), 0.2); return {x, z: SHIPP.z + 0.04 * Math.sin(T * 1.7) * (T > CT.sail[0] ? 1 : 0), yaw: SHIPP.yaw + 0.02 * Math.sin(T * 2.1), y: 0.012 * Math.sin(T * 2.3) * (T > CT.sail[0] && T < CT.sail[1] + 0.3 ? 1 : 0.3), moving: T > CT.sail[0] && T < CT.sail[1]}; };
+/* a point in the ship's own frame (local x right of travel, z forward) -> world */
+const shipLocal = (T, lx, lz) => { const s = shipNow(T), c = Math.cos(s.yaw), n = Math.sin(s.yaw); return V3(s.x + lx * c + lz * n, 0, s.z - lx * n + lz * c); };
+const CPA = V3(-1.3, 0, 0.9), CPB = V3(-2.3, 0, 0.55), CPC = V3(-2.3, 0, -0.9), RAB_P = V3(0.2, 0, 1.6), COW_P = V3(0.2, 0, 0.35);
+function babyState(which, T){
+  const isR = which === 'rab', P0 = isR ? RAB_P : COW_P, tj = isR ? 2.2 : 3.2, lk = isR ? V3(-0.22, 0, 1.0) : V3(0.22, 0, 0.45);
+  const s = {x: P0.x, y: 0, z: P0.z, yaw: -Math.PI / 2, pitch: 0, roll: 0, sq: 1};
+  const jump = bell(span(T, tj, tj + 0.5)); s.y += 0.28 * jump; s.sq = 1 + 0.08 * Math.sin(span(T, tj, tj + 0.5) * TAU * 1.0) * (jump > 0 ? 1 : 0);
+  const hp = isR ? 4.45 : 4.95; s.y += 0.2 * bell(span(T, hp, hp + 0.45));
+  if (T >= CT.run[0]){
+    const tr = span(T, CT.run[0] + (isR ? 0 : 0.25), CT.run[1] + (isR ? 0 : 0.25)), u = ease(tr), tgt = shipLocal(T, lk.x, lk.z);
+    const sh = shipNow(T);
+    if (T < CT.sail[0] || true){ s.x = lerp(P0.x, tgt.x, u); s.z = lerp(P0.z, tgt.z, u); }
+    s.y = 0.1 * Math.abs(Math.sin(tr * Math.PI * 5)) * (tr > 0 && tr < 1 ? 1 : 0) + 0.45 * bell(span(tr, 0.75, 1.0)) * 1.0 + (SHIP.floor + sh.y) * ss((tr - 0.85) / 0.15);
+    if (tr >= 1){ s.x = tgt.x; s.z = tgt.z; s.y = SHIP.floor + sh.y; }
+    s.yaw = tr < 1 ? Math.atan2(tgt.x - P0.x, tgt.z - P0.z) : sh.yaw;
+    if (T > CT.sail[1]) { const j = span(T, 11.95 + (isR ? 0 : 0.2), 12.55 + (isR ? 0 : 0.2)); s.y += 0.3 * bell(j); s.sq = 1 + 0.08 * Math.sin(j * TAU); }
+    if (T > CT.sail[0] && T < CT.sail[1]) { s.y += 0.04 * Math.abs(Math.sin(T * 6 + (isR ? 0 : 1.2))); }
+  }
+  return s;
+}
+const capSpin = (T, isR) => { const u = span(T, isR ? 4.4 : 4.9, (isR ? 4.4 : 4.9) + 0.4); return u > 0 ? backOut(u) : 0.001; };
+function captainState(T){
+  const s = {x: -2.6, z: 0.9, yaw: Math.PI / 2, floor: 0, hop: 0, dist: 0, walk: 0, onShip: false};
+  const L1 = Math.hypot(CPB.x - CPA.x, CPB.z - CPA.z), L2 = Math.hypot(CPC.x - CPB.x, CPC.z - CPB.z), hAB = Math.atan2(CPB.x - CPA.x, CPB.z - CPA.z);
+  if (T < CT.walkA[0]){ const u = trap(span(T, ...CT.enter)); s.x = lerp(-2.6, CPA.x, u); s.dist = s.x + 2.6; s.walk = ease(span(T, 0.1, 0.3)) * (1 - ease(span(T, 1.4, 1.6))); }
+  else if (T < CT.hop[0]){ const u = trap(span(T, ...CT.walkA)), d = u * (L1 + L2);
+    if (d < L1){ s.x = lerp(CPA.x, CPB.x, d / L1); s.z = lerp(CPA.z, CPB.z, d / L1); } else { s.x = CPB.x; s.z = lerp(CPB.z, CPC.z, (d - L1) / L2); }
+    s.yaw = angLerp(Math.PI / 2, hAB, ease(span(T, 5.0, 5.45))); if (d > L1 - 0.15) s.yaw = angLerp(hAB, Math.PI, ease(span(d, L1 - 0.15, L1 + 0.35)));
+    s.dist = 1.3 + d; s.walk = ease(span(T, 5.05, 5.3)) * (1 - ease(span(T, 7.15, 7.4))); }
+  else if (T < CT.sail[0]){ const sh = shipNow(T), tr = span(T, ...CT.hop), tgt = shipLocal(T, 0, -1.1);
+    s.x = lerp(CPC.x, tgt.x, ease(tr)); s.z = lerp(CPC.z, tgt.z, ease(tr)); s.floor = lerp(0, SHIP.floor + sh.y + SHIP.helm, ss((tr - 0.3) / 0.7)); s.hop = 0.45 * bell(tr); s.yaw = angLerp(Math.PI, sh.yaw, ease(span(T, 7.4, 7.9))); s.onShip = true; }
+  else { const sh = shipNow(T), tgt = shipLocal(T, 0, -1.1); s.x = tgt.x; s.z = tgt.z; s.floor = SHIP.floor + sh.y + SHIP.helm; s.yaw = sh.yaw; s.onShip = true; }
+  return s;
+}
+function poseCrew(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const c = captainState(T);
+  p.x = c.x; p.z = c.z; p.ry = c.yaw; p.floor = c.floor; p.hop = c.hop;
+  const sw = sWalk(c.dist * (TAU / 0.7), c.walk, p);
+  life(p, t, 0.6);
+  /* roll call: look at each baby in turn and point; handing out caps: both flippers forward; at the helm: flippers on the wheel */
+  const rr = bell(span(T, 2.0, 2.9)), cc = bell(span(T, 3.0, 3.8));
+  const toR = wrapA(Math.atan2(RAB_P.x - c.x, RAB_P.z - c.z) - c.yaw), toC = wrapA(Math.atan2(COW_P.x - c.x, COW_P.z - c.z) - c.yaw);
+  const look = T < 5.0 ? (rr * toR + cc * toC + 0.0) : 0, watch = ease(span(T, 1.6, 2.0)) * (1 - ease(span(T, 5.0, 5.6)));
+  headTurn(look * 1.0 + (T < 1.8 || T > 5.5 ? 0 : 0.0) , 0);
+  const cap = bell(span(T, 4.1, 5.0)), helm = ease(span(T, 7.9, 8.5)) * (1 - ease(span(T, 11.7, 12.0)));
+  const sal = ease(span(T, 11.9, 12.3));
+  wings(0.1 + 1.0 * rr + 1.0 * cc + 0.9 * cap + 0.3 * helm + 0.3 * sw, 0.9 * rr + 0.9 * cc + 0.9 * cap + 0.9 * helm + 0.3 * sw, 0.1 + 1.0 * cc + 1.0 * rr * 0 + 0.9 * cap + 0.3 * helm - 0.3 * sw + 1.6 * sal, 0.9 * cc + 0.9 * cap + 0.9 * helm - 0.3 * sw + 0.6 * sal, 0, 0);
+  
+  p.happy = hp(bell(span(T, 4.0, 5.2))) + hp(bell(span(T, 11.6, 12.8)));
+  if (hitT(T, 0.8)) p.events.push('hum'); if (hitT(T, 2.0)) p.events.push('callR'); if (hitT(T, 2.2)) p.events.push('hereR'); if (hitT(T, 3.0)) p.events.push('callC'); if (hitT(T, 3.2)) p.events.push('hereC');
+  if (hitT(T, 4.2)) p.events.push('capsOn'); if (hitT(T, 4.45)) p.events.push('capR'); if (hitT(T, 4.95)) p.events.push('capC'); if (hitT(T, 6.2)) p.events.push('aboard'); if (hitT(T, 8.6)) p.events.push('anchor'); if (hitT(T, 9.2)) p.events.push('sail'); if (hitT(T, 11.8)) p.events.push('dock'); if (hitT(T, 12.1)) p.events.push('yay');
+  place(p);
+}
+let beakLocal = null;
+const SUB_FEET = []; const SUB_TAIL = [];
+const _gv = V3();
+/* put the lowest foot/leg vertex on the floor (the ground, or the bridge surface when p.floor is set), then add the hop */
+function groundFix(p){
+  rig.updateMatrixWorld(true); skinned.skeleton.update();
+  let mn = Infinity; for (const i of SUB_FEET){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn) mn = _gv.y; }
+  rig.position.y += -mn + 0.004 + (p.floor || 0) + (p.hop || 0); rig.updateMatrixWorld(true);
+}
+const _tw = V3();
+function tailMinY(){ skinned.skeleton.update(); let mn = Infinity, mi = -1; for (const i of SUB_TAIL){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn){ mn = _gv.y; mi = i; } } return [mn, mi]; }
+function tailGuard(floor = 0){
+  for (let it = 0; it < 4; it++){
+    rig.updateMatrixWorld(true); const [mn, mi] = tailMinY(); if (mn >= floor + 0.012) return;
+    skinned.getVertexPosition(mi, _gv); _gv.applyMatrix4(skinned.matrixWorld); bones.Tail01.getWorldPosition(_tw);
+    const d = Math.max(0.2, Math.hypot(_gv.x - _tw.x, _gv.z - _tw.z)), ang = (floor + 0.012 - mn) / d * 1.15;
+    rot(TL[0], 'x', TAIL_UP * ang);
+  }
+}
+let TAIL_UP = 1;
+const newP = () => ({T: 0, x: 0, z: 0, ry: 0, pitch: 0, roll: 0, hop: 0, yAbs: 0, sy: 1, lid: 0, happy: 0, sad: 0, glow: 0, events: [], free: true, surf: 0, floor: 0, q: null});
+// ---------- load the model ----------
+
+// =====================================================================================================
+// 餵食（2026-11-02）：食物飛到嘴前，頭湊上去咬三口（企鵝鰭太短，不用手捧）；搖頭不吃＝湊近聞、搖頭難過、食物飛走
+// =====================================================================================================
+const EATK = makeEat(THREE, GLTFLoader, scene, makeTex, spawn, fx);
+window.__eatWrong = window.__eatWrong || 'bittermelon';   // 搖頭不吃：成年固定拿苦瓜（App 會自己放玩家給的食物）
+EATK.preload(['sardine', 'soda', 'bittermelon']); window.__eatPreload = n => EATK.preload(n);
+const HOLD = makeHold(THREE, { EATK, rig, get model(){ return model; }, skin: () => skinned,
+  reach(){}, grip(sd, out){ return out.copy(wpos(sd + 'Hand')); },
+  armRe: /(Left|Right)(Shoulder|Arm|ForeArm|Hand)/, S: CFG.scale, size: 0.3, chestY: 0.84, mouthY: 1.1, follow: 1, float: true, floatY: -0.12 });
+function poseEat(p, t, T, name){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const P = phases(name, t); p.eat = P; if (!HOLD.m) HOLD.measure();
+  life(p, t, 0.4);
+  if (name === 'refuse'){
+    const sn = ease(P.sniff) * (1 - ease(P.shake));
+    spineLean(0.14 * sn); rot('neck', 'x', 0.1 * sn); rot('Head', 'x', 0.12 * sn);
+    if (P.shake > 0 && P.shake < 1){ const k = Math.sin(Math.PI * P.shake); headTurn(0.55 * Math.sin(TAU * P.shake * 3) * k); rot('Head', 'z', -0.06 * k); }
+    wings(0.12 + 0.1 * P.sad, 0);
+    p.sad = P.sad; if (P.sad) p.lid = 0;
+  } else {
+    const nod = P.biting ? P.lunge : 0;
+    spineLean(0.1 * nod + 0.04 * P.hold); rot('neck', 'x', 0.14 * nod); rot('Head', 'x', 0.18 * nod + 0.06 * P.hold);
+    wings(0.12 + 0.35 * P.yum * Math.abs(Math.sin(TAU * t * 1.8)), 0);
+    p.happy = P.happy && !P.chew ? 1 : 0; p.lid = P.chew ? 1 : (p.happy ? 0 : p.lid);
+    p.hop = 0.08 * P.hop;
+  }
+  p.ry = 0.1 + (name === 'snack' ? TAU * P.spin : 0); place(p);
+}
+fetchModel('pg3_penguinadult_model.json').then(gltf => {
+  model = gltf.scene; model.scale.setScalar(CFG.scale);
+  model.traverse(o => {
+    if (o.isBone){ bones[o.name] = o; rest[o.name] = o.quaternion.clone(); restP[o.name] = o.position.clone(); }
+    if (o.isMesh){ skinned = o; o.frustumCulled = false; prepFace(o, {eye:CFG.eye, eyeR:CFG.eyeR, eyeZ:CFG.eyeZ, eyeOut:CFG.eyeOut, eyeFill:CFG.eyeFill, mouth:CFG.mouth, mouthR:CFG.mouthR, mouthZ:CFG.mouthZ, noPink:CFG.noPink}); (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.roughness = Math.max(m.roughness || 0, 0.75); m.metalness = 0; patch(m); }); }
+  });
+  rig.add(model); rig.updateMatrixWorld(true); skinned.skeleton.update();
+  { const g = skinned.geometry, n = g.attributes.position.count, SI = g.attributes.skinIndex, SW = g.attributes.skinWeight, BN = skinned.skeleton.bones.map(b => b.name); let top = -1, ty = -1;
+    for (let i = 0; i < n; i += 1){ let best = 0, bw = -1; for (let c = 0; c < 4; c++){ const w = SW.getComponent(i, c); if (w > bw){ bw = w; best = SI.getComponent(i, c); } } if (/Leg|Foot|Toe/.test(BN[best])) SUB_FEET.push(i); if (/^Tail/.test(BN[best]) && i % 3 === 0) SUB_TAIL.push(i);
+      skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y > ty){ ty = _gv.y; top = i; } }
+  }
+  beakLocal = bones.Head.worldToLocal(model.localToWorld(V3(0, 1.2, 0.36)));
+  { resetPose(); rig.updateMatrixWorld(true); const a = tailMinY()[0]; rot('Tail01', 'x', 0.2); rig.updateMatrixWorld(true); const b = tailMinY()[0]; TAIL_UP = b > a ? 1 : -1; resetPose(); }
+  loadingEl.hidden = true; statusEl.hidden = false;
+  setMove('idle'); requestAnimationFrame(loop);
+}).catch(e => { console.error(e); loadingEl.textContent = '模型載入失敗，請重新整理頁面。'; });
+
+
+// ---------- effects ----------
+const confTex = [0xe8584a, 0xf6c445, 0x4aa3df, 0x5cae4f].map(c => makeTex(g => { g.fillStyle = '#' + c.toString(16).padStart(6, '0'); g.fillRect(34, 20, 60, 88); }));
+function confetti(x, y, z, n){ for (let i = 0; i < n; i++){ const a = Math.random() * TAU, r = Math.random(); spawn(confTex[i % 4], V3(x, y, z), V3(Math.cos(a) * (0.3 + r * 0.6), 0.8 + Math.random() * 0.6, Math.sin(a) * 0.3), 1.2 + r * 0.4, 0.07, 0, {gravity: -1.6}); } }
+function hearts(pos, n = 3, sz = 0.15){ for (let i = 0; i < n; i++) spawn(heartTex, pos.clone().add(V3((i - (n - 1) / 2) * 0.3, 0.1, 0.1)), V3((i - (n - 1) / 2) * 0.12, 0.45, 0), 1.1, sz); }
+function stars(pos, n = 5, sz = 0.13, sp = 0.6){ for (let i = 0; i < n; i++){ const a = i / n * TAU; spawn(starTex, pos.clone(), V3(Math.cos(a) * sp, 0.5 + Math.random() * 0.3, Math.sin(a) * sp * 0.5), 0.8, sz); } }
+function splash(x, z, n = 6){ for (let i = 0; i < n; i++){ const a = Math.random() * TAU; spawn(dropTex, V3(x, 0.08, z), V3(Math.cos(a) * 0.5, 0.9 + Math.random() * 0.5, Math.sin(a) * 0.5), 0.8, 0.07, 0, {gravity: -3.2}); } }
+const W = {hum: wordTex('哼～♪', '#2f63b8'), hup: wordTex('嘿咻！', '#8a6240'), scope: wordTex('望遠鏡準備～', '#2f63b8'), look: wordTex('咦？', '#e8853a'), there: wordTex('在那邊！', '#e8584a'), dipper: wordTex('北斗七星！', '#c9a227'), pole: wordTex('北極星在這～', '#2f9fd8'), yay: wordTex('耶～', '#e8584a'),
+  pedal: wordTex('踩踩踩～', '#2f63b8'), hello: wordTex('兔寶寶、牛寶寶～', '#e8584a'), honk: wordTex('叭叭！', '#e8853a'), hello2: wordTex('嗨～船長！', '#e8584a'), arrive: wordTex('靠岸囉', '#2b7a4b'), thanks: wordTex('謝謝搭乘！', '#2b7a4b'),
+  callR: wordTex('小兔船員！', '#e8584a'), hereR: wordTex('到！', '#e8584a'), callC: wordTex('小牛船員！', '#2f63b8'), hereC: wordTex('到！', '#2f63b8'), capsOn: wordTex('發帽子～', '#8a6240'), capR: wordTex('好帥～', '#e8584a'), capC: wordTex('哞～好帥', '#2f63b8'), aboard: wordTex('上船囉！', '#2b7a4b'), anchor: wordTex('起錨！', '#e8853a'), sail: wordTex('出航～', '#2f63b8'), dock: wordTex('靠港！', '#2b7a4b')};
+const babyPosR = V3(), babyPosC = V3();
+function events(p){
+  if (reduceMotion) return;
+  for (const e of p.events){
+    const head = wpos('Head', V3()).add(V3(0, 0.35, 0));
+    if (W[e]){ const at = (e === 'hereR' || e === 'capR' || e === 'hello2') && move !== 'swan' ? babyPosR.clone().add(V3(0, 0.75, 0.15)) : (e === 'hello2') ? V3(SWAN_RAB.x, 1.0, SWAN_RAB.z + 0.3) : (e === 'hereR' || e === 'capR') ? babyPosR.clone().add(V3(0, 0.75, 0.15)) : (e === 'hereC' || e === 'capC') ? babyPosC.clone().add(V3(0, 0.75, 0.15)) : head.clone().add(V3(0, 0.5, 0.2)); showWord(W[e], at, 1.55); }
+    if (e === 'yay'){ confetti(head.x, head.y + 0.2, head.z, 16); if (move === 'crew'){ confetti(babyPosR.x, 0.9, babyPosR.z, 10); confetti(babyPosC.x, 0.9, babyPosC.z, 10); } else hearts(head.clone().add(V3(0, 0.25, 0.2)), 3); }
+    if (e === 'dipper' || e === 'pole') stars(head.clone().add(V3(-0.4, 0.5, -0.3)), 8, 0.18, 1.2);
+    if (e === 'capR') stars(babyPosR.clone().add(V3(0, 0.85, 0)), 5, 0.1, 0.4);
+    if (e === 'capC') stars(babyPosC.clone().add(V3(0, 0.85, 0)), 5, 0.1, 0.4);
+    if (e === 'hup') splash(rig.position.x, rig.position.z, 6);
+    if (e === 'arrive' || e === 'thanks') hearts(head.clone().add(V3(0, 0.25, 0.2)), 2, 0.12);
+    if (e === 'honk') stars(head.clone().add(V3(0.2, 0, 0)), 4, 0.12, 0.4);
+  }
+}
+// ---------- placing the props ----------
+const _hp = V3(), _kq = new THREE.Quaternion(), _kv = V3();
+function placeRipples(x, z, scl, op, t){ ripples.forEach((r, i) => { const u = ((t * 0.5 + i * 0.5) % 1); r.visible = op > 0.01; r.position.set(x, 0.03, z); r.scale.set(scl * (0.5 + u), scl * (0.5 + u) * 0.62, 1); r.material.opacity = op * (1 - u) * 0.8; }); }
+function placeStar(p, T, t){
+  boatG.visible = true; gangG.visible = true; swanG.visible = false;
+  const bob = boatBob(T); boatG.position.set(BOAT_C.x, 0.02 + bob, BOAT_C.z); QYXZ(boatG.quaternion, -Math.PI / 2, 0.012 * Math.sin(T * 1.9), 0.015 * Math.sin(T * 1.3)); placeRipples(BOAT_C.x, BOAT_C.z, 1.3, 0.7, t);
+  /* telescope: eyepiece at the beak, pointing where the head looks */
+  const up = ease(span(T, ...ST.up)) * (1 - ease(span(T, ...ST.down)));
+  scopeG.visible = up > 0.02; if (scopeG.visible){ const gz = gazeNow(); scopeG.position.copy(gz.pos).addScaledVector(gz.dir, 0.34); _kq.setFromUnitVectors(V3(0, 0, 1), gz.dir); scopeG.quaternion.copy(_kq); scopeG.scale.setScalar(Math.max(0.01, up)); }
+  /* the sky */
+  starG.visible = T > 7.4; if (!starG.visible) return;
+  for (let i = 0; i < 7; i++){ const ti = 7.9 + 0.3 * i, u = span(T, ti, ti + 0.35), sp = starSprites[i], k = u <= 0 ? 0.001 : backOut(u); sp.s.scale.setScalar(SKY_R * 0.011 * k * (1 + 0.12 * Math.sin(t * 5 + i))); sp.s.material.opacity = Math.min(1, u * 3); sp.gl.scale.setScalar(SKY_R * 0.024 * k); sp.gl.material.opacity = 0.7 * Math.min(1, u * 3); }
+  starLines.forEach((l, k) => { l.material.opacity = 0.8 * ease(span(T, 8.6 + 0.3 * k, 9.1 + 0.3 * k)); });
+  { const u = span(T, 10.6, 11.0), sp = starSprites[7], k = u <= 0 ? 0.001 : backOut(u); sp.s.scale.setScalar(SKY_R * 0.016 * k * (1 + 0.1 * Math.sin(t * 6))); sp.s.material.opacity = Math.min(1, u * 3); sp.gl.scale.setScalar(SKY_R * 0.04 * k); sp.gl.material.opacity = Math.min(1, u * 3); poleLine.material.opacity = 0.85 * ease(span(T, 10.2, 10.8)); }
+  twinkle.forEach(w => { const u = span(T, w.t0, w.t0 + 0.5); w.s.material.opacity = 0.75 * u * (0.55 + 0.45 * Math.sin(t * 3 + w.ph)); w.s.scale.setScalar(w.sz * (u <= 0 ? 0.001 : backOut(u))); });
+}
+function placeSwan(p, T, t){
+  boatG.visible = false; gangG.visible = true; swanG.visible = true; starG.visible = false; scopeG.visible = false;
+  const sp = swanPose(T); swanG.position.set(sp.x, 0.02 + swanBob(T), sp.z); swanG.scale.setScalar(SW.s); QYXZ(swanG.quaternion, sp.yaw, 0.012 * Math.sin(T * 1.7), 0.02 * Math.sin(T * 1.2 + 1));
+  swanNeck.rotation.x = 0.1 * Math.sin(T * (sp.v ? 3.0 : 1.5)); swanNeck.userData.head.rotation.x = 0.18 * Math.sin(T * (sp.v ? 3.0 : 1.5) + 0.8);
+  placeRipples(sp.x, sp.z, 1.6, 0.75, t);
+  { const sr = swanBabies(T, 'rab'), sc = swanBabies(T, 'cow'); placeBaby(RAB, sr); placeBaby(COW, sc); babyPosR.set(sr.x, sr.y, sr.z); babyPosC.set(sc.x, sc.y, sc.z); }
+  if (!reduceMotion && sp.v && Math.floor(T * 14) !== Math.floor((T - __dE) * 14)){ spawn(dustTex, V3(sp.x - Math.sin(sp.yaw) * 1.0 + (Math.random() - 0.5) * 0.3, 0.06, sp.z - Math.cos(sp.yaw) * 1.0 + (Math.random() - 0.5) * 0.3), V3(0, 0.05, 0), 0.9, 0.16, 0.6); }
+}
+const _cq = V3();
+function placeCrew(p, T, t){
+  boatG.visible = false; swanG.visible = false; gangG.visible = false; starG.visible = false; scopeG.visible = false; ripples.forEach(r => { r.visible = false; });
+  const sh = shipNow(T); shipG.visible = true; shipG.position.set(sh.x, sh.y, sh.z); QYXZ(shipG.quaternion, sh.yaw, 0.01 * Math.sin(T * 2.6) * (sh.moving ? 1 : 0), 0.02 * Math.sin(T * 2.0) * (sh.moving ? 1 : 0));
+  shipG.userData.wheel.rotation.z = 0.5 * Math.sin(T * 1.8) * ease(span(T, 8.0, 8.6)); shipG.userData.sail.rotation.z = 0.05 * Math.sin(T * 5) * (sh.moving ? 1 : 0.3);
+  const sr = babyState('rab', T), sc = babyState('cow', T);
+  placeBaby(RAB, sr); placeBaby(COW, sc); babyPosR.set(sr.x, sr.y, sr.z); babyPosC.set(sc.x, sc.y, sc.z);
+  [RAB, COW].forEach((B, i) => { const s = capSpin(T, i === 0); CAPS[i].visible = s > 0.01 && B.ready; CAPS[i].position.set(0, i === 0 ? CAP_Y.rab : CAP_Y.cow, 0.03); CAPS[i].scale.setScalar(s * 1.35); });
+  if (!reduceMotion && sh.moving && Math.floor(T * 16) !== Math.floor((T - __dE) * 16)){ spawn(petalTex[Math.floor(Math.random() * 4)], V3(sh.x - 1.6 + Math.random() * 0.4, 0.12, sh.z + (Math.random() - 0.5) * 1.0), V3(-0.3, 0.5, (Math.random() - 0.5) * 0.4), 0.9, 0.1, 0, {gravity: -1.0}); }
+}
+const petalTex = [0xff8fb8, 0xffd84a, 0xffffff, 0x9fd8f5].map(c => makeTex(g => { g.translate(64, 64); g.rotate(-0.5); g.beginPath(); g.ellipse(0, 0, 40, 22, 0, 0, TAU); g.fillStyle = '#' + c.toString(16).padStart(6, '0'); g.fill(); }));
+{ const wood = mat(0x9a6a3e, {roughness: 0.95}); const pl = mesh(gangG, BOX, wood, [PLANK.x, PLANK.y - 0.03, (PLANK.z0 + PLANK.z1) / 2], [0.55, 0.05, PLANK.z0 - PLANK.z1]); for (const sx of [-1, 1]) mesh(gangG, BOX, mat(0x6a4426), [PLANK.x + sx * 0.3, 0.14, (PLANK.z0 + PLANK.z1) / 2], [0.04, 0.12, PLANK.z0 - PLANK.z1 - 0.02]); mesh(gangG, BOX, wood, [PLANK.x, 0.0, 1.3], [0.7, 0.04, 0.3]); }
+function placeProps(p, t){
+  const isS = move === 'star', isW = move === 'swan', isC = move === 'crew';
+  if (!isS) { boatG.visible = false; scopeG.visible = false; starG.visible = false; }
+  if (!isW) swanG.visible = false; if (!isS && !isW) { gangG.visible = false; ripples.forEach(r => { r.visible = false; }); }
+  if (!isC) shipG.visible = false;
+  if (!isC && !isW){ RAB.root.visible = false; COW.root.visible = false; if (RAB.sh) RAB.sh.visible = false; if (COW.sh) COW.sh.visible = false; }
+  else { RAB.root.visible = RAB.ready; COW.root.visible = COW.ready; }
+  if (!isC) CAPS.forEach(c => { c.visible = false; });
+  if (isS) placeStar(p, p.T, t); if (isW) placeSwan(p, p.T, t); if (isC) placeCrew(p, p.T, t);
+}
+
+// ---------- buttons, camera, loop ----------
+const snap = {}; let blendStart = -10;
+function setMove(name){
+  if (EATK.wait(name, 'penguin', setMove)) return;   // 食物載好才開始
+  if (model){ for (const n in bones) snap[n] = bones[n].quaternion.clone(); snap.rp = rig.position.clone(); snap.rq = rig.quaternion.clone(); blendStart = performance.now() / 1000; }
+  clearFx(); userCam = false;
+  PARKS.show(isEat(name) ? 'idle' : name); EATK.show(name, 'penguin', 0.3);
+  move = name; t0 = performance.now() / 1000; frozen = null; __hold = 0;
+  document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
+  statusEl.textContent = names[name];
+}
+document.querySelectorAll('.moves button').forEach(b => b.addEventListener('click', () => setMove(b.dataset.move)));
+const CAM = {idle:{t:[0, 0.9, 0.1], d:6.6, az:0.09}, star:{pos:[1.9, 1.3, 5.6], look:[-1.5, 3.0, -1.6], fov:58}, swan:{pos:[-1.0, 3.9, 8.6], look:[-1.0, 0.5, -3.4], fov:42}, crew:{t:[1.0, 0.8, 0.0], d:12.4, az:0.06}, sleep:{t:[0, 0.7, 0.1], d:5.4, az:0.1}, eat:{t:[0, 0.8, 0.3], d:5.2, az:0.0}, snack:{t:[0, 0.8, 0.3], d:5.2, az:0.0}, refuse:{t:[0, 0.8, 0.3], d:5.2, az:0.0}};
+const COM_L = V3(0, 0.8, 0.1);
+const _ct = V3(), _cp = V3();
+let zTimer = 0, last = performance.now() / 1000, shY = 0;
+function loop(){
+  const now = performance.now() / 1000, rawDt = Math.max(0, now - last), dt = Math.min(rawDt, 0.05); last = now; if (__hold && loopEl.checked) __hold = 0;
+  let t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  if (frozen === null && !loopEl.checked && (/^(eat|snack|refuse)$/.test(move) || (move === 'star' || move === 'swan' || move === 'crew') ) && t >= LEN[move]){ if (!__hold) __hold = now; t = LEN[move] - 0.001; if (now - __hold >= 1 && !EMBED){ setMove('idle'); t = 0; } }
+  __dE = (frozen !== null || __hold) ? 1e-4 : Math.min(0.5, Math.max(0.001, rawDt));   // 字卡用真實經過時間判斷（上限 0.5 秒），慢手機不會漏
+  let p = pose(move, t);
+  const bw = frozen !== null ? 1 : Math.min(1, (now - blendStart) / 0.35);
+  if (bw < 1){ const e = ease(bw); for (const n in bones){ if (!snap[n]) continue; bones[n].quaternion.slerpQuaternions(snap[n], bones[n].quaternion.clone(), e); }
+    rig.position.lerpVectors(snap.rp, rig.position.clone(), e); rig.quaternion.slerpQuaternions(snap.rq, rig.quaternion.clone(), e); }
+  if (p.surf != null && skinned) groundFix(p);
+  if (skinned) tailGuard(p.floor || 0);
+  rig.updateMatrixWorld(true);
+  if (p.eat) HOLD.arms(p.eat, move);
+  placeProps(p, t);
+  if (p.eat) HOLD.place(p.eat, move, dt, wpos('Head', V3()), reduceMotion); else EATK.food.visible = false;
+  lidU.value = move === 'sleep' ? lidU.value + (1 - lidU.value) * (1 - Math.pow(0.02, dt)) : p.lid;
+  happyU.value = p.happy; sadU.value = p.sad;
+  flatEU.value = Math.max(lidU.value, p.happy, p.sad); flatMU.value = 0;
+  if (move === 'sleep' && !reduceMotion){ zTimer -= dt; if (zTimer <= 0){ zTimer = 1.1; spawn(zTex, wpos('Head', V3()).add(V3(0.3, 0.5, 0.3)), V3(0.14, 0.24, 0), 2.6, 0.15, 1.3); } }
+  if (frozen === null && !__hold) events(p);
+  updateFx(dt); updateWord(dt);
+  const com = rig.localToWorld(COM_L.clone()), hgt = Math.max(0, com.y - 0.78 - (p.floor || 0));
+  const s = 1 / (1 + hgt * 0.9); shadow.scale.set(s, s, s); shadow.position.set(com.x, 0.003 + (move === 'swan' || move === 'star' ? (p.floor || 0) * 0 : 0), com.z);
+  shadow.visible = !(move === 'swan' || move === 'star') || (p.floor || 0) < 0.09;
+  if (!userCam){
+    const c = CAM[move], k = 1 - Math.pow(0.04, dt), fov = c.fov || 32;
+    if (c.pos){ _ct.set(...c.look); controls.target.lerp(_ct, k); _cp.set(...c.pos); camera.position.lerp(_cp, k); }
+    else { _ct.set(c.t[0], c.t[1], c.t[2]); controls.target.lerp(_ct, k);
+      _cp.set(controls.target.x + Math.sin(c.az) * c.d, controls.target.y + 0.45 + c.d * 0.04 + (c.el || 0), controls.target.z + Math.cos(c.az) * c.d); camera.position.lerp(_cp, k); }
+    if (Math.abs(camera.fov - fov) > 0.05){ camera.fov += (fov - camera.fov) * Math.min(1, k * 1.5); camera.updateProjectionMatrix(); }
+  }
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+function pose(name, t){
+  const T = t % LEN[name];
+  const p = newP(); p.T = T;
+  resetPose();
+  if (name === 'idle') poseIdle(p, t, T); else if (name === 'sleep') poseSleep(p, t, T); else if (isEat(name)) poseEat(p, t, T, name);
+  else if (name === 'star') poseStar(p, t, T); else if (name === 'swan') poseSwan(p, t, T); else if (name === 'crew') poseCrew(p, t, T);
+  return p;
+}
+window.__m = {lidU, happyU, sadU, flatEU, rot, resetPose, wings, newP, place, groundFix, THREE, rest, setMove, camera, controls, bones, rig, freeze(x){ frozen = x; }, setT(x){ frozen = null; t0 = performance.now()/1000 - x; },
+  setUser(v){ userCam = v; }, HOLD, EATK, get model(){ return model; }, get skinned(){ return skinned; }, wpos, scene, PARKS, RAB, COW, shipG, swanG, boatG, scopeG, gazeNow,
+  minY(){ let mn = Infinity; const v = V3(); skinned.updateMatrixWorld(true); skinned.skeleton.update(); for (let i = 0; i < skinned.geometry.attributes.position.count; i += 3){ skinned.getVertexPosition(i, v); v.applyMatrix4(skinned.matrixWorld); mn = Math.min(mn, v.y); } return mn; }};
+window.__armClear = 0; /* flippers hang close to the body; no forced abduction */
+// 3D動畫生成規範 safety layer (meshysafe.js)
+const __sh = /nosafe/.test(location.search) ? 0 : setInterval(() => { if (model && bones.Head){ clearInterval(__sh); import('./meshysafe-c14b1db8.js').then(m => { window.__SAFE = m.installSafety(THREE, () => model, bones, rig, scene, { clock: () => (frozen !== null ? frozen : performance.now() / 1000 - t0) }); }); } }, 300);
+</script>
+</body></html>

@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>火山小赤龍成年才藝試作</title>
+<style>
+body.embed{margin:0;background:transparent;overflow:hidden}
+body.embed .wrap{padding:0;max-width:none;gap:0}
+body.embed .wrap>*:not(.stage){display:none!important}
+body.embed .stage{position:fixed;inset:0;aspect-ratio:auto;border-radius:0;border:0}
+body.embed .status{display:none}
+</style>
+<script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('embed-doc'),addEventListener('DOMContentLoaded',()=>document.body.classList.add('embed'));</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F4F6F1; --surface:#FFFFFF; --fg:#1B2A22; --muted:#55645B; --line:#DCE3DA;
+  --grass:#C8452B; --grass-ink:#FFFFFF; --spark:#F5A524; --spark-soft:#FFF1D6;
+  --sky-top:#DCEAF7; --sky-bot:#EEF5E6;
+  --f-display:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#8FB4F0; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#8FB4F0; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:17px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:20px 40px;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--f-display);font-weight:400;font-size:30px;margin:0;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted)}
+.stage{position:relative;width:100%;aspect-ratio:4/3.9;border-radius:24px;overflow:hidden;background:linear-gradient(var(--sky-top),var(--sky-bot));border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.status{position:absolute;left:12px;top:12px;background:var(--surface);color:var(--fg);border-radius:99px;padding:6px 16px;font-size:17px;font-weight:700;border:1px solid var(--line)}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:17px;pointer-events:none}
+.moves{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.moves{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.moves button{min-height:64px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:18px;font-weight:700;cursor:pointer;padding:6px;line-height:1.25}
+.moves button small{display:block;font-weight:400;font-size:16px;color:var(--muted)}
+.moves button[aria-pressed="true"]{background:var(--grass);color:var(--grass-ink);border-color:var(--grass)}
+.moves button[aria-pressed="true"] small{color:var(--grass-ink)}
+.moves button.sig{border-color:var(--spark)}
+.moves button:focus-visible{outline:3px solid var(--spark);outline-offset:2px}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+.cap{position:absolute;left:0;right:0;bottom:16px;text-align:center;color:#fff;font-family:var(--f-display);font-size:19px;text-shadow:0 2px 8px rgba(0,0,0,.8);pointer-events:none;padding:0 12px}
+.polaroid{position:absolute;right:14px;bottom:14px;width:32%;background:#fff;padding:8px 8px 6px;border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,.35);transform:rotate(4deg);pointer-events:none}
+.polaroid .pic{width:100%;aspect-ratio:4/3;background:#222 center/cover no-repeat}
+.polaroid .cap{font-family:var(--f-display);font-size:17px;color:#333;text-align:center;padding-top:6px}
+.toggle{display:flex;gap:10px;align-items:center;font-size:17px;color:var(--muted)}
+.toggle input{width:20px;height:20px;accent-color:var(--grass)}
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <h1>火山小赤龍成年</h1>
+    <p class="sub">四個才藝試作：點亮公園、天空巡航（兔寶、牛寶一起搭乘，夜晚升空看台灣光點）、孵蛋時光、全員大合照（夥伴們來互動）。拖曳可以轉視角。</p>
+  </header>
+  <div class="stage" id="stage">
+    <div class="loading" id="loading">火山小赤龍成年載入中（約 8 MB）…</div>
+    <span class="status" id="status" hidden>待機</span>
+    <div class="flash" id="flash"></div><div class="cap" id="cap" hidden>每一個光點，都是我們一起點亮的公園</div><div class="polaroid" id="polaroid" hidden><div class="pic"></div><div class="cap">Sparkee 全員大團圓</div></div>
+  </div>
+  <div class="moves" role="group" aria-label="動作">
+    <button data-move="idle" aria-pressed="true">待機</button>
+    <button data-move="light" class="sig" aria-pressed="false">點亮公園<small>16 秒</small></button>
+    <button data-move="fly" class="sig" aria-pressed="false">天空巡航<small>18 秒</small></button>
+    <button data-move="egg" class="sig" aria-pressed="false">孵蛋時光<small>16 秒</small></button>
+    <button data-move="photo" class="sig" aria-pressed="false">全員大合照<small>16 秒</small></button>
+    <button data-move="sleep" aria-pressed="false">睡覺</button>
+    <button data-move="eat" class="feed" aria-pressed="false">開心吃<small>6 秒</small></button>
+    <button data-move="snack" class="feed" aria-pressed="false">最愛點心<small>7 秒</small></button>
+    <button data-move="refuse" class="feed" aria-pressed="false">搖頭不吃<small>5 秒</small></button>
+  </div>
+  <label class="toggle"><input type="checkbox" id="loopT"> 才藝播完自動重播</label>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+// 3D動畫生成規範 2.1: rotations are quaternions (axis-angle products), never Euler writes
+import {makeParks} from './parkscenes.js';
+import {makeEat, makeHold, phases, isEat} from './eatkit.js';
+const CAMEAT = {t:[0, 0.9, 0.3], d: 5.8, az: 0};
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+const TAU = Math.PI * 2;
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const AX = {x:V3(1,0,0), y:V3(0,1,0), z:V3(0,0,1)};
+const __qa = new THREE.Quaternion(), __qb = new THREE.Quaternion(), __qc = new THREE.Quaternion();
+function QYXZ(out, yaw, pitch, roll){ __qa.setFromAxisAngle(AX.y, yaw); __qb.setFromAxisAngle(AX.x, pitch); __qc.setFromAxisAngle(AX.z, roll); return out.copy(__qa).multiply(__qb).multiply(__qc); }
+
+// ---------- calibration (model space of the rigged GLB: feet at 0, height 1.65, facing +z) ----------
+const CFG = { scale:1, eye:[0.149,1.165], eyeR:[0.034,0.042], eyeZ:0.45, eyeOut:1.75, eyeFill:[0.40,0.085,0.019], noPink:false, ink:[0.17,0.06,0.04], mouth:[0,0.985], mouthR:[0.14,0.05], mouthZ:0.5 };
+
+{ const q = new URLSearchParams(location.search); if (q.get('eyeR')) CFG.eyeR = q.get('eyeR').split(',').map(Number); if (q.get('eye')) CFG.eye = q.get('eye').split(',').map(Number); if (q.get('eyeFill')) CFG.eyeFill = q.get('eyeFill').split(',').map(Number); if (q.get('eyeOut')) CFG.eyeOut = Number(q.get('eyeOut')); }
+const stage = document.getElementById('stage');
+const statusEl = document.getElementById('status');
+const loadingEl = document.getElementById('loading');
+const loopEl = document.getElementById('loopT');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb59a, 2.0));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3); scene.add(sun);
+const PARKS = makeParks(THREE, scene, 'adult-dragon'); PARKS.show('idle');
+const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 500);
+camera.position.set(0.6, 1.5, 8.2);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.95, 0.1); controls.enablePan = false; controls.enableDamping = true;
+controls.minDistance = 0.6; controls.maxDistance = 90; controls.maxPolarAngle = Math.PI * 0.8;
+let userCam = false; controls.addEventListener('start', () => { userCam = true; });
+
+const ground = new THREE.Mesh(new THREE.CircleGeometry(3.8, 64), new THREE.MeshLambertMaterial({color:0xcfe5c4}));
+AXQ(ground, 'x', -Math.PI/2); ground.material.depthWrite = false; ground.renderOrder = -2; scene.add(ground);
+function AXQ(o, a, ang){ o.quaternion.setFromAxisAngle(AX[a], ang); }
+const shCanvas = document.createElement('canvas'); shCanvas.width = shCanvas.height = 128;
+const sctx = shCanvas.getContext('2d'); const gr = sctx.createRadialGradient(64,64,4,64,64,62);
+gr.addColorStop(0,'rgba(30,50,35,0.45)'); gr.addColorStop(1,'rgba(30,50,35,0)'); sctx.fillStyle = gr; sctx.fillRect(0,0,128,128);
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.4,1.4), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shCanvas), transparent:true, depthWrite:false}));
+AXQ(shadow, 'x', -Math.PI/2); shadow.position.y = 0.003; shadow.renderOrder = -1; scene.add(shadow);
+
+const rig = new THREE.Group(); scene.add(rig);
+const glowU = {value:0}, calmU = {value:0}, flatEU = {value:0}, flatMU = {value:0}, lidU = {value:0}, happyU = {value:0}, sadU = {value:0};
+
+// ---------- floating symbols ----------
+function makeTex(draw){ const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); draw(g); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx; }
+const heartTex = makeTex(g => { g.translate(64, 66); g.beginPath(); g.moveTo(0, 40); g.bezierCurveTo(-64, -4, -36, -56, 0, -24); g.bezierCurveTo(36, -56, 64, -4, 0, 40); g.closePath(); g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ff6f8e'; g.fill(); });
+const zTex = makeTex(g => { g.font = '900 104px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.lineJoin = 'round'; g.strokeText('Z', 64, 68); g.fillStyle = '#5a6fa8'; g.fillText('Z', 64, 68); });
+const starTex = makeTex(g => { g.translate(64, 64); g.beginPath(); for (let i = 0; i < 10; i++){ const r = i % 2 ? 22 : 54, a = -Math.PI/2 + i*Math.PI/5; g.lineTo(Math.cos(a)*r, Math.sin(a)*r); } g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#f5c24a'; g.fill(); });
+const dustTex = makeTex(g => { g.beginPath(); g.arc(64, 64, 50, 0, TAU); g.fillStyle = '#e6dcc8'; g.fill(); });
+const dropTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -52); g.bezierCurveTo(22, -18, 40, 6, 40, 22); g.arc(0, 22, 40, 0, Math.PI); g.bezierCurveTo(-40, 6, -22, -18, 0, -52); g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#6fbfee'; g.fill(); });
+const noteTex = color => makeTex(g => { const shape = () => { g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.moveTo(62, 92); g.lineTo(62, 20); g.quadraticCurveTo(92, 34, 96, 62); };
+  g.lineJoin = 'round'; g.lineCap = 'round'; shape(); g.lineWidth = 20; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ffffff'; g.fill(); shape(); g.lineWidth = 9; g.strokeStyle = color; g.stroke(); g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.fillStyle = color; g.fill(); });
+const noteTexes = [noteTex('#f5a524'), noteTex('#2b7a4b')];
+const words = {};
+function wordTex(txt, col = '#e8584a'){
+  if (words[txt]) return words[txt];
+  const c = document.createElement('canvas'); c.width = 384; c.height = 160; const g = c.getContext('2d');
+  g.font = '900 96px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  let s = 96; while (g.measureText(txt).width > 340 && s > 40){ s -= 6; g.font = `900 ${s}px "Huninn","Noto Sans TC",sans-serif`; }
+  g.lineJoin = 'round'; g.lineWidth = 18; g.strokeStyle = '#ffffff'; g.strokeText(txt, 192, 84); g.fillStyle = col; g.fillText(txt, 192, 84);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return (words[txt] = tx);
+}
+const fx = [];
+function spawn(map, pos, vel, life, size, grow = 0, extra = null){
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map, transparent:true, depthWrite:false})); sp.position.copy(pos); sp.renderOrder = 5; scene.add(sp);
+  const f = Object.assign({sp, vel, life, size, grow, age:0}, extra || {}); fx.push(f); return f;
+}
+function updateFx(dt){
+  for (let i = fx.length - 1; i >= 0; i--){
+    const f = fx[i]; f.age += dt;
+    if (f.age > f.life){ scene.remove(f.sp); f.sp.material.dispose(); fx.splice(i, 1); continue; }
+    const u = f.age / f.life; if (f.gravity) f.vel.y += f.gravity * dt;
+    if (f.follow) f.sp.position.copy(f.follow(f.age)); else f.sp.position.addScaledVector(f.vel, dt);
+    const s = f.size * (Math.min(1, f.age/0.2)*0.4 + 0.6) * (1 + f.grow*u); f.sp.scale.set(s, s, s);
+    f.sp.material.opacity = Math.min(1, f.age/0.15) * (u > 0.6 ? 1 - (u-0.6)/0.4 : 1);
+  }
+}
+function clearFx(){ fx.forEach(f => { scene.remove(f.sp); f.sp.material.dispose(); }); fx.length = 0; }
+let wordSprite = null;
+function showWord(tex, pos, scale = 0.8){
+  if (wordSprite){ scene.remove(wordSprite); wordSprite.material.dispose(); }
+  wordSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: tex, transparent: true, depthWrite: false, depthTest: false}));
+  wordSprite.renderOrder = 9; wordSprite.position.copy(pos); wordSprite.userData.age = 0; wordSprite.userData.sc = scale; scene.add(wordSprite);
+}
+function updateWord(dt){
+  if (!wordSprite) return;
+  const a = (wordSprite.userData.age += dt), pop = a < 0.18 ? 0.6 + 2.6 * a : 1.07 - 0.07 * Math.min(1, (a - 0.18) / 0.15), k = wordSprite.userData.sc;
+  wordSprite.scale.set(k * pop, k * 0.5 * pop, 1); wordSprite.material.opacity = a > 1.2 ? Math.max(0, 1 - (a - 1.2) / 0.3) : 1;
+  if (a > 1.5){ scene.remove(wordSprite); wordSprite.material.dispose(); wordSprite = null; }
+}
+function resize(){ const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage); resize();
+// ---------- face prep: when an expression is drawn, the painted eye/mouth disappears into clean skin ----------
+// For each vertex on an eye or the mouth we store the skin colour of the surrounding ring, plus an offset and
+// a normal that sink the eye/mouth bump back onto the surrounding surface, so nothing looks like a closed lid.
+function prepFace(mesh, F){
+  const g = mesh.geometry, P = g.attributes.position, UV = g.attributes.uv, N = g.attributes.normal, n = P.count;
+  const img = mesh.material.map && mesh.material.map.image;
+  const W = img.width, H = img.height, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d', {willReadFrequently: true}); cx.drawImage(img, 0, 0); const px = cx.getImageData(0, 0, W, H).data;
+  const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const colOf = i => { const u = UV.getX(i), v = UV.getY(i);
+    const x = Math.min(W - 1, Math.max(0, Math.floor(((u % 1) + 1) % 1 * W))), y = Math.min(H - 1, Math.max(0, Math.floor(((v % 1) + 1) % 1 * H)));
+    const k = (y * W + x) * 4; return [lin(px[k]), lin(px[k + 1]), lin(px[k + 2])]; };
+  const OUT = F.eyeOut || 1.35, re = new Float32Array(n), rm = new Float32Array(n), cols = new Array(n);
+  for (let i = 0; i < n; i++){
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i), s = x < 0 ? -1 : 1;
+    re[i] = z > F.eyeZ ? Math.hypot((x - F.eye[0] * s) / F.eyeR[0], (y - F.eye[1]) / F.eyeR[1]) : 99;
+    rm[i] = z > F.mouthZ ? Math.hypot((x - F.mouth[0]) / F.mouthR[0], (y - F.mouth[1]) / F.mouthR[1]) : 99;
+    if (re[i] < OUT + 0.9 || rm[i] < 2.1) cols[i] = colOf(i);
+  }
+  const lum = c => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  const ringE = [], ringM = [];
+  for (let i = 0; i < n; i++){
+    if (re[i] > OUT - 0.1 && re[i] < OUT + 0.6) ringE.push(i);   /* skin ring around the eye */
+    else if (rm[i] > 1.25 && rm[i] < 2.0 && re[i] > 1.35 && lum(cols[i]) > 0.15) ringM.push(i);
+  }
+  // centre of the head from the skin ring around the eyes (least-squares sphere)
+  const M = Array.from({length: 4}, () => [0, 0, 0, 0, 0]);
+  for (const i of ringE){ const x = P.getX(i), y = P.getY(i), z = P.getZ(i), r = [2*x, 2*y, 2*z, 1], b = x*x + y*y + z*z;
+    for (let a = 0; a < 4; a++){ for (let c = 0; c < 4; c++) M[a][c] += r[a] * r[c]; M[a][4] += r[a] * b; } }
+  for (let a = 0; a < 4; a++){ let p = a; for (let r = a + 1; r < 4; r++) if (Math.abs(M[r][a]) > Math.abs(M[p][a])) p = r; [M[a], M[p]] = [M[p], M[a]];
+    for (let r = 0; r < 4; r++){ if (r === a) continue; const f = M[r][a] / M[a][a]; for (let c = a; c < 5; c++) M[r][c] -= f * M[a][c]; } }
+  const C = [M[0][4] / M[0][0], M[1][4] / M[1][1], M[2][4] / M[2][2]];
+  // eyes are filled with the dominant skin colour around each eye (keeps a clean, even patch)
+  const domE = F.eyeFill ? [F.eyeFill, F.eyeFill] : [-1, 1].map(sd => { const sel = ringE.filter(j => (P.getX(j) < 0 ? -1 : 1) === sd && P.getY(j) > F.eye[1] && re[j] < OUT + 0.3);   // upper half: forehead fur, away from snout and blush
+    return [0, 1, 2].map(k => { const v = sel.map(j => cols[j][k]).sort((a, b) => a - b); return v.length ? v[v.length >> 1] : 0.8; }); });
+  const aSkin = new Float32Array(n * 4), aFlat = new Float32Array(n * 4), aFlatN = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++){
+    aFlatN[i*3] = N.getX(i); aFlatN[i*3+1] = N.getY(i); aFlatN[i*3+2] = N.getZ(i);
+    const own = cols[i]; if (own){ aSkin[i*4] = own[0]; aSkin[i*4+1] = own[1]; aSkin[i*4+2] = own[2]; }
+    const pinkV = !F.noPink && cols[i] && cols[i][0] - cols[i][2] > 0.15 && cols[i][1] > 0.3;   // snout & blush stay as they are
+    const isE = re[i] < OUT && !pinkV, isM = !isE && rm[i] < 1.4;
+    if (!isE && !isM) continue;
+    const ring = isE ? ringE : ringM, r = isE ? re[i] : rm[i];
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+    const near = [];
+    for (const j of ring){ const d = Math.hypot(P.getX(j) - x, P.getY(j) - y, P.getZ(j) - z); if (near.length < 18 || d < near[near.length - 1][0]){ near.push([d, j]); near.sort((a, b) => a[0] - b[0]); if (near.length > 18) near.pop(); } }
+    if (!near.length) continue;
+    // colour: take ring samples lying in the same direction from the eye/mouth centre, so the skin pattern continues across
+    const sx = x < 0 ? -1 : 1, cxE = isE ? F.eye[0] * sx : F.mouth[0], cyE = isE ? F.eye[1] : F.mouth[1], rx = isE ? F.eyeR[0] : F.mouthR[0], ry = isE ? F.eyeR[1] : F.mouthR[1];
+    const ang = Math.atan2((y - cyE) / ry, (x - cxE) / rx), dirSet = [];
+    for (const j of ring){ const jx = P.getX(j), jy = P.getY(j); if (isE && (jx < 0) !== (x < 0)) continue;
+      let da = Math.abs(Math.atan2((jy - cyE) / ry, (jx - cxE) / rx) - ang); if (da > Math.PI) da = 2 * Math.PI - da;
+      if (da < 0.4) dirSet.push([Math.hypot(jx - x, jy - y, P.getZ(j) - z), j]); }
+    dirSet.sort((a, b) => a[0] - b[0]);
+    const pick = r < 0.6 || dirSet.length < 4 ? near : dirSet.slice(0, 8);   // the very middle blends from all around
+    const med = isE ? domE[x < 0 ? 0 : 1] : [0, 1, 2].map(k => { const v = pick.map(q => cols[q[1]][k]).sort((a, b) => a - b); return v[v.length >> 1]; });
+    let wsum = 0, rad = 0, nx = 0, ny = 0, nz = 0;
+    for (const [d, j] of near.slice(0, 10)){ const w = 1 / (d + 0.01); wsum += w;
+      rad += w * Math.hypot(P.getX(j) - C[0], P.getY(j) - C[1], P.getZ(j) - C[2]); nx += w * N.getX(j); ny += w * N.getY(j); nz += w * N.getZ(j); }
+    rad /= wsum; const nl = Math.hypot(nx, ny, nz) || 1;
+    const dx = x - C[0], dy = y - C[1], dz = z - C[2], dl = Math.hypot(dx, dy, dz) || 1;
+    const fade = isE ? 1 - Math.min(1, Math.max(0, (r - (OUT - 0.3)) / 0.3)) : 1 - Math.min(1, Math.max(0, (r - 1.05) / 0.3));
+    aSkin[i*4] = med[0]; aSkin[i*4+1] = med[1]; aSkin[i*4+2] = med[2]; aSkin[i*4+3] = fade;
+    aFlat[i*4] = C[0] + dx / dl * rad - x; aFlat[i*4+1] = C[1] + dy / dl * rad - y; aFlat[i*4+2] = C[2] + dz / dl * rad - z; aFlat[i*4+3] = isE ? 1 : 2;
+    aFlatN[i*3] = nx / nl; aFlatN[i*3+1] = ny / nl; aFlatN[i*3+2] = nz / nl;
+  }
+  g.setAttribute('aSkin', new THREE.BufferAttribute(aSkin, 4));
+  g.setAttribute('aFlat', new THREE.BufferAttribute(aFlat, 4));
+  g.setAttribute('aFlatN', new THREE.BufferAttribute(aFlatN, 3));
+}
+const FLAT_VS_HEAD = 'attribute vec4 aSkin;\nattribute vec4 aFlat;\nattribute vec3 aFlatN;\nuniform float uFlatE;\nuniform float uFlatM;\nvarying vec4 vSkin;\nvarying float vFlatW;\n';
+const FLAT_VS_NORMAL = `#include <beginnormal_vertex>
+  float flatW = (aFlat.w > 0.5 && aFlat.w < 1.5 ? uFlatE : (aFlat.w > 1.5 ? uFlatM : 0.0)) * aSkin.a;
+  objectNormal = normalize(mix(objectNormal, aFlatN, flatW));
+  vSkin = aSkin; vFlatW = flatW;`;
+
+// ---------- shader: blink / closed eyes, calm closed mouth, happy eyes, ear wobble ----------
+const f = x => Number(x).toFixed(4);
+const v2 = a => `vec2(${f(a[0])}, ${f(a[1])})`;
+const v3 = a => `vec3(${f(a[0])}, ${f(a[1])}, ${f(a[2])})`;
+function patch(m){ for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap']){ const tx = m[k]; if (tx){ tx.generateMipmaps = false; tx.minFilter = THREE.LinearFilter; tx.needsUpdate = true; } }   // 模型建立規則 4.6：Meshy 貼圖是很多緊貼的碎片，一定要關 mipmap
+  
+  const c = CFG;
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, {uGlow:glowU, uFlatE:flatEU, uFlatM:flatMU, uLid:lidU, uCalm:calmU, uHappy:happyU, uSad:sadU});
+    sh.fragmentShader = 'uniform float uGlow;\nuniform float uLid;\nuniform float uCalm;\nuniform float uHappy;\nuniform float uSad;\nvarying vec3 vObj;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+      if (!gl_FrontFacing && vFlatW > 0.05) discard;
+      float coverM = 0.0;
+      float inkK = 0.0;
+      float eyeK = max(max(uLid, uHappy), uSad);
+      if (eyeK > 0.01 && vObj.z > ${f(c.eyeZ)}) {
+        float side = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 e = (vObj.xy - vec2(${f(c.eye[0])} * side, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        float r = length(e);
+        if (r < ${f((c.eyeOut || 1.35) + 0.15)} && (uHappy > 0.5 || uSad > 0.5 || e.y > ${f(c.eyeOut || 1.35)} * (1.0 - 2.0 * uLid))) {
+          coverM = smoothstep(${f((c.eyeOut || 1.35) + 0.15)}, ${f((c.eyeOut || 1.35) - 0.1)}, r)${c.noPink ? '' : ' * (1.0 - step(0.15, diffuseColor.r - diffuseColor.b) * step(0.3, diffuseColor.g) * (1.0 - step(0.55, diffuseColor.g)) * step(1.6, r))'};
+          diffuseColor.rgb = mix(diffuseColor.rgb, ${c.eyeFill ? v3(c.eyeFill) : 'vSkin.rgb'}, coverM);
+          if (uHappy > 0.9) {
+            vec2 tip = vec2(0.0, 0.62), a1 = vec2(-0.92, -0.38), a2 = vec2(0.92, -0.38);
+            vec2 pa = e - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = e - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.3) { diffuseColor.rgb = ${v3(c.ink)}; inkK = 1.0; }
+          } else if (uSad > 0.9) {
+            // 難過：「> <」眼（2026-10-18 搖頭不吃）
+            vec2 q = vec2(-e.x * side, e.y), tip = vec2(0.42, 0.0), a1 = vec2(-0.5, 0.42), a2 = vec2(-0.5, -0.42);
+            vec2 pa = q - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = q - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.2) { diffuseColor.rgb = ${v3(c.ink)}; inkK = 1.0; }
+          } else if (uLid > 0.9 && abs(e.x) < 1.2) {
+            float yc = -0.12 - 0.56 * (1.0 - (e.x * e.x) / 1.44);
+            if (abs(e.y - yc) < 0.3) { diffuseColor.rgb = ${v3(c.ink)}; inkK = 1.0; }
+          }
+        }
+      }
+      float mouthK = max(uCalm, uSad);
+      if (mouthK > 0.01 && vObj.z > ${f(c.mouthZ)}) {
+        vec2 mo = (vObj.xy - ${v2(c.mouth)}) / ${v2(c.mouthR)};
+        float r = length(mo);
+        if (r < 1.2) {
+          float mm = smoothstep(1.2, 0.95, r) * mouthK;
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, mm);
+          coverM = max(coverM, mm);
+          vec2 q = (vObj.xy - vec2(0.0, ${f(c.mouth[1] + 0.01)})) / vec2(0.045, 0.02);
+          if (mouthK > 0.9 && abs(q.x) < 1.0) {
+            float yc = (uSad > 0.5 ? 0.6 : -0.6) * (1.0 - q.x * q.x);   // 難過時嘴角往下
+            if (abs(q.y - yc) < 0.38) diffuseColor.rgb = vec3(0.36, 0.2, 0.22);
+          }
+        }
+      }`).replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+      totalEmissiveRadiance += vec3(0.0) * inkK;
+      if (uGlow > 0.001 && vObj.z > ${f(c.eyeZ)}) {
+        float sideG = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 eg = (vObj.xy - vec2(${f(c.eye[0])} * sideG, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        float rg = length(eg), gmask = smoothstep(1.08, 0.86, rg) * uGlow;
+        float slit = smoothstep(0.2, 0.1, abs(eg.x) / (1.0 - 0.75 * eg.y * eg.y + 0.0001)) * step(abs(eg.y), 0.82);   /* cat slit pupil */
+        diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.55, 1.0, 0.62), vec3(0.05, 0.25, 0.1), slit), gmask);
+        totalEmissiveRadiance += vec3(0.35, 1.0, 0.55) * gmask * (1.0 - 0.85 * slit) * 1.6;
+        float halo = smoothstep(1.35, 1.0, rg) * (1.0 - smoothstep(1.0, 0.86, rg)) * uGlow;   /* soft glow on the rim */
+        totalEmissiveRadiance += vec3(0.25, 0.8, 0.4) * halo * 0.5;
+      }`).replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+          roughnessFactor = mix(roughnessFactor, 0.85, max(coverM, vFlatW));
+`).replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+          metalnessFactor = mix(metalnessFactor, 0.0, max(coverM, vFlatW));`).replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+      normal = normalize(mix(normal, nonPerturbedNormal, max(coverM, vFlatW)));`);
+    sh.vertexShader = FLAT_VS_HEAD + 'varying vec3 vObj;\n' + sh.vertexShader.replace('#include <beginnormal_vertex>', FLAT_VS_NORMAL).replace('#include <begin_vertex>', `#include <begin_vertex>
+      transformed += aFlat.xyz * flatW;
+      vObj = position;`);
+  };
+  m.customProgramCacheKey = () => 'dragonadult';
+  m.needsUpdate = true;
+}
+
+
+// ---------- skeleton helpers ----------
+let model = null; const bones = {}, rest = {}, restP = {};
+const _pq = new THREE.Quaternion(), _rq = new THREE.Quaternion(), _w = new THREE.Quaternion(), _l = new THREE.Quaternion();
+function resetPose(){ for (const n in bones){ bones[n].quaternion.copy(rest[n]); bones[n].position.copy(restP[n]); } }
+// rotate a bone about an axis in the character's own space (x = his left, y = up, z = forward)
+function rot(name, axis, ang){
+  const b = bones[name]; if (!b || !ang) return;
+  b.parent.updateWorldMatrix(true, false);
+  b.parent.getWorldQuaternion(_pq); model.getWorldQuaternion(_rq);
+  _pq.premultiply(_rq.invert());
+  _w.setFromAxisAngle(AX[axis], ang);
+  _l.copy(_pq).invert().multiply(_w).multiply(_pq);
+  b.quaternion.premultiply(_l).normalize();
+}
+function rotWorld(b, axis, ang){
+  b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pq);
+  _w.setFromAxisAngle(axis, ang); _l.copy(_pq).invert().multiply(_w).multiply(_pq); b.quaternion.premultiply(_l);
+}
+const FEET = ['LeftFoot','RightFoot','LeftToeBase','RightToeBase'];
+const _v = V3();
+function wpos(n, out = V3()){ return bones[n].getWorldPosition(out); }
+const tailR = {};
+function feetLow(){ let mn = Infinity; model.updateMatrixWorld(true); for (const n of FEET) mn = Math.min(mn, wpos(n, _v).y); for (const n in tailR) mn = Math.min(mn, wpos(n, _v).y - tailR[n]); return mn; }
+let restFeet = 0, skinned = null;
+const charPt = (x, y, z) => rig.localToWorld(V3(x, y, z));
+
+// ---------- tail (2 small bones) and arms ----------
+const TL = ['Tail01', 'Tail02', 'Tail03', 'Tail04', 'Tail05', 'Tail06', 'Tail07'];
+function tailSway(amp, t, spd = 1.5, curl = 0){ TL.forEach((n, i) => { rot(n, 'y', amp * 0.16 * Math.sin(t * spd - 0.6 * i)); if (curl) rot(n, 'x', curl * 0.1); }); }
+function tailBend(yaw, curl = 0){ TL.forEach(n => { rot(n, 'y', yaw / 7); if (curl) rot(n, 'x', curl / 7); }); }
+/* wings. open 1 = spread (rest pose), 0 = folded back against the back. flap > 0 lifts both tips, < 0 lowers them (each wing mirrored). */
+function wingSet(sd, open = 1, flap = 0, hug = 0){ const s = sd === 'Left' ? 1 : -1, f = 1 - open;
+  if (f) { rot(sd + 'Wing1', 'y', s * 0.85 * f); rot(sd + 'Wing2', 'y', s * 0.6 * f); rot(sd + 'Wing1', 'z', -s * 0.5 * f); rot(sd + 'Wing2', 'z', -s * 0.4 * f); }
+  if (hug){ rot(sd + 'Wing1', 'y', -s * 1.05 * hug); rot(sd + 'Wing2', 'y', -s * 0.75 * hug); rot(sd + 'Wing1', 'z', -s * 0.25 * hug); rot(sd + 'Wing2', 'z', -s * 0.35 * hug); }
+  if (flap){ rot(sd + 'Wing1', 'z', s * 0.6 * flap); rot(sd + 'Wing2', 'z', s * 0.55 * flap); } }
+function wings(open, flap = 0, flapR = flap, hug = 0){ wingSet('Left', open, flap, hug); wingSet('Right', open, flapR, hug); }
+/* The dragon's rest pose already holds the arms ~35 deg away from the body, so abd is only an OFFSET from that rest:
+   abd > 0 lifts the arm sideways, capped at ABD_MAX (user rule 2026-11-02: no T-pose / arms-out-flat), abd < 0 draws it in a little.
+   fwd swings the whole arm forward, el bends the forearm forward, tw twists. */
+const ABD_MAX = 0.30, ABD_MIN = -0.14, FWD_MAX = 1.15, EL_MAX = 1.4;
+function armSet(sd, abd, fwd = 0, el = 0, tw = 0){ const s = sd === 'Left' ? 1 : -1; abd = Math.max(ABD_MIN, Math.min(ABD_MAX, abd)); fwd = Math.max(-1.0, Math.min(FWD_MAX, fwd)); el = Math.max(-0.2, Math.min(EL_MAX, el));
+  if (abd){ rot(sd + 'Shoulder', 'z', s * abd * 0.2); rot(sd + 'Arm', 'z', s * abd * 0.6); rot(sd + 'ForeArm', 'z', s * abd * 0.2); }
+  if (fwd){ rot(sd + 'Shoulder', 'x', -fwd * 0.15); rot(sd + 'Arm', 'x', -fwd * 0.85); }
+  if (el) rot(sd + 'ForeArm', 'x', -el);
+  if (tw){ rot(sd + 'Arm', 'y', tw * 0.5); rot(sd + 'ForeArm', 'y', tw * 0.5); } }
+function arms(abdL, fwdL = 0, elL = 0, abdR = abdL, fwdR = fwdL, elR = elL){ armSet('Left', abdL, fwdL, elL); armSet('Right', abdR, fwdR, elR); }
+function clampTo(n, lim){ const b = bones[n]; if (!b) return; const a = b.quaternion.angleTo(rest[n]); if (a > lim){ _l.copy(rest[n]).slerp(b.quaternion, lim / a); b.quaternion.copy(_l); } }
+
+/* ---- two-bone arm IK (world space). The bone lengths are measured once at the bind pose. pole = the way the elbow should point.
+   k blends from the pose the page already set (0) to the full IK pose (1). */
+let armLen = null;
+function measureArms(){ armLen = {}; model.updateMatrixWorld(true); for (const sd of ['Left', 'Right']){ const S = wpos(sd + 'Arm', V3()), E = wpos(sd + 'ForeArm', V3()), H = wpos(sd + 'Hand', V3()); armLen[sd] = [S.distanceTo(E), E.distanceTo(H)]; } }
+const _aq = new THREE.Quaternion();
+function aimBone(b, cur, tgt){ _aq.setFromUnitVectors(cur, tgt); b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pq); _l.copy(_pq).invert().multiply(_aq).multiply(_pq); b.quaternion.premultiply(_l).normalize(); b.updateMatrixWorld(true); }
+const _qa0 = new THREE.Quaternion(), _qf0 = new THREE.Quaternion();
+function elbowPole(sd, up = -0.8, out = 0.6, back = 0.2){ const s = sd === 'Left' ? 1 : -1, o = V3(s, 0, 0).applyQuaternion(rig.quaternion), f = V3(0, 0, 1).applyQuaternion(rig.quaternion); return o.multiplyScalar(out).add(V3(0, up, 0)).addScaledVector(f, -back); }
+function ikArm(sd, X, pole, k = 1){
+  if (k <= 0.001 || !armLen) return;
+  const A = bones[sd + 'Arm'], F = bones[sd + 'ForeArm'], Hd = bones[sd + 'Hand'], l = armLen[sd] || [0.29, 0.24];
+  model.updateMatrixWorld(true);
+  const S = A.getWorldPosition(V3()); let d = X.distanceTo(S); const dmax = l[0] + l[1] - 0.012, dmin = Math.max(Math.abs(l[0] - l[1]) + 0.03, 0.36);   /* never fold the elbow past ~110 deg */ d = Math.max(dmin, Math.min(dmax, d));
+  const dir = X.clone().sub(S).normalize(); const a = (l[0] * l[0] - l[1] * l[1] + d * d) / (2 * d), h = Math.sqrt(Math.max(0, l[0] * l[0] - a * a));
+  const perp = pole.clone().sub(dir.clone().multiplyScalar(pole.dot(dir))).normalize();
+  const E = S.clone().addScaledVector(dir, a).addScaledVector(perp, h);
+  _qa0.copy(A.quaternion); _qf0.copy(F.quaternion);
+  const E0 = F.getWorldPosition(V3()); aimBone(A, E0.sub(S).normalize(), E.clone().sub(S).normalize());
+  F.updateWorldMatrix(true, false); const Ec = F.getWorldPosition(V3()), H0 = Hd.getWorldPosition(V3()); aimBone(F, H0.sub(Ec).normalize(), X.clone().sub(Ec).normalize().multiplyScalar(1));
+  if (k < 0.999){ const qa1 = A.quaternion.clone(), qf1 = F.quaternion.clone(); A.quaternion.slerpQuaternions(_qa0, qa1, k); F.quaternion.slerpQuaternions(_qf0, qf1, k); }
+  A.updateMatrixWorld(true);
+}
+async function fetchModel(file){
+  const res = await fetch(file); if (!res.ok) throw new Error('fetch ' + res.status);
+  const j = await res.json(); const raw = atob(j._bin); delete j._bin;
+  const bin = new Uint8Array(raw.length); for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
+  delete j.buffers[0].uri; j.buffers[0].byteLength = bin.length;
+  const jb = new TextEncoder().encode(JSON.stringify(j)); const jLen = Math.ceil(jb.length/4)*4, bLen = Math.ceil(bin.length/4)*4;
+  const buf = new ArrayBuffer(28 + jLen + bLen), dv = new DataView(buf), u8 = new Uint8Array(buf);
+  dv.setUint32(0, 0x46546C67, true); dv.setUint32(4, 2, true); dv.setUint32(8, buf.byteLength, true);
+  dv.setUint32(12, jLen, true); dv.setUint32(16, 0x4E4F534A, true); u8.fill(0x20, 20, 20 + jLen); u8.set(jb, 20);
+  const o = 20 + jLen; dv.setUint32(o, bLen, true); dv.setUint32(o + 4, 0x004E4942, true); u8.set(bin, o + 8);
+  return new Promise((ok, fail) => new GLTFLoader().parse(buf, './', ok, fail));
+}
+
+// ---------- prop helpers ----------
+const mat = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({color: c, roughness: 0.75}, o));
+const SPH = new THREE.SphereGeometry(1, 20, 14), CYL = new THREE.CylinderGeometry(1, 1, 1, 14), CONE = new THREE.ConeGeometry(1, 1, 12), BOX = new THREE.BoxGeometry(1, 1, 1);
+function mesh(p, geo, m, pos, s){ const o = new THREE.Mesh(geo, m); o.position.set(...pos); if (Array.isArray(s)) o.scale.set(...s); else o.scale.setScalar(s); p.add(o); return o; }
+function placeStick(o, A, B, r){ const d = _d1.subVectors(B, A); const L = d.length() || 1e-4; o.position.copy(A).addScaledVector(d, 0.5); o.scale.set(r, L, r); o.quaternion.setFromUnitVectors(AX.y, d.multiplyScalar(1 / L)); }
+const _d1 = V3();
+function stick(p, a, b, r, m){ const o = new THREE.Mesh(CYL, m); placeStick(o, V3(...a), V3(...b), r); p.add(o); return o; }
+const ease = x => x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const span = (t, a, b) => clamp01((t - a) / (b - a));
+const bell = x => Math.sin(Math.PI * clamp01(x));
+const backOut = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, t) => a + (b - a) * t;
+const glowTexB = makeTex(g => { const r = g.createRadialGradient(64, 64, 2, 64, 64, 62); r.addColorStop(0, 'rgba(255,255,255,0.9)'); r.addColorStop(0.35, 'rgba(190,225,255,0.45)'); r.addColorStop(1, 'rgba(160,200,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+const popS = (T, a, b, c, d) => Math.max(0.001, backOut(span(T, a, b)) * (1 - ease(span(T, c, d))));
+const _bp = V3();
+const sparkTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -56); g.quadraticCurveTo(6, -6, 56, 0); g.quadraticCurveTo(6, 6, 0, 56); g.quadraticCurveTo(-6, 6, -56, 0); g.quadraticCurveTo(-6, -6, 0, -56); g.closePath(); g.fillStyle = '#fff6b8'; g.fill(); g.lineWidth = 6; g.strokeStyle = '#ffffff'; g.stroke(); });
+const tearTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -46); g.bezierCurveTo(26, -10, 38, 10, 38, 24); g.arc(0, 24, 38, 0, Math.PI); g.bezierCurveTo(-38, 10, -26, -10, 0, -46); g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#7ec8f5'; g.fill(); });
+
+// rigid partner models (babies etc.), normalised to a height H (metres), feet on y = 0, facing +z
+function makeBaby(file, H, o = {}){
+  const B = {root: new THREE.Group(), body: new THREE.Group(), ready: false, file, H}; B.root.add(B.body); B.root.visible = false; scene.add(B.root);
+  B.load = () => B.p || (B.p = fetchModel(file).then(gl => {
+    const m = gl.scene; m.traverse(oo => { if (oo.isMesh){ oo.frustumCulled = false; (Array.isArray(oo.material) ? oo.material : [oo.material]).forEach(mm => { mm.roughness = Math.max(mm.roughness || 0, 0.7); mm.metalness = 0; }); } });
+    m.updateMatrixWorld(true); let bb = new THREE.Box3().setFromObject(m); const k = H / Math.max(0.01, bb.max.y - bb.min.y); m.scale.multiplyScalar(k); if (o.yaw) m.rotation.y = o.yaw;
+    m.updateMatrixWorld(true); bb = new THREE.Box3().setFromObject(m); m.position.y -= bb.min.y; B.body.add(m);
+    B.sh = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), new THREE.MeshBasicMaterial({map: shadow.material.map, transparent: true, depthWrite: false})); AXQ(B.sh, 'x', -Math.PI / 2); B.sh.position.y = 0.004; B.sh.renderOrder = -1; B.sh.visible = false; scene.add(B.sh); B.ready = true;
+  }).catch(err => console.error(file, err)));
+  return B;
+}
+// =====================================================================================================
+// props for the four talents
+// =====================================================================================================
+const flameTex = makeTex(g => { const r = g.createRadialGradient(64, 78, 4, 64, 78, 58); r.addColorStop(0, 'rgba(255,250,210,1)'); r.addColorStop(0.3, 'rgba(255,200,80,0.95)'); r.addColorStop(0.7, 'rgba(255,110,40,0.55)'); r.addColorStop(1, 'rgba(255,80,30,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128);
+  g.beginPath(); g.moveTo(64, 8); g.bezierCurveTo(98, 52, 100, 84, 64, 112); g.bezierCurveTo(28, 84, 30, 52, 64, 8); g.closePath(); g.fillStyle = 'rgba(255,170,60,0.55)'; g.fill(); });
+const warmGlow = makeTex(g => { const r = g.createRadialGradient(64, 64, 2, 64, 64, 62); r.addColorStop(0, 'rgba(255,236,170,1)'); r.addColorStop(0.35, 'rgba(255,200,100,0.55)'); r.addColorStop(1, 'rgba(255,170,70,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+const addSprite = (map, sc, vis = false) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({map, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false})); s.scale.set(sc, sc, 1); s.visible = vis; scene.add(s); return s; };
+
+// ---------------- 點亮公園: five lamp posts, a string of lanterns, fireflies ----------------
+const LAMP_P = [[-3.4, -0.4], [-1.7, -2.3], [1.7, -2.3], [3.4, -0.4]], LAMP_H = 1.28;
+const lightG = new THREE.Group(); lightG.visible = false; scene.add(lightG);
+const lamps = LAMP_P.map(([x, z]) => {
+  const g = new THREE.Group(); g.position.set(x, 0, z); lightG.add(g);
+  mesh(g, CYL, mat(0x4a3a2c), [0, LAMP_H / 2, 0], [0.04, LAMP_H, 0.04]); mesh(g, CYL, mat(0x4a3a2c), [0, 0.04, 0], [0.12, 0.08, 0.12]);
+  const cap = mesh(g, CONE, mat(0x3a2c22), [0, LAMP_H + 0.27, 0], [0.17, 0.12, 0.17]);
+  const lm = new THREE.MeshBasicMaterial({color: 0x6a5846}); const lan = mesh(g, SPH, lm, [0, LAMP_H + 0.12, 0], [0.13, 0.16, 0.13]);
+  const gl = addSprite(warmGlow, 1.6); gl.position.set(x, LAMP_H + 0.12, z); return {g, lm, gl, x, z, top: V3(x, LAMP_H + 0.12, z), k: 0};
+});
+const GAR = {y0: 3.0, sag: 0.55, xa: -5.2, xb: 5.2, z: -3.4, n: 15};
+GAR.poles = [GAR.xa, GAR.xb].map(x => mesh(lightG, CYL, mat(0x6b4a2e), [x, 1.7, GAR.z], [0.07, 3.4, 0.07]));
+const garBulbs = Array.from({length: GAR.n}, (_, i) => { const u = i / (GAR.n - 1), x = lerp(GAR.xa, GAR.xb, u), y = GAR.y0 - GAR.sag * 4 * u * (1 - u);
+  const lm = new THREE.MeshBasicMaterial({color: 0x6a5846}); const b = mesh(lightG, SPH, lm, [x, y, GAR.z], 0.07); const gl = addSprite(warmGlow, 0.9); gl.position.set(x, y, GAR.z); return {lm, gl, b, u, k: 0}; });
+{ const pts = []; for (let i = 0; i <= 30; i++){ const u = i / 30; pts.push(V3(lerp(GAR.xa, GAR.xb, u), GAR.y0 - GAR.sag * 4 * u * (1 - u) + 0.05, GAR.z)); } lightG.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color: 0x3a2c22}))); }
+const FIRE_N = 26, flies = Array.from({length: FIRE_N}, (_, i) => { const s = addSprite(warmGlow, 0.22); return {s, a: i * 2.399, r: 1.5 + (i % 7) * 0.55, h: 0.5 + (i % 5) * 0.35, sp: 0.4 + (i % 4) * 0.12}; });
+function setLamp(L, k){ L.k = k; L.lm.color.setRGB(lerp(0.42, 1.0, k), lerp(0.35, 0.82, k), lerp(0.27, 0.48, k)); L.gl.visible = k > 0.01; L.gl.material.opacity = 0.95 * k; const s = 1.6 * (0.9 + 0.1 * Math.sin(performance.now() / 160 + L.x)) * (0.4 + 0.6 * k); L.gl.scale.set(s, s, 1); }
+function setBulb(B, k){ B.k = k; B.lm.color.setRGB(lerp(0.42, 1.0, k), lerp(0.35, 0.82, k), lerp(0.27, 0.48, k)); B.gl.visible = k > 0.01; B.gl.material.opacity = 0.9 * k; B.gl.scale.setScalar(0.9 * (0.5 + 0.5 * k)); }
+const fireball = addSprite(flameTex, 0.4), handFlame = addSprite(flameTex, 0.3);
+// =====================================================================================================
+// props shared by the fly / egg / photo talents: the cow teen rider, partner babies, the egg
+// =====================================================================================================
+function placeBaby(B, s){
+  if (!B.ready) return;
+  B.root.position.set(s.x, s.y, s.z); QYXZ(B.root.quaternion, s.yaw, s.pitch || 0, s.roll || 0);
+  const k = s.sc == null ? 1 : s.sc, q = s.sq || 1;
+  B.body.scale.set(k / Math.sqrt(q), k * q, k / Math.sqrt(q));
+  B.sh.visible = s.y < 0.06 && s.shadow !== false && k > 0.05; B.sh.position.set(s.x, 0.004, s.z); B.sh.scale.setScalar((0.9 - 0.4 * Math.min(1, s.y / 0.06)) * k);
+}
+// partners (rigid babies, loaded when a talent that needs them is played)
+const PARTNERS = {
+  bunny: makeBaby('bunny_model.json', 0.62), cow: makeBaby('cow_model.json', 0.66), puppy: makeBaby('puppy_model.json', 0.6), bear: makeBaby('bear_model.json', 0.66),
+  pangolin: makeBaby('pangolin_model.json', 0.6), penguin: makeBaby('penguin_model.json', 0.62), mammoth: makeBaby('mammoth_model.json', 0.78), leopard: makeBaby('leopard_model.json', 0.6),
+  owl: makeBaby('owl_model.json', 0.62), turtle: makeBaby('turtle_model.json', 0.52), magpie: makeBaby('magpie_model.json', 0.66), sparky: makeBaby('sparky_model.json', 0.72),
+  rex: makeBaby('rexbaby_model.json', 0.72), dragon: makeBaby('dragon_model.json', 0.62)};
+const loadPartners = names => Promise.all(names.map(n => PARTNERS[n].load()));
+const hidePartners = () => { for (const k in PARTNERS){ const B = PARTNERS[k]; B.root.visible = false; if (B.sh) B.sh.visible = false; } };
+// the egg: warm cream shell with orange speckles, a glow, and two halves for hatching
+const eggTexC = (() => { const c = document.createElement('canvas'); c.width = 256; c.height = 256; const g = c.getContext('2d'); const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, '#ffe9b8'); gr.addColorStop(0.55, '#ffd48a'); gr.addColorStop(1, '#f6a45a'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+  const r = (a => () => (a = (a * 16807) % 2147483647) / 2147483647)(7); for (let i = 0; i < 46; i++){ g.fillStyle = i % 3 ? 'rgba(232,88,50,0.55)' : 'rgba(255,255,255,0.5)'; g.beginPath(); g.ellipse(r() * 256, r() * 256, 5 + r() * 9, 4 + r() * 7, r() * 3, 0, TAU); g.fill(); } const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; tx.wrapS = THREE.RepeatWrapping; return tx; })();
+const eggMat = new THREE.MeshStandardMaterial({map: eggTexC, roughness: 0.55, emissive: 0xff8a3a, emissiveIntensity: 0.0, side: THREE.DoubleSide});
+const eggG = new THREE.Group(); eggG.visible = false; scene.add(eggG);
+const EGG_R = 0.23;   /* radius; the egg is 1.28 x taller */
+const eggTop = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 16, 0, TAU, 0, Math.PI / 2), eggMat), eggBot = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 16, 0, TAU, Math.PI / 2, Math.PI / 2), eggMat);
+[eggTop, eggBot].forEach(m => { m.scale.set(EGG_R, EGG_R * 1.28, EGG_R); eggG.add(m); });
+const eggGlow = addSprite(warmGlow, 1.4);
+const crackTex = makeTex(g => { g.strokeStyle = '#6b3a1c'; g.lineWidth = 6; g.lineJoin = 'round'; g.beginPath(); g.moveTo(8, 70); g.lineTo(30, 52); g.lineTo(48, 76); g.lineTo(68, 48); g.lineTo(88, 74); g.lineTo(110, 56); g.lineTo(122, 70); g.stroke(); });
+const crack = new THREE.Sprite(new THREE.SpriteMaterial({map: crackTex, transparent: true, depthWrite: false})); crack.scale.set(0.5, 0.5, 1); crack.visible = false; scene.add(crack);
+// nest: a ring of stones and straw
+const nestG = new THREE.Group(); nestG.visible = false; scene.add(nestG);
+for (let i = 0; i < 14; i++){ const a = i / 14 * TAU, r = 0.42; mesh(nestG, SPH, mat(i % 2 ? 0x8a7a6a : 0x9a8a78, {roughness: 0.95}), [Math.cos(a) * r, 0.08, Math.sin(a) * r], [0.12, 0.09, 0.12]); }
+mesh(nestG, CYL, mat(0xd8b46a, {roughness: 1}), [0, 0.04, 0], [0.4, 0.08, 0.4]);
+
+// ---------------- 天空巡航: cloud puffs and the glowing map of Taiwan (every light is a park the players lit) ----------------
+const cloudTex = makeTex(g => { for (let i = 0; i < 9; i++){ const a = i / 9 * TAU, cx = 64 + Math.cos(a) * 24, cy = 64 + Math.sin(a) * 14, r = 26 + (i % 3) * 5; const gr = g.createRadialGradient(cx, cy, 2, cx, cy, r); gr.addColorStop(0, 'rgba(236,243,255,0.95)'); gr.addColorStop(1, 'rgba(236,243,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); } });
+const cloudsG = new THREE.Group(); cloudsG.visible = false; scene.add(cloudsG);
+{ const r = (a => () => (a = (a * 16807) % 2147483647) / 2147483647)(11);
+  for (let layer = 0; layer < 3; layer++){ const h = 12 + layer * 8; for (let k = 0; k < 9; k++){ const hh = h + (r() - 0.5) * 3, along = hh / 1.73 + (r() - 0.5) * 16;
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({map: cloudTex, transparent: true, depthWrite: false, opacity: 0.5 + r() * 0.3, fog: false})); s.position.set(along, hh, -4 + r() * 5); const sz = 3 + r() * 3.5; s.scale.set(sz * 1.7, sz, 1); s.renderOrder = 3; cloudsG.add(s); } } }
+const TW_POLY = [[121.54, 25.3], [121.75, 25.28], [121.95, 25.14], [122.0, 25.05], [121.9, 24.95], [121.82, 24.8], [121.85, 24.6], [121.85, 24.45], [121.7, 24.15], [121.6, 23.9], [121.5, 23.55], [121.4, 23.2], [121.35, 23.05], [121.2, 22.8], [121.05, 22.6], [120.9, 22.35], [120.85, 22.05], [120.85, 21.9], [120.72, 21.95], [120.68, 22.1], [120.62, 22.35], [120.55, 22.45], [120.4, 22.5], [120.3, 22.58], [120.2, 22.75], [120.1, 22.95], [120.08, 23.15], [120.12, 23.4], [120.14, 23.65], [120.22, 23.85], [120.35, 24.05], [120.52, 24.3], [120.7, 24.5], [120.85, 24.7], [120.95, 24.85], [121.05, 25.0], [121.25, 25.1], [121.4, 25.2]], TW_S = 0.06, TW_X0 = 38.5;
+const twToWorld = (lat, lon) => [TW_X0 + (lat - 23.6) * 111 * TW_S, (lon - 121.0) * 101.8 * TW_S];
+const twU = {uT: {value: 0}, uA: {value: 0}, uS: {value: 500}};
+const skyG = new THREE.Group(); skyG.visible = false; scene.add(skyG);
+{ const r = (a => () => (a = (a * 16807) % 2147483647) / 2147483647)(5), poly = TW_POLY.map(([lon, lat]) => twToWorld(lat, lon)); const pts = [], cols = [], sizes = [], ph = [];
+  const inside = (x, z) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++){ const [xi, zi] = poly[i], [xj, zj] = poly[j]; if (((zi > z) !== (zj > z)) && (x < (xj - xi) * (z - zi) / (zj - zi) + xi)) c = !c; } return c; };
+  const pal = [[1.0, 0.84, 0.5], [1.0, 0.95, 0.8], [1.0, 0.68, 0.32], [1.0, 0.9, 0.62]]; const add = (x, z, s) => { pts.push(x, 0.12, z); const c = pal[Math.floor(r() * pal.length)]; cols.push(c[0], c[1], c[2]); sizes.push(s); ph.push(r()); };
+  let n = 0; while (n < 3200){ const x = TW_X0 - 11.5 + r() * 23, z = (r() - 0.5) * 12; if (inside(x, z)){ add(x, z, 0.26 + 0.2 * r()); n++; } }
+  for (let i = 0; i < poly.length; i++){ const a = poly[i], b = poly[(i + 1) % poly.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]), m = Math.ceil(L / 0.16); for (let k = 0; k < m; k++){ const u = k / m; add(lerp(a[0], b[0], u), lerp(a[1], b[1], u), 0.34); } }
+  const gauss = () => (r() + r() + r() - 1.5) * 0.9;
+  for (const [lat, lon, cnt] of [[25.04, 121.55, 70], [24.99, 121.3, 45], [24.8, 120.97, 38], [24.15, 120.67, 70], [23.48, 120.45, 28], [22.99, 120.2, 50], [22.63, 120.3, 70], [23.98, 121.6, 28], [22.75, 121.15, 22], [24.75, 121.75, 28], [24.55, 120.82, 22], [23.7, 120.43, 22]]){ const [cx, cz] = twToWorld(lat, lon); for (let k = 0; k < cnt; k++){ const x = cx + gauss() * 0.55, z = cz + gauss() * 0.45; if (inside(x, z)) add(x, z, 0.5 + 0.4 * r()); } }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3)); g.setAttribute('aC', new THREE.Float32BufferAttribute(cols, 3)); g.setAttribute('aS', new THREE.Float32BufferAttribute(sizes, 1)); g.setAttribute('aP', new THREE.Float32BufferAttribute(ph, 1));
+  const m = new THREE.ShaderMaterial({uniforms: twU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+    vertexShader: 'attribute vec3 aC; attribute float aS; attribute float aP; uniform float uT; uniform float uS; varying vec3 vC; varying float vA; void main(){ vC = aC; vec4 mv = modelViewMatrix * vec4(position, 1.0); float tw = 0.72 + 0.28 * sin(uT * 2.0 + aP * 6.2831); gl_PointSize = aS * uS * tw / max(0.5, -mv.z); vA = tw; gl_Position = projectionMatrix * mv; }',
+    fragmentShader: 'uniform float uA; varying vec3 vC; varying float vA; void main(){ float r = length(gl_PointCoord - 0.5) * 2.0; float a = smoothstep(1.0, 0.0, r); a *= a; gl_FragColor = vec4(vC * (0.55 + a), a * uA * vA); }'});
+  const pt = new THREE.Points(g, m); pt.frustumCulled = false; skyG.add(pt); }
+const photoG = new THREE.Group(); photoG.visible = false; scene.add(photoG);
+// risers for the group photo: the back rows stand higher so every face can be seen
+mesh(photoG, BOX, mat(0xc9985a, {roughness: 0.9}), [0, 0.14, 0.0], [6.9, 0.28, 0.95]); mesh(photoG, BOX, mat(0xd8aa6a, {roughness: 0.9}), [0, 0.07, 0.75], [6.3, 0.14, 0.75]);
+mesh(photoG, BOX, mat(0xa87a44, {roughness: 0.9}), [0, 0.285, 0.0], [7.0, 0.01, 1.0]);
+mesh(photoG, BOX, mat(0xb88a4e, {roughness: 0.9}), [0, 0.25, -1.9], [2.6, 0.5, 1.4]); mesh(photoG, BOX, mat(0x9a6c3a, {roughness: 0.9}), [0, 0.505, -1.9], [2.7, 0.01, 1.5]);
+// ---------- motions ----------
+const names = {idle:'待機', light:'點亮公園', fly:'天空巡航', egg:'孵蛋時光', photo:'全員大合照', sleep:'睡覺', eat:'開心吃', snack:'最愛點心', refuse:'搖頭不吃'};
+const LEN = {idle:8, light:16, fly:18, egg:16, photo:16, sleep:8, eat:6, snack:7, refuse:5};
+let move = 'idle', t0 = performance.now()/1000, frozen = null, gY = 0, __dE = 0.016;
+const hitT = (T, X) => T >= X && T - __dE < X;
+let __hold = 0; const EMBED = new URLSearchParams(location.search).get('embed') === '1';   // 才藝、餵食播一次：停在最後一格約 1 秒再回待機（App 裡只停住，由 App 切回待機）
+const blinkAt = (t, off = 0) => { const b = ((t + off) % 4.6) / 0.2; return b < 1 ? Math.sin(Math.PI * b) : 0; };
+const wrapA = a => Math.atan2(Math.sin(a), Math.cos(a));
+const angLerp = (a, b, u) => a + wrapA(b - a) * u;
+const hp = x => (x > 0.1 ? 1 : 0);
+const ss = x => { x = clamp01(x); return x * x * (3 - 2 * x); };
+const trap = (u, a = 0.2) => { u = clamp01(u); return u < a ? u * u / (2 * a * (1 - a)) : u > 1 - a ? 1 - (1 - u) * (1 - u) / (2 * a * (1 - a)) : (u - a / 2) / (1 - a); };
+const _tq = new THREE.Quaternion();
+function place(p){
+  for (const n of [...TL, 'Head', 'neck', 'Spine', 'Spine01', 'Spine02']) clampTo(n, 0.5);
+  QYXZ(rig.quaternion, p.ry, p.pitch, p.roll);
+  if (p.tilt){ _tq.setFromAxisAngle(AX.z, p.tilt); rig.quaternion.premultiply(_tq); }
+  rig.position.set(p.x, (p.yAbs != null ? p.yAbs : gY) + (p.surf == null ? p.hop : 0), p.z);
+  const sz = p.sz || 1; rig.scale.set(1 / Math.sqrt(p.sy * sz), p.sy, sz); rig.updateMatrixWorld(true);
+  if (p.anchor){ const h = wpos('Hips', V3()); rig.position.x += p.anchor[0] - h.x; rig.position.z += p.anchor[1] - h.z; rig.updateMatrixWorld(true); }
+}
+/* walking: phase in radians (advance it by distance so the feet never slide). Left leg forward <-> RIGHT arm forward (K33).
+   returns sin(phase)*amt */
+function sWalk(ph, amt, p, armsOn = true){
+  if (amt <= 0) return 0;
+  const s = Math.sin(ph);
+  rot('LeftUpLeg', 'x', -0.4 * amt * s); rot('RightUpLeg', 'x', 0.4 * amt * s);
+  rot('LeftLeg', 'x', 0.5 * amt * Math.max(0, -s)); rot('RightLeg', 'x', 0.5 * amt * Math.max(0, s));
+  rot('LeftFoot', 'x', 0.28 * amt * s - 0.28 * amt * Math.max(0, -s)); rot('RightFoot', 'x', -0.28 * amt * s - 0.28 * amt * Math.max(0, s));
+  if (armsOn){ rot('LeftArm', 'x', 0.34 * amt * s); rot('RightArm', 'x', -0.34 * amt * s); rot('LeftForeArm', 'x', -0.18 * amt * Math.max(0, -s)); rot('RightForeArm', 'x', -0.18 * amt * Math.max(0, s)); }
+  rot('Spine02', 'y', 0.06 * amt * s); rot('Spine01', 'y', 0.04 * amt * s); rot('Head', 'y', -0.05 * amt * s); tailBend(0.3 * amt * Math.sin(ph + 0.8), 0.05 * amt * Math.cos(2 * ph));
+  p.roll += 0.04 * amt * s;
+  return s * amt;
+}
+/* sitting on the ground: thighs forward k=1 -> about 85 deg */
+function sit(k, legsOut = 0){ for (const sd of ['Left', 'Right']){ const s = sd === 'Left' ? 1 : -1; rot(sd + 'UpLeg', 'x', -1.45 * k); rot(sd + 'Leg', 'x', 0.1 * k); rot(sd + 'Foot', 'x', 0.15 * k); rot(sd + 'UpLeg', 'z', s * 0.12 * k * (1 + legsOut)); } }
+function headTurn(yaw, pitch = 0){ rot('neck', 'y', yaw * 0.4); rot('Head', 'y', yaw * 0.6); rot('neck', 'x', pitch * 0.4); rot('Head', 'x', pitch * 0.6); }
+function life(p, t, k = 1, noWings = false){
+  const br = Math.sin(TAU * t / 3.6);
+  rot('Spine02', 'x', 0.012 * br * k); rot('Spine01', 'x', 0.012 * br * k);
+  rot('Head', 'y', 0.1 * Math.sin(t * 0.55) * k); rot('Head', 'x', 0.03 * Math.sin(t * 0.9) * k);
+  tailSway(0.4 * k, t, 1.3); if (!noWings) wings(0.62 + 0.03 * Math.sin(t * 0.9), 0.05 * Math.sin(t * 0.9 + 1) * k);
+  p.lid = Math.max(p.lid, blinkAt(t));
+}
+function spineLean(a){ rot('Spine02', 'x', a * 0.4); rot('Spine01', 'x', a * 0.35); rot('Spine', 'x', a * 0.25); }
+const fwdOf = ry => V3(Math.sin(ry), 0, Math.cos(ry));
+
+function poseIdle(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  life(p, t);
+  headTurn(0.35 * Math.sin(t * 0.45));
+  const wv = bell(span(T, 3.4, 5.4));
+  arms(-0.06 + 0.02 * Math.sin(t * 0.9), 0, 0, -0.06, 0.65 * wv, 1.05 * wv);
+  rot('RightForeArm', 'z', -0.32 * Math.sin(t * 9) * wv);
+  if (wv > 0.1) p.happy = 1;
+  p.ry = 0.1; place(p);
+}
+function poseSleep(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0; p.ground = 'all';
+  const br = Math.sin(TAU * t / 4.4);
+  sit(1); spineLean(-0.06 + 0.02 * br); rot('Head', 'x', 0.5 + 0.02 * br); rot('neck', 'x', 0.35);
+  arms(-0.1, 0.3, 0.5); tailBend(0.5, 0.1); tailSway(0.1, t, 0.8); wings(0.9 + 0.01 * br, 0.02 * br);
+  p.ry = 0.2; p.lid = 1; place(p);
+}
+
+// =====================================================================================================
+// 1. 點亮公園 (dusk): the dragon flicks a little fireball at each lamp, then lights the lantern string with a wing-spread hop
+// =====================================================================================================
+const STOP = [[-2.3, 0.5], [-0.9, -0.9], [0.9, -0.9], [2.3, 0.5]], WALK = [[2.0, 3.2], [4.0, 5.0], [5.8, 7.0], [7.8, 9.1]], REL = [3.55, 5.35, 7.35, 9.45], FB_FLY = 0.55, HOME = [0, 0.8];
+const LT_KEYS = (() => { const k = [[0, HOME[0], HOME[1]], [WALK[0][0], HOME[0], HOME[1]]]; STOP.forEach((s, i) => { k.push([WALK[i][1], s[0], s[1]]); if (i < 3) k.push([WALK[i + 1][0], s[0], s[1]]); }); k.push([10.0, STOP[3][0], STOP[3][1]], [11.2, HOME[0], HOME[1]], [16.5, HOME[0], HOME[1]]); return k; })();
+function routeAt(keys, T){ for (let i = 0; i < keys.length - 1; i++){ const a = keys[i], b = keys[i + 1]; if (T <= b[0] || i === keys.length - 2){ const u = trap(span(T, a[0], b[0]), 0.28); return [lerp(a[1], b[1], u), lerp(a[2], b[2], u), a, b]; } } return [keys[0][1], keys[0][2]]; }
+const routeDist = (keys, T) => { let d = 0; for (let i = 0; i < keys.length - 1; i++){ const a = keys[i], b = keys[i + 1], L = Math.hypot(b[1] - a[1], b[2] - a[2]); if (T >= b[0]) d += L; else { if (T > a[0]) d += L * trap(span(T, a[0], b[0]), 0.28); break; } } return d; };
+const routeAmt = (keys, T) => { let m = 0; for (let i = 0; i < keys.length - 1; i++){ const a = keys[i], b = keys[i + 1]; if (Math.hypot(b[1] - a[1], b[2] - a[2]) > 0.05) m = Math.max(m, ease(span(T, a[0], a[0] + 0.3)) * (1 - ease(span(T, b[0] - 0.3, b[0])))); } return m; };
+const yawKeys = ks => T => { for (let i = 0; i < ks.length - 1; i++){ const a = ks[i], b = ks[i + 1]; if (T <= b[0]) return angLerp(a[1], b[1], ease(span(T, a[0], b[0]))); } return ks[ks.length - 1][1]; };
+const hd = (ax, az, bx, bz) => Math.atan2(bx - ax, bz - az);
+const LT_YAW = (() => { const k = [[0, 0], [0.5, 0.5], [1.1, -0.4], [1.8, 0], [2.2, hd(...HOME, ...STOP[0])]]; let prev = HOME;
+  STOP.forEach((s, i) => { const h = hd(...prev, ...s), aL = hd(s[0], s[1], LAMP_P[i][0], LAMP_P[i][1]); if (i) k.push([WALK[i][0] + 0.25, h]); k.push([WALK[i][1], h], [WALK[i][1] + 0.2, aL], [WALK[i][1] + 0.9, aL]); prev = s; });
+  k.push([10.3, hd(...prev, ...HOME)], [11.2, hd(...prev, ...HOME)], [11.6, 0], [16.5, 0]); return yawKeys(k); })();
+const lampArrive = i => REL[i] + 0.12 + FB_FLY;
+const fbStart = i => { const s = STOP[i], a = hd(s[0], s[1], LAMP_P[i][0], LAMP_P[i][1]); return V3(s[0] + Math.sin(a) * 0.45, 1.0, s[1] + Math.cos(a) * 0.45); };
+function poseLight(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const [x, z] = routeAt(LT_KEYS, T); p.x = x; p.z = z; p.ry = LT_YAW(T);
+  const amt = routeAmt(LT_KEYS, T), fin = ease(span(T, 11.4, 12.2)) * (1 - ease(span(T, 14.6, 15.4)));
+  life(p, t, 0.6, true);
+  sWalk(routeDist(LT_KEYS, T) * (TAU / 0.85), amt, p, true);
+  headTurn(T < 1.9 ? 0.45 * Math.sin(T * 2.2) * (1 - ease(span(T, 1.2, 1.8))) : 0);
+  // the little torch in the right hand
+  const raise = ease(span(T, 1.2, 1.9)) * (1 - ease(span(T, 2.0, 2.4)));
+  if (raise > 0.01) armSet('Right', 0.1 * raise, 0.7 * raise, 1.0 * raise);
+  let A = 0, B = 0;
+  for (let i = 0; i < 4; i++){ const r = REL[i], wind = ease(span(T, r - 0.45, r)), sw = ease(span(T, r, r + 0.16)), rc = ease(span(T, r + 0.3, r + 0.85)); A += wind * (1 - sw); B += sw * (1 - rc); }
+  if (A + B > 0.01){ armSet('Right', 0.2 * (A + B), -0.55 * A + 1.0 * B, 1.0 * A + 0.25 * B); armSet('Left', -0.05, 0.25 * B, 0.2 * B); rot('Spine01', 'y', -0.3 * A + 0.22 * B); rot('Spine02', 'y', -0.15 * A + 0.12 * B); }
+  if (fin > 0.01){ const cheer = fin * ss(span(T, 12.0, 12.4)); if (cheer > 0.01){ armSet('Left', -0.14 * cheer, 0.3 * cheer, 1.3 * cheer); armSet('Right', -0.14 * cheer, 0.3 * cheer, 1.3 * cheer); } }
+  const hopN = span(T, 11.7, 13.5); let wFlap = 0.05 * Math.sin(t * 0.9); if (hopN > 0 && hopN < 1){ p.hop = 0.3 * Math.abs(Math.sin(hopN * Math.PI * 3)); wFlap = 0.7 * Math.sin(hopN * 9 * Math.PI); }
+  wings(0.62 + 0.38 * fin, wFlap);
+  if (T > 11.6) p.happy = 1;
+  p.camT = V3(0.3 * x, 0.5, -1.8); p.camD = 15.0; p.camEl = 2.0;
+  if (hitT(T, 0.5)) p.events.push('l1'); if (hitT(T, 1.5)) p.events.push('l2'); if (hitT(T, 11.7)) p.events.push('l3'); if (hitT(T, 12.2)) p.events.push('yay');
+  for (let i = 0; i < 4; i++){ if (hitT(T, REL[i] - 0.05)) p.events.push('lz'); if (hitT(T, lampArrive(i))) p.events.push('lamp' + i); }
+  place(p);
+}
+
+// =====================================================================================================
+// 2. 天空巡航 (night): the bunny and cow babies climb onto his back, he takes off from the lit-up park, climbs at 60 degrees through the clouds,
+//    and from the top we look down on Taiwan: every light is a park the players lit together.
+// =====================================================================================================
+const FL = {T0: 4.3, TOP: 10.4, LEVEL: 12.4, CLOUD_OUT: 10.4};
+const FLP = (() => { const N = Math.round(18 * 120) + 1, X = [], Y = [], TH = [], V = []; let x = 0, y = 0;
+  for (let i = 0; i < N; i++){ const T = i / 120, th = Math.PI / 3 * (1 - ease(span(T, FL.TOP, FL.LEVEL))), v = T < FL.T0 ? 0 : T < FL.TOP ? 7.0 * ease(span(T, FL.T0, 6.4)) : (T < FL.LEVEL ? lerp(7.0, 2.0, ease(span(T, FL.TOP, FL.LEVEL))) : lerp(2.0, 0.4, ease(span(T, FL.LEVEL, 14.4))));
+    X.push(x); Y.push(y); TH.push(th); V.push(v); x += v * Math.cos(th) / 120; y += v * Math.sin(th) / 120; }
+  return {X, Y, TH, V, at(T){ const f = Math.max(0, Math.min(N - 1.001, T * 120)), i = Math.floor(f), u = f - i; return {x: lerp(X[i], X[i + 1], u), y: lerp(Y[i], Y[i + 1], u), th: lerp(TH[i], TH[i + 1], u), v: lerp(V[i], V[i + 1], u)}; }}; })();
+const flFly = T => ease(span(T, FL.T0, FL.T0 + 1.0));
+const flPhase = T => TAU * (T < FL.T0 ? 1.5 * T : T < FL.TOP ? 1.5 * FL.T0 + 2.2 * (T - FL.T0) : T < FL.LEVEL ? 1.5 * FL.T0 + 2.2 * (FL.TOP - FL.T0) + 2.2 * (T - FL.TOP) - 0.325 * (T - FL.TOP) ** 2 : 1.5 * FL.T0 + 2.2 * (FL.TOP - FL.T0) + 2.2 * 2 - 0.325 * 4 + 0.9 * (T - FL.LEVEL));
+const flAmp = T => 0.5 * bell(span(T, 3.0, 4.4)) + 1.0 * ease(span(T, 4.0, 4.8)) * (1 - 0.65 * ease(span(T, FL.TOP, FL.LEVEL)));
+let SEATS = null, SEAT_Q0 = null;
+function captureRide(){ rig.updateMatrixWorld(true); model.updateMatrixWorld(true);
+  SEATS = {cow: bones.Hips.worldToLocal(rig.localToWorld(V3(-0.13, 0.62, -0.13))), bun: bones.Hips.worldToLocal(rig.localToWorld(V3(0.13, 0.62, -0.13)))}; SEAT_Q0 = bones.Spine01.getWorldQuaternion(new THREE.Quaternion()); }
+const _q1 = new THREE.Quaternion();
+const seatQ = () => bones.Spine01.getWorldQuaternion(_q1).clone().multiply(SEAT_Q0.clone().invert()).normalize();
+function flCam(T, D){   /* camera: ground view -> chase while climbing -> high third-person view looking down at the map */
+  const g0 = ease(span(T, 3.4, 5.0)), g1 = ease(span(T, 9.6, 11.8));
+  const lookG = V3(0, 0.95, 0.3), posG = V3(0.4, 1.5, 7.8);
+  const dC = lerp(9.5, 13, ease(span(T, 4.3, 9.5))), azC = lerp(0.15, 0.55, ease(span(T, 4.3, 9.5)));
+  const lookC = D.clone().add(V3(0, 0.5, 0)), posC = lookC.clone().add(V3(Math.sin(azC) * dC * 0.4, 0.5 + dC * 0.06, Math.cos(azC) * dC));
+  const posA = D.clone().add(V3(-6.5, 7.5, 0.0)), lookA = V3(posA.x + posA.y * 0.577, 0, 0);
+  const look = lookG.clone().lerp(lookC, g0).lerp(lookA, g1), pos = posG.clone().lerp(posC, g0).lerp(posA, g1);
+  return {pos, look, fov: lerp(32, 44, g1)};
+}
+function poseFly(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const P = FLP.at(T), fl = flFly(T), th = P.th;
+  p.x = P.x; p.z = 0; p.ry = Math.PI / 2; p.hop = P.y; p.ground = P.y > 0.02 ? 'all' : 'feet';
+  p.pitch = fl * (0.52 + 0.58 * (1 - th / (Math.PI / 3))); p.roll = 0;
+  life(p, t, 0.5, true);
+  const prep = ease(span(T, 3.0, 3.8));
+  rot('LeftUpLeg', 'x', 0.3 * fl); rot('RightUpLeg', 'x', 0.3 * fl); rot('LeftLeg', 'x', 0.55 * fl); rot('RightLeg', 'x', 0.55 * fl); rot('LeftFoot', 'x', 0.3 * fl); rot('RightFoot', 'x', 0.3 * fl);
+  armSet('Left', -0.05, 0.85 * fl, 0.15 * fl); armSet('Right', -0.05, 0.85 * fl, 0.15 * fl);
+  if (fl < 0.02) arms(-0.06 + 0.02 * Math.sin(t * 0.9), 0, 0);
+  rot('Head', 'x', -0.3 * fl); rot('neck', 'x', -0.12 * fl); tailSway(0.3 * (1 - 0.6 * fl), t, 1.4); tailBend(0, -0.35 * fl);
+  wings(0.45 + 0.55 * prep, flAmp(T) * Math.sin(flPhase(T)) + 0.12 * fl);
+  if (T > 4.0 && T < 9.0 || T > 12.0) p.happy = 1;
+  const c = flCam(T, V3(P.x, P.y + 1.0, 0)); p.camPos = c.pos; p.camLook = c.look; p.camFov = c.fov;
+  const ev = [[1.0, 'f1'], [3.4, 'f2'], [12.6, 'f5']]; for (const [tt, n] of ev) if (hitT(T, tt)) p.events.push(n);
+  place(p);
+}
+/* the two babies run in from the left, hop onto his back, and ride there (side by side, hugging his back) */
+function placeFlyBabies(p, T, t){
+  const cow = PARTNERS.cow, bun = PARTNERS.bunny; if (!cow.ready || !bun.ready || !SEATS) return;
+  for (const [B, seat, ta, tm, z0] of [[cow, SEATS.cow, 1.0, 2.8, 0.9], [bun, SEATS.bun, 1.6, 3.2, 0.5]]){
+    const tgtRun = V3(-1.0, 0, z0 * 0.2), start = V3(-6.6, 0, z0), run = trap(span(T, ta, ta + 1.4), 0.3), mount = ease(span(T, tm, tm + 0.7));
+    const S = bones.Hips.localToWorld(seat.clone()), q = seatQ();
+    B.root.visible = T > ta - 0.05;
+    if (T < tm){ const x = lerp(start.x, tgtRun.x, run), z = lerp(start.z, tgtRun.z, run); B.root.position.set(x, (T > ta && T < ta + 1.4 ? 0.08 * Math.abs(Math.sin(t * 13)) : 0.04 * Math.abs(Math.sin(t * 5 + z0))), z); B.root.quaternion.setFromAxisAngle(AX.y, Math.PI / 2 + 0.0); B.root.scale.setScalar(0.72); B.sh.visible = true; B.sh.position.set(x, 0.004, z); B.sh.scale.setScalar(0.65); }
+    else { B.root.position.lerpVectors(V3(tgtRun.x, 0, tgtRun.z), S, mount); B.root.position.y += 0.5 * bell(mount); B.root.quaternion.slerpQuaternions(_q2.setFromAxisAngle(AX.y, Math.PI / 2), q, mount); B.root.scale.setScalar(0.72); if (B.sh) B.sh.visible = false; }
+    B.body.scale.set(1, 1, 1); B.body.position.set(0, 0, 0);
+  }
+}
+const _q2 = new THREE.Quaternion();
+
+// =====================================================================================================
+// 3. 孵蛋時光: the dragon finds an egg in a nest, sits down behind it and folds his wings round it to keep it warm; the partners come to see,
+//    the egg wobbles and cracks, his wings open and the baby hatches.  (Nobody picks the egg up, so nothing ever has to pass through anything.)
+// =====================================================================================================
+const EGGP = {nest: V3(0.0, 0, 0.9), S: [0, -0.2], who: ['bunny', 'cow', 'puppy', 'bear', 'pangolin', 'penguin'],
+  slots: [[-1.0, 0.95], [-1.5, 0.35], [-1.95, 1.05], [1.0, 0.95], [1.5, 0.35], [1.95, 1.05]]};
+const EG = {walk:[0.2, 1.7], turn:[1.6, 2.4], sit:[2.4, 3.6], hug:[3.6, 4.8], crack:[10.2, 11.2], hatch: 11.2, open:[10.8, 11.5]};
+const egHug = T => ease(span(T, ...EG.hug)) * (1 - ease(span(T, ...EG.open)));
+const egSit = T => ease(span(T, ...EG.sit));
+const egX = T => lerp(-3.0, EGGP.S[0], trap(span(T, ...EG.walk), 0.25));
+const egYaw = T => T < EG.turn[0] ? Math.PI / 2 : angLerp(Math.PI / 2, 0.0, ease(span(T, ...EG.turn)));
+const _ew = V3();
+function eggWorld(T, out){ return out.set(EGGP.nest.x, EGG_R * 1.28 + 0.07, EGGP.nest.z); }
+function poseEgg(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0; p.ground = 'all';
+  const sit_ = egSit(T), hug = egHug(T), walkAmt = ease(span(T, 0.2, 0.5)) * (1 - ease(span(T, 1.4, 1.7)));
+  p.x = T < EG.turn[0] ? egX(T) : EGGP.S[0]; p.z = EGGP.S[1]; p.ry = egYaw(T);
+  life(p, t, 0.6, true);
+  sWalk((egX(T) + 3.0) * (TAU / 0.85), walkAmt * (1 - sit_), p, true);
+  const look = bell(span(T, 1.7, 2.6)); headTurn(0.3 * Math.sin(T * 3) * look, 0.3 * look);
+  sit(sit_, 1.6); spineLean(0.2 * hug);
+  rot('Head', 'x', 0.35 * hug); rot('neck', 'x', 0.2 * hug);
+  const fin = ease(span(T, 11.2, 11.8)) * (1 - ease(span(T, 15.2, 15.9)));
+  // arms rest beside the thighs; they cheer once the egg has hatched
+  arms(-0.05 + 0.02 * Math.sin(t * 0.9) - 0.1 * sit_, 0.2 * sit_ * (1 - fin), 0.2 * sit_ * (1 - fin));
+  if (fin > 0.01){ armSet('Left', -0.14 * fin, 0.3 * fin, 1.3 * fin); armSet('Right', -0.14 * fin, 0.3 * fin, 1.3 * fin); }
+  let flap = 0.05 * Math.sin(t * 0.9), open = 0.9;
+  if (fin > 0.01){ open = 1; flap = 0.8 * Math.sin((T - EG.hatch) * 9) * fin; }
+  wings(open, flap, flap, hug);
+  tailBend(0.9 * hug, 0.1 * hug); tailSway(0.15, t, 1.0);
+  if ((T > 4.2 && T < 11.0) || T > 11.2) p.happy = 1;
+  const zoom = ease(span(T, 9.6, 10.8));
+  p.camT = V3(0.0, lerp(0.8, 0.65, zoom), lerp(0.45, 0.7, zoom)); p.camD = lerp(9.6, 8.0, zoom);
+  const ev = [[2.0, 'e1'], [4.9, 'e2'], [7.4, 'e3'], [10.3, 'e4'], [11.3, 'yay'], [12.4, 'e5']]; for (const [tt, n] of ev) if (hitT(T, tt)) p.events.push(n);
+  place(p);
+}
+/* the six partners: three from the left, three from the right, each on its own lane, the one that stops nearest the nest arrives first,
+   so nobody ever has to walk through another; afterwards they all face the egg */
+function partnerEgg(i, T, t){
+  const side = i < 3 ? -1 : 1, k = i % 3, sl = EGGP.slots[i], ta = 5.0 + 1.0 * k + (side > 0 ? 0.35 : 0);
+  const u = trap(span(T, ta, ta + 1.8), 0.3), x = lerp(side * 6.6, sl[0], u), z = sl[1], run = T > ta && T < ta + 1.8;
+  let y = run ? 0.08 * Math.abs(Math.sin(t * 13 + i)) : 0;
+  const wait = T >= ta + 1.8 && T < EG.hatch ? 1 : 0, lean = ss(span(T, 8.4, 9.4)) * (1 - ss(span(T, EG.hatch - 0.1, EG.hatch)));
+  y += wait * 0.05 * Math.abs(Math.sin(t * 3 + i * 1.3)) * (1 + 1.5 * lean);
+  const cheer = ss(span(T, EG.hatch, EG.hatch + 0.3)) * (1 - ss(span(T, 15.2, 15.9)));
+  y += 0.28 * cheer * Math.abs(Math.sin(t * 5.5 + i * 0.9));
+  const faceE = Math.atan2(EGGP.nest.x - x, EGGP.nest.z - z), runYaw = side < 0 ? Math.PI / 2 : -Math.PI / 2;
+  let yaw = run ? runYaw : angLerp(runYaw, faceE, ease(span(T, ta + 1.6, ta + 2.0)));
+  if (T > EG.hatch + 1.6) yaw = angLerp(faceE, 0.0, ease(span(T, EG.hatch + 1.6, EG.hatch + 2.4)));
+  return {x, y, z, yaw, sc: T > ta - 0.05 ? 1 : 0.001, pitch: 0.18 * lean, side};
+}
+function placeEgg(p, T, t){
+  hidePartners();
+  nestG.visible = true; nestG.position.set(EGGP.nest.x, 0, EGGP.nest.z); nestG.scale.setScalar(0.78);
+  eggG.visible = true; eggWorld(T, _ew); eggG.position.copy(_ew);
+  const wob = ease(span(T, 8.6, 10.6)) * (1 - ease(span(T, 11.2, 11.3))), wobH = 0.04 * ease(span(T, 4.8, 5.5)) * (1 - ease(span(T, 8.0, 8.6)));
+  eggG.rotation.z = 0.28 * wob * Math.sin(t * (12 + 10 * wob)) + wobH * Math.sin(t * 2.4);
+  eggG.rotation.x = 0.1 * wob * Math.sin(t * 19);
+  const hatched = T >= EG.hatch, k = hatched ? ease(span(T, EG.hatch, EG.hatch + 0.9)) : 0;
+  const sh = 1 - 0.8 * ss(span(T, EG.hatch + 0.7, EG.hatch + 1.1));
+  eggTop.position.set(0, 0.9 * k, -0.35 * k); eggTop.rotation.x = -1.2 * k; eggTop.scale.set(EG_R_ * sh, EG_R_ * 1.28 * sh, EG_R_ * sh);
+  eggTop.visible = T < EG.hatch + 1.1; eggBot.position.y = -0.05 * k; eggBot.rotation.z = 0.25 * k; eggBot.visible = T < EG.hatch + 2.0; eggBot.scale.set(EG_R_, EG_R_ * 1.28 * (1 - 0.7 * ss(span(T, EG.hatch + 1.2, EG.hatch + 1.9))), EG_R_);
+  const warm = (T > 4.4 ? 1 : 0) * (0.5 + 0.5 * Math.sin(t * 3)) * 0.5 + 0.6 * wob; eggMat.emissiveIntensity = (hatched ? 0 : 0.18 + warm * 0.9);
+  eggGlow.visible = !hatched || T < EG.hatch + 0.9; eggGlow.position.copy(_ew).add(V3(0, 0.05, 0)); const gs = 1.2 + 0.3 * warm + 2.6 * bell(span(T, EG.hatch - 0.1, EG.hatch + 0.7)); eggGlow.scale.set(gs, gs, 1); eggGlow.material.opacity = (T < EG.hatch ? 0.35 + 0.4 * warm : 1 - ss(span(T, EG.hatch + 0.5, EG.hatch + 0.9)));
+  crack.visible = T > EG.crack[0] + 0.4 && T < EG.hatch; crack.position.copy(_ew).add(V3(0.0, 0.06, EG_R_ * 0.98)); crack.scale.setScalar(0.42 * ease(span(T, EG.crack[0] + 0.4, EG.hatch)));
+  const NB = PARTNERS.dragon; if (NB.ready){ const bs = ss(span(T, EG.hatch + 0.1, EG.hatch + 0.7)); const hop = 0.14 * Math.abs(Math.sin(t * 6)) * ss(span(T, EG.hatch + 1.0, EG.hatch + 1.4));
+    placeBaby(NB, {x: EGGP.nest.x, y: hop, z: EGGP.nest.z, yaw: 0.5 * Math.sin(t * 1.3), sc: Math.max(0.001, backOut(bs)) }); NB.root.visible = bs > 0.01; }
+  EGGP.who.forEach((n, i) => { const B = PARTNERS[n]; if (!B.ready) return; const s = partnerEgg(i, T, t); placeBaby(B, s); B.root.visible = s.sc > 0.01; });
+}
+const EG_R_ = EGG_R;
+
+// =====================================================================================================
+// 4. 全員大合照: the dragon stands at the back with spread wings, all the partners run in and line up, countdown, flash, everybody jumps
+// =====================================================================================================
+const PH = {slots: [
+  ['mammoth', -2.3, 0.0], ['sparky', -1.15, 0.0], ['rex', 0.0, 0.0], ['bear', 1.15, 0.0], ['magpie', 2.3, 0.0],
+  ['cow', -1.725, 0.75], ['leopard', -0.575, 0.75], ['owl', 0.575, 0.75], ['turtle', 1.725, 0.75],
+  ['bunny', -2.3, 1.5], ['puppy', -1.15, 1.5], ['penguin', 0.0, 1.5], ['dragon', 1.15, 1.5], ['pangolin', 2.3, 1.5]], flash: 11.2, DZ: -1.9};
+const PH_ORDER = [9, 3, 0, 12, 5, 8, 1, 13, 6, 10, 2, 11, 4, 7];   /* who arrives when (index into slots) */
+function partnerPhoto(k, T, t){
+  const [n, sx, sz] = PH.slots[k], order = PH_ORDER.indexOf(k), ta = 1.5 + 0.4 * order, side = order % 2 ? 1 : -1, u = trap(span(T, ta, ta + 1.5), 0.3);
+  const x = lerp(side * 7.5, sx, u), run = T > ta && T < ta + 1.5;
+  const riser = (sz < 0.1 ? 0.28 : sz < 1.0 ? 0.14 : 0) * ss(span(T, ta + 1.2, ta + 1.6));
+  let y = (run ? 0.09 * Math.abs(Math.sin(t * 13 + k)) : 0) + riser;
+  const wait = T >= ta + 1.5 && T < 9.0 ? 1 : 0; y += wait * 0.06 * Math.pow(Math.max(0, Math.sin(t * 2.3 + k * 1.7)), 8) * 3;
+  const jump = ss(span(T, PH.flash, PH.flash + 0.2)) * (1 - ss(span(T, 15.0, 15.8)));
+  y += jump * 0.34 * Math.abs(Math.sin((T - PH.flash) * 5.5 + k * 0.35));
+  const yaw = run ? (side < 0 ? Math.PI / 2 : -Math.PI / 2) : angLerp(side < 0 ? Math.PI / 2 : -Math.PI / 2, 0.0, ease(span(T, ta + 1.4, ta + 1.8)));
+  return {x, y, z: sz, yaw, sc: T > ta - 0.05 ? 1.22 : 0.001, n};
+}
+function posePhoto(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  p.x = 0; p.z = PH.DZ; p.ry = 0; p.floor = 0.5;   /* the dragon stands on a podium at the back */
+  life(p, t, 0.8, true);
+  const wave = bell(span(T, 0.4, 1.9)), fl = ease(span(T, PH.flash, PH.flash + 0.25)) * (1 - ease(span(T, 15.0, 15.8)));
+  arms(-0.06 + 0.02 * Math.sin(t * 0.9), 0, 0, -0.06, 0.65 * wave, 1.05 * wave); rot('RightForeArm', 'z', -0.32 * Math.sin(t * 9) * wave);
+  const stand = ease(span(T, 1.0, 2.2));
+  let open = lerp(0.55, 1.0, stand), flap = 0.05 * Math.sin(t * 0.9);
+  if (T > 0.4 && T < 2.4) flap = 0.5 * Math.sin(T * 7) * bell(span(T, 0.4, 2.4));
+  if (fl > 0.01){ flap = 0.8 * Math.sin((T - PH.flash) * 9) * fl; armSet('Left', -0.14 * fl, 0.3 * fl, 1.3 * fl); armSet('Right', -0.14 * fl, 0.3 * fl, 1.3 * fl); p.hop = 0.18 * Math.abs(Math.sin((T - PH.flash) * 5.5)) * fl; }
+  wings(open, flap); tailSway(0.4, t, 1.3);
+  headTurn(T < 9 ? 0.25 * Math.sin(t * 0.8) : 0);
+  if (T > 0.4 && T < 2.4 || T > 9.0) p.happy = 1;
+  p.camT = V3(0, 0.9, -0.2); p.camD = 11.0; p.camEl = 0.52 * 11.0 - 0.45;   /* camera about 28 degrees above the group, looking down */
+  const ev = [[0.9, 'p0'], [9.0, 'p3'], [9.8, 'p2'], [10.6, 'p1'], [PH.flash, 'pflash'], [12.3, 'p5']]; for (const [tt, n] of ev) if (hitT(T, tt)) p.events.push(n);
+  place(p);
+}
+let photoShot = false;
+function placePhoto(p, T, t){
+  photoG.visible = true; hidePartners(); PH.slots.forEach(([n], k) => { const B = PARTNERS[n]; if (!B.ready) return; const s = partnerPhoto(k, T, t); placeBaby(B, s); B.root.visible = s.sc > 0.01; });
+  const fo = T >= PH.flash && T < PH.flash + 0.7 ? 1 - ease(span(T, PH.flash + 0.05, PH.flash + 0.7)) : 0;
+  flashEl.style.opacity = String(fo);
+  polaroidEl.hidden = !(T > PH.flash + 1.0);
+  if (T < PH.flash - 0.2) photoShot = false;
+}
+const SUB_FEET = [], SUB_ALL = [], SUB_TORSO = []; let MOUTH_L = null;
+const _gv = V3();
+/* put the lowest foot/leg vertex on the floor (the ground, or a surface when p.floor is set), then add the hop */
+function groundFix(p){
+  rig.updateMatrixWorld(true); skinned.skeleton.update();
+  let mn = Infinity; for (const i of SUB_FEET){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn) mn = _gv.y; }
+  rig.position.y += -mn + 0.004 + (p.floor || 0) + (p.hop || 0); rig.updateMatrixWorld(true);
+}
+/* lowest point of the WHOLE body on the floor (sitting, lying down). Tail and wings may pass through the floor, so their verts are skipped */
+function groundAll(p){
+  rig.updateMatrixWorld(true); skinned.skeleton.update();
+  let mn = Infinity; for (const L of [SUB_ALL, SUB_FEET]) for (const i of L){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn) mn = _gv.y; }
+  rig.position.y += -mn + 0.004 + (p.floor || 0) + (p.hop || 0); rig.updateMatrixWorld(true);
+}
+/* feet on a height-field floor (the trail): the lowest foot point above the surface under it touches it */
+function groundSurf(p){
+  rig.updateMatrixWorld(true); skinned.skeleton.update();
+  let mn = Infinity; for (const i of SUB_FEET){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); const d = _gv.y - p.surfFn(_gv.x); if (d < mn) mn = d; }
+  rig.position.y += -mn + 0.004 + (p.hop || 0); rig.updateMatrixWorld(true);
+}
+const newP = () => ({T: 0, x: 0, z: 0, ry: 0, pitch: 0, roll: 0, tilt: 0, hop: 0, yAbs: 0, sy: 1, sz: 1, lid: 0, happy: 0, sad: 0, glow: 0, events: [], free: true, surf: 0, floor: 0, q: null, ground: 'feet', anchor: null});
+// ---------- load the model ----------
+
+// =====================================================================================================
+// 餵食（2026-11-02）：開心吃 / 最愛點心 / 搖頭不吃（雙手捧到嘴前、低頭咬三口；搖頭不吃＝湊近聞、搖頭難過、雙手推開）
+// =====================================================================================================
+const FK = makeEat(THREE, GLTFLoader, scene, makeTex, spawn, fx);
+window.__eatWrong = window.__eatWrong || 'bittermelon';   // 搖頭不吃：少年固定紅辣椒、成年固定苦瓜（App 會自己放玩家給的食物）
+FK.preload(["sweetpotato", "bubbletea", "bittermelon"]); window.__eatPreload = n => FK.preload(n);
+
+const FH = makeHold(THREE, { EATK: FK, rig, get model(){ return model; }, skin: () => skinned,
+  reach: (sd, tg, w) => { if (!armLen) measureArms(); ikArm(sd, tg, elbowPole(sd, -0.8, 0.5, 0.1), w); }, grip: (sd, out) => out.copy(wpos(sd + 'Hand')),
+  armRe: /(Left|Right)(Shoulder|Arm|ForeArm|Hand)/, S: 1, size: 0.3, chestY: 0.8, mouthY: 1.0, follow: 1 });
+function feedLean(a){ rot('Spine02', 'x', a * 0.4); rot('Spine01', 'x', a * 0.35); rot('Spine', 'x', a * 0.25); }
+function feedYaw(yaw){ rot('neck', 'y', yaw * 0.4); rot('Head', 'y', yaw * 0.6); }
+function poseEat(p, t, name){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const P = phases(name, t); p.eat = P; if (!FH.m) FH.measure();
+  const br = Math.sin(TAU * t / 3.6); rot('Spine02', 'x', 0.012 * br * 0.4); rot('Spine01', 'x', 0.012 * br * 0.4);
+  if (typeof tailSway === 'function') tailSway(0.15, t, 1.3);
+  
+  p.lid = Math.max(p.lid || 0, blinkAt(t));
+  if (name === 'refuse'){
+    const sn = ease(P.sniff) * (1 - ease(P.shake));
+    feedLean(0.14 * sn); rot('neck', 'x', 0.1 * sn); rot('Head', 'x', 0.12 * sn);
+    if (P.shake > 0 && P.shake < 1){ const k = Math.sin(Math.PI * P.shake); feedYaw(0.55 * Math.sin(TAU * P.shake * 3) * k); rot('Head', 'z', -0.06 * k); }
+    p.sad = P.sad; if (P.sad) p.lid = 0;
+  } else {
+    const nod = P.biting ? P.lunge : 0;
+    feedLean(0.1 * nod + 0.04 * P.hold); rot('neck', 'x', 0.14 * nod); rot('Head', 'x', 0.18 * nod + 0.06 * P.hold);
+    p.happy = P.happy && !P.chew ? 1 : 0; p.lid = P.chew ? 1 : (p.happy ? 0 : p.lid);
+    p.hop = 0.08 * P.hop;
+  }
+  p.ry = 0.1 + (name === 'snack' ? TAU * P.spin : 0); place(p);
+}
+fetchModel('dragonadult_model.json').then(gltf => {
+  model = gltf.scene; model.scale.setScalar(CFG.scale);
+  model.traverse(o => {
+    if (o.isBone){ bones[o.name] = o; rest[o.name] = o.quaternion.clone(); restP[o.name] = o.position.clone(); }
+    if (o.isMesh){ skinned = o; o.frustumCulled = false; prepFace(o, {eye:CFG.eye, eyeR:CFG.eyeR, eyeZ:CFG.eyeZ, eyeOut:CFG.eyeOut, eyeFill:CFG.eyeFill, mouth:CFG.mouth, mouthR:CFG.mouthR, mouthZ:CFG.mouthZ, noPink:CFG.noPink}); (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.roughness = Math.max(m.roughness || 0, 0.8); m.metalness = 0; patch(m); }); }
+  });
+  rig.add(model); rig.updateMatrixWorld(true); skinned.skeleton.update();
+  { const g = skinned.geometry, n = g.attributes.position.count, SI = g.attributes.skinIndex, SW = g.attributes.skinWeight, BN = skinned.skeleton.bones.map(b => b.name);
+    for (let i = 0; i < n; i += 1){ let best = 0, bw = -1; for (let c = 0; c < 4; c++){ const w = SW.getComponent(i, c); if (w > bw){ bw = w; best = SI.getComponent(i, c); } }
+      if (/Leg|Foot|Toe/.test(BN[best])) SUB_FEET.push(i); if (i % 5 === 0 && !/^(Tail|LeftWing|RightWing)/.test(BN[best])) SUB_ALL.push(i); if (i % 2 === 0 && /^(Hips|Spine|Spine01|Spine02|neck)$/.test(BN[best])) SUB_TORSO.push(i); } }
+  captureRide(); measureArms(); MOUTH_L = bones.Head.worldToLocal(rig.localToWorld(V3(0, 0.985, 0.7)));
+  loadingEl.hidden = true; statusEl.hidden = false;
+  setMove('idle'); requestAnimationFrame(loop);
+}).catch(e => { console.error(e); loadingEl.textContent = '模型載入失敗，請重新整理頁面。'; });
+// ---------- effects ----------
+const confTex = [0xe8584a, 0xf6c445, 0x4aa3df, 0x5cae4f].map(c => makeTex(g => { g.fillStyle = '#' + c.toString(16).padStart(6, '0'); g.fillRect(34, 20, 60, 88); }));
+function confetti(x, y, z, n){ for (let i = 0; i < n; i++){ const a = Math.random() * TAU, r = Math.random(); spawn(confTex[i % 4], V3(x, y, z), V3(Math.cos(a) * (0.3 + r * 0.6), 0.8 + Math.random() * 0.6, Math.sin(a) * 0.3), 1.2 + r * 0.4, 0.07, 0, {gravity: -1.6}); } }
+function hearts(pos, n = 3, sz = 0.15){ for (let i = 0; i < n; i++) spawn(heartTex, pos.clone().add(V3((i - (n - 1) / 2) * 0.3, 0.1, 0.1)), V3((i - (n - 1) / 2) * 0.12, 0.45, 0), 1.1, sz); }
+function stars(pos, n = 5, sz = 0.13, sp = 0.6){ for (let i = 0; i < n; i++){ const a = i / n * TAU; spawn(starTex, pos.clone(), V3(Math.cos(a) * sp, 0.5 + Math.random() * 0.3, Math.sin(a) * sp * 0.5), 0.8, sz); } }
+function splash(x, z, n = 6){ for (let i = 0; i < n; i++){ const a = Math.random() * TAU; spawn(dropTex, V3(x, 0.08, z), V3(Math.cos(a) * 0.5, 0.9 + Math.random() * 0.5, Math.sin(a) * 0.5), 0.8, 0.07, 0, {gravity: -3.2}); } }
+const W = {l1: wordTex('天黑了…', '#5a6fa8'), l2: wordTex('小火苗～', '#e8853a'), lz: wordTex('亮囉！', '#e8853a'), l3: wordTex('公園亮起來了！', '#e8584a'), yay: wordTex('耶～', '#e8584a'), p0: wordTex('大家來拍照！', '#e8584a'), p3: wordTex('3', '#e8584a'), p2: wordTex('2', '#e8853a'), p1: wordTex('1', '#2f63b8'), p5: wordTex('大團圓！', '#e8584a'), e1: wordTex('咦？是一顆蛋！', '#e8853a'), e2: wordTex('熱呼呼～', '#e8584a'), e3: wordTex('大家都來了～', '#2f63b8'), e4: wordTex('要出來囉！', '#e8584a'), e5: wordTex('歡迎來到 Sparkee！', '#e8584a'), f1: wordTex('寶寶們，一起上來吧！', '#e8584a'), f2: wordTex('抓緊囉！', '#2f63b8'), f3: wordTex('出發～', '#e8853a'), f4: wordTex('穿過雲層！', '#5a6fa8'), f5: wordTex('哇～是台灣！', '#e8584a'), again: wordTex('再玩一次！', '#e8584a')};
+const capEl = document.getElementById('cap'), _hv = V3(), _hv2 = V3(), flashEl = document.getElementById('flash'), polaroidEl = document.getElementById('polaroid');
+function events(p){
+  if (reduceMotion) return;
+  for (const e of p.events){
+    const head = wpos('Head', V3()).add(V3(0, 0.4, 0));
+    if (W[e]){ if (/^p[123]$/.test(e)) showWord(W[e], V3(0, 2.6, 2.4), 1.3); else if (e === 'p5' || e === 'p0') showWord(W[e], V3(0, 2.7, 0.6), 1.4); else showWord(W[e], head.clone().add(V3(0, 0.3, 0.2)), 1.05); }
+    if (e === 'pflash'){ confetti(0, 2.0, 1.0, 40); confetti(-2.5, 1.6, 1.0, 16); confetti(2.5, 1.6, 1.0, 16); hearts(V3(0, 2.2, 1.0), 5, 0.22); }
+    if (e === 'yay'){ confetti(head.x, head.y + 0.1, head.z + 0.3, 16); hearts(head.clone().add(V3(0, 0.2, 0.3)), 3, 0.2); }
+    if (e === 'again') hearts(head.clone().add(V3(0.1, 0.3, 0.3)), 3, 0.18);
+    const m = /^lamp(\d)$/.exec(e); if (m){ const L = lamps[+m[1]]; stars(L.top.clone().add(V3(0, 0.1, 0.1)), 6, 0.1, 0.5); }
+  }
+}
+function placeProps(p, t){
+  const T = p.T, isL = move === 'light', isF = move === 'fly', isE = move === 'egg', isP = move === 'photo';
+  lightG.visible = isL || (isF && T < FL.CLOUD_OUT); fireball.visible = false; handFlame.visible = false; lamps.forEach(L => { L.gl.visible = isL && L.k > 0.01; }); garBulbs.forEach(B => { B.gl.visible = isL && B.k > 0.01; }); flies.forEach(f => { f.s.visible = false; });
+  skyG.visible = isF && T >= FL.CLOUD_OUT; cloudsG.visible = isF && T > 4.0 && T < FL.CLOUD_OUT + 0.3;
+  if (isF){ PARKS.show(T >= FL.CLOUD_OUT ? 'sky' : 'fly'); capEl.hidden = !(T > 13.4); capEl.style.opacity = String(ss(span(T, 13.4, 14.4))); const fo = bell(span(T, 9.8, 11.0)); flashEl.style.background = '#e6efff'; flashEl.style.opacity = String(0.95 * fo); } else capEl.hidden = true;
+  if (!isP) photoG.visible = false;
+  if (!isE){ eggG.visible = false; nestG.visible = false; eggGlow.visible = false; crack.visible = false; }
+  if (!isE && !isP) hidePartners();
+  if (!isP){ flashEl.style.opacity = '0'; polaroidEl.hidden = true; }
+  if (isL) placeLight(p, T, t);
+  if (isF) placeFly(p, T, t);
+  if (!isF){ PARTNERS.cow.root.scale.setScalar(1); }
+  if (isE) placeEgg(p, T, t);
+  if (isP) placePhoto(p, T, t);
+}
+let sparkT = 0;
+function placeFly(p, T, t){
+  hidePartners(); placeFlyBabies(p, T, t);
+  if (T < FL.CLOUD_OUT){ lamps.forEach(L => setLamp(L, 1)); garBulbs.forEach(B => setBulb(B, 1)); flies.forEach((f, i) => { f.s.visible = true; const a = f.a + t * f.sp; f.s.position.set(Math.cos(a) * f.r, f.h + 0.15 * Math.sin(t * 1.7 + i), -1.2 + Math.sin(a * 0.8) * f.r * 0.55); f.s.material.opacity = 0.55 + 0.45 * Math.sin(t * 3 + i * 2); }); }
+  twU.uT.value = t; twU.uA.value = ss(span(T, 10.8, 12.6)); twU.uS.value = renderer.domElement.height / (2 * Math.tan(camera.fov * Math.PI / 360));
+  if (!reduceMotion && flFly(T) > 0.3 && T < 12.5 && t - sparkT > 0.14){ sparkT = t; wpos('Tail07', _hv); spawn(sparkTex, _hv.clone(), V3(0, 0.1, 0), 0.9, 0.14, 0.2); wpos('LeftWing2', _hv2); spawn(sparkTex, _hv2.clone().add(V3(0.1, 0, 0)), V3(0, 0, 0), 0.7, 0.1); wpos('RightWing2', _hv2); spawn(sparkTex, _hv2.clone().add(V3(-0.1, 0, 0)), V3(0, 0, 0), 0.7, 0.1); }
+}
+function placeLight(p, T, t){
+  lamps.forEach((L, i) => setLamp(L, ss(span(T, lampArrive(i), lampArrive(i) + 0.4))));
+  garBulbs.forEach(B => setBulb(B, ss(span(T, 11.7 + B.u * 0.9, 12.0 + B.u * 0.9))));
+  for (let i = 0; i < 4; i++){ const u = (T - (REL[i] + 0.12)) / FB_FLY; if (u > 0 && u < 1){ fireball.visible = true; fireball.position.lerpVectors(fbStart(i), lamps[i].top, u); fireball.position.y += 0.25 * Math.sin(Math.PI * u); const s = 0.42 * (1 + 0.2 * Math.sin(T * 40)); fireball.scale.set(s, s, 1); } }
+  const hf = ease(span(T, 1.3, 1.9)) * (1 - ease(span(T, 9.7, 10.2)));
+  if (hf > 0.02){ handFlame.visible = true; wpos('RightHand', _hv); handFlame.position.copy(_hv).add(V3(0, 0.1, 0)); const s = 0.36 * hf * (1 + 0.15 * Math.sin(t * 22)); handFlame.scale.set(s, s * 1.2, 1); }
+  const fk = ss(span(T, 12.3, 13.6));
+  flies.forEach((f, i) => { if (fk < 0.02) return; f.s.visible = true; const a = f.a + t * f.sp; f.s.position.set(Math.cos(a) * f.r, f.h + 0.15 * Math.sin(t * 1.7 + i), -1.2 + Math.sin(a * 0.8) * f.r * 0.55); f.s.material.opacity = fk * (0.55 + 0.45 * Math.sin(t * 3 + i * 2)); });
+}
+
+// ---------- buttons, camera, loop ----------
+const snap = {}; let blendStart = -10;
+const TALENTS = ['light', 'fly', 'egg', 'photo'];
+function onMove(name){ const need = name === 'fly' ? ['cow', 'bunny'] : name === 'egg' ? [...EGGP.who, 'dragon'] : name === 'photo' ? Object.keys(PARTNERS) : null; if (need){ const was = statusEl.textContent; statusEl.textContent = '夥伴載入中…'; loadPartners(need).then(() => { if (move === name) statusEl.textContent = names[name]; }); } }
+function setMove(name){
+  if (FK.wait(name, 'dragon', setMove)) return;   // 食物載好才開始
+  if (model){ for (const n in bones) snap[n] = bones[n].quaternion.clone(); snap.rp = rig.position.clone(); snap.rq = rig.quaternion.clone(); blendStart = performance.now() / 1000; }
+  clearFx(); if (wordSprite){ scene.remove(wordSprite); wordSprite.material.dispose(); wordSprite = null; } userCam = false;
+  PARKS.show(isEat(name) ? 'idle' : name); FK.show(name, 'dragon', 0.3);
+  move = name; t0 = performance.now() / 1000; frozen = null; __hold = 0;
+  if (typeof onMove === 'function') onMove(name);
+  document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
+  statusEl.textContent = names[name];
+}
+document.querySelectorAll('.moves button').forEach(b => b.addEventListener('click', () => setMove(b.dataset.move)));
+const CAM = { eat:CAMEAT, snack:CAMEAT, refuse:CAMEAT,idle:{t:[0, 0.85, 0.1], d:6.6, az:0.09}, light:{t:[0, 0.5, -1.8], d:15.0, az:0.0}, fly:{t:[0, 1.0, 0.3], d:9.6, az:0.0}, egg:{t:[0, 0.9, 0], d:7.4, az:0.0}, photo:{t:[0, 1.1, 0.4], d:11.0, az:0.0}, sleep:{t:[0, 0.65, 0.2], d:6.0, az:0.1}};
+const COM_L = V3(0, 0.8, 0.1);
+const _ct = V3(), _cp = V3();
+let zTimer = 0, last = performance.now() / 1000, shY = 0;
+function loop(){
+  const now = performance.now() / 1000, rawDt = Math.max(0, now - last), dt = Math.min(rawDt, 0.05); last = now; if (__hold && loopEl.checked) __hold = 0;
+  let t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  if (frozen === null && !loopEl.checked && (/^(eat|snack|refuse)$/.test(move) || TALENTS.includes(move) ) && t >= LEN[move]){ if (!__hold) __hold = now; t = LEN[move] - 0.001; if (now - __hold >= 1 && !EMBED){ setMove('idle'); t = 0; } }
+  __dE = (frozen !== null || __hold) ? 1e-4 : Math.min(0.5, Math.max(0.001, rawDt));   // 字卡用真實經過時間判斷（上限 0.5 秒），慢手機不會漏
+  let p = pose(move, t); __lastT = p.T;
+  const bw = frozen !== null ? 1 : Math.min(1, (now - blendStart) / 0.35);
+  if (bw < 1){ const e = ease(bw); for (const n in bones){ if (!snap[n]) continue; bones[n].quaternion.slerpQuaternions(snap[n], bones[n].quaternion.clone(), e); }
+    rig.position.lerpVectors(snap.rp, rig.position.clone(), e); rig.quaternion.slerpQuaternions(snap.rq, rig.quaternion.clone(), e); }
+  if (p.surf != null && skinned){ if (p.ground === 'all') groundAll(p); else if (p.ground === 'surf') groundSurf(p); else groundFix(p); }
+  rig.updateMatrixWorld(true);
+  if (p.post) p.post();
+  placeProps(p, t);
+  if (p.eat){ FH.arms(p.eat, move); FH.place(p.eat, move, dt, wpos('Head', V3()), reduceMotion); } else FK.food.visible = false;
+  lidU.value = (window.__forceLid != null) ? window.__forceLid : move === 'sleep' ? lidU.value + (1 - lidU.value) * (1 - Math.pow(0.02, dt)) : p.lid;
+  happyU.value = p.happy; sadU.value = p.sad;
+  flatEU.value = Math.max(lidU.value, p.happy, p.sad); flatMU.value = 0;
+  if (move === 'sleep' && !reduceMotion){ zTimer -= dt; if (zTimer <= 0){ zTimer = 1.1; spawn(zTex, wpos('Head', V3()).add(V3(0.3, 0.5, 0.3)), V3(0.14, 0.24, 0), 2.6, 0.15, 1.3); } }
+  if (frozen === null && !__hold) events(p);
+  updateFx(dt); updateWord(dt);
+  const com = rig.localToWorld(COM_L.clone()), hgt = Math.max(0, com.y - 0.78 - (p.floor || 0));
+  const s = 1 / (1 + hgt * 0.9); shadow.scale.set(s, s, s); shadow.position.set(com.x, 0.003, com.z); shadow.visible = (p.floor || 0) < 0.09 && p.ground !== 'hide';
+  if (!userCam){
+    if (p.camPos){ camera.position.copy(p.camPos); controls.target.copy(p.camLook); if (Math.abs(camera.fov - p.camFov) > 0.02){ camera.fov = p.camFov; camera.updateProjectionMatrix(); } }
+    else {
+    const c = p.camT ? {t: [p.camT.x, p.camT.y, p.camT.z], d: p.camD || 8, az: p.camAz || 0.0, el: p.camEl || 0} : CAM[move], k = 1 - Math.pow(p.camT ? 0.2 : 0.04, dt), fov = c.fov || 32;
+    _ct.set(c.t[0], c.t[1], c.t[2]); controls.target.lerp(_ct, k);
+    _cp.set(controls.target.x + Math.sin(c.az) * c.d, controls.target.y + 0.45 + c.d * 0.04 + (c.el || 0), controls.target.z + Math.cos(c.az) * c.d); camera.position.lerp(_cp, k);
+    if (Math.abs(camera.fov - fov) > 0.05){ camera.fov += (fov - camera.fov) * Math.min(1, k * 1.5); camera.updateProjectionMatrix(); }
+    }
+  }
+  controls.update(); renderer.render(scene, camera);
+  if (move === 'photo' && p.T >= PH.flash + 0.06 && !photoShot && polaroidEl){ photoShot = true; try { polaroidEl.querySelector('.pic').style.backgroundImage = 'url(' + renderer.domElement.toDataURL('image/jpeg', 0.7) + ')'; } catch (e) {} }
+  requestAnimationFrame(loop);
+}
+function pose(name, t){
+  const T = t % LEN[name];
+  const p = newP(); p.T = T;
+  resetPose();
+  if (isEat(name)){ poseEat(p, t, name); return p; }
+  const F = {idle: poseIdle, sleep: poseSleep, light: poseLight, fly: poseFly, egg: poseEgg, photo: posePhoto}[name] || poseIdle;
+  F(p, t, T);
+  return p;
+}
+window.__m = {lidU, happyU, sadU, flatEU, rot, resetPose, newP, place, groundFix, groundAll, THREE, rest, setMove, camera, controls, bones, rig, freeze(x){ frozen = x; }, setT(x){ frozen = null; t0 = performance.now()/1000 - x; },
+  setUser(v){ userCam = v; }, HOLD: FH, EATK: FK, get model(){ return model; }, get skinned(){ return skinned; }, wpos, scene, PARKS,
+  minY(){ let mn = Infinity; const v = V3(); skinned.updateMatrixWorld(true); skinned.skeleton.update(); for (let i = 0; i < skinned.geometry.attributes.position.count; i += 3){ skinned.getVertexPosition(i, v); v.applyMatrix4(skinned.matrixWorld); mn = Math.min(mn, v.y); } return mn; }};
+window.__dbg = {bodyMinY(){ rig.updateMatrixWorld(true); skinned.skeleton.update(); let mn = Infinity; for (const i of SUB_ALL){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn) mn = _gv.y; } return mn; }};
+window.__pr = () => Object.values(PARTNERS).filter(b => b.ready).length;
+window.__dbg.eggClear = () => { skinned.skeleton.update(); eggWorld(p_lastT(), _ew); let mn = 9, who = ''; const R = EGG_R, v = V3(); for (let i = 0; i < skinned.geometry.attributes.position.count; i += 3){ skinned.getVertexPosition(i, v); v.applyMatrix4(skinned.matrixWorld); const d = Math.hypot((v.x - _ew.x) / R, (v.y - _ew.y) / (R * 1.28), (v.z - _ew.z) / R); if (d < mn){ mn = d; } } return +mn.toFixed(3); };
+window.__dbg.partnerGap = T => { let mn = 9; const P = EGGP.who.map((n, i) => partnerEgg(i, T, 0)).filter(s => s.sc > 0.01); P.push({x: 0, z: -0.2}); P.push({x: EGGP.nest.x, z: EGGP.nest.z}); for (let a = 0; a < P.length; a++) for (let b = a + 1; b < P.length; b++){ const d = Math.hypot(P[a].x - P[b].x, P[a].z - P[b].z); if (d < mn) mn = d; } return +mn.toFixed(2); };
+let __lastT = 0; const p_lastT = () => __lastT;
+window.__armClear = 0; /* the dragon's arms already rest ~35 deg away from the body */
+// 3D動畫生成規範 safety layer (meshysafe.js)
+const __sh = /nosafe/.test(location.search) ? 0 : setInterval(() => { if (model && bones.Head){ clearInterval(__sh); import('./meshysafe-c14b1db8.js').then(m => { window.__SAFE = m.installSafety(THREE, () => model, bones, rig, scene, { clock: () => (frozen !== null ? frozen : performance.now() / 1000 - t0) }); }); } }, 300);
+</script>
+</body></html>

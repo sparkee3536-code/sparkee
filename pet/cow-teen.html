@@ -107,7 +107,7 @@ function QRc(o, ax, v){ const r = QRa(o); return QR(o, ax === 'x' ? v : r[0], ax
 import {makeParks} from './parkscenes.js';
 import {makeSfx} from './sparkee-sfx.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {makeEat, makeHold, phases, isEat} from './eatkit.js';
+import {makeEat, makeHold, phases, isEat, period as __eatLen} from './eatkit.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
 // ---------- cow teen calibration (model space of the rigged GLB: feet at 0, height 1.7, facing +z) ----------
@@ -251,6 +251,7 @@ const f = x => Number(x).toFixed(4);
 const v2 = a => `vec2(${f(a[0])}, ${f(a[1])})`;
 const v3 = a => `vec3(${f(a[0])}, ${f(a[1])}, ${f(a[2])})`;
 function patch(m){
+  if (m.map){ m.map.generateMipmaps = false; m.map.minFilter = THREE.LinearFilter; m.map.needsUpdate = true; }   // 關 mipmap（2026-11-04）：縮小時不混出拼塊邊緣的細紋
   const c = CFG;
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, {uFlatE:flatEU, uFlatM:flatMU, uEar:earU, uLid:lidU, uCalm:calmU, uHappy:happyU, uSad:sadU});
@@ -870,16 +871,26 @@ function setMove(name){
   if (EATK.wait(name, 'cow', setMove)) return;   // 食物載好才開始
   PARKS.show(isEat(name) ? 'idle' : name); SFX.move(name, PARKS.key); EATK.show(name, 'cow', 0.3);
   if (model){ for (const n in bones){ snap[n] = [bones[n].quaternion.clone(), bones[n].position.clone()]; } snap.rigY = rig.position.y; blendStart = performance.now()/1000; }
-  move = name; t0 = performance.now()/1000; __pT = -0.001;
+  move = name; t0 = performance.now()/1000; __hold = 0; __pT = -0.001;
   document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
   statusEl.textContent = names[name];
 }
 document.querySelectorAll('.moves button').forEach(b => b.addEventListener('click', () => setMove(b.dataset.move)));
 
 let earAng = 0, earVel = 0, lastY = 0, last = performance.now()/1000, zTimer = 0, ry = 0, lastT = 0;
+// 才藝、餵食播一次（2026-11-04）：時間到停在最後一格約 1 秒再回待機；App 裡（?embed=1）只停住，由 App 切回待機
+var __hold = 0, EMBED = new URLSearchParams(location.search).get('embed') === '1';
+const __onceLen = m => (({milk: MILK_T, kick: KICK_T, charge: CHG_T})[m] || 0) || (isEat(m) ? __eatLen(m) : 0);
+function __once(t, now){
+  const L = __onceLen(move);
+  if (!L || frozen !== null || reduceMotion || t < L) return t;
+  if (!__hold) __hold = now;
+  if (now - __hold >= 1 && !EMBED){ setMove('idle'); return 0; }
+  return L - 0.001;
+}
 function loop(){
   const now = performance.now()/1000, dt = Math.max(0, Math.min(now - last, 0.05)); last = now;
-  const t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  const t = __once(frozen !== null ? frozen : (reduceMotion ? 0 : now - t0), now);
   rig.position.set(0, 0, 0); QRc(rig, 'y', ry); rig.scale.set(1, 1, 1);
   __dE = Math.max(0.001, t - __pT);
   const p = pose(move, t);

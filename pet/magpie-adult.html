@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>台灣藍鵲長尾成年才藝試作</title>
+<style>
+body.embed{margin:0;background:transparent;overflow:hidden}
+body.embed .wrap{padding:0;max-width:none;gap:0}
+body.embed .wrap>*:not(.stage){display:none!important}
+body.embed .stage{position:fixed;inset:0;aspect-ratio:auto;border-radius:0;border:0}
+body.embed .status{display:none}
+</style>
+<script>if(new URLSearchParams(location.search).has('embed'))document.documentElement.classList.add('embed-doc'),addEventListener('DOMContentLoaded',()=>document.body.classList.add('embed'));</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F4F6F1; --surface:#FFFFFF; --fg:#1B2A22; --muted:#55645B; --line:#DCE3DA;
+  --grass:#2F63B8; --grass-ink:#FFFFFF; --spark:#F5A524; --spark-soft:#FFF1D6;
+  --sky-top:#DCEAF7; --sky-bot:#EEF5E6;
+  --f-display:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#8FB4F0; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121915; --surface:#1B241F; --fg:#E6EEE8; --muted:#9EB0A4; --line:#2E3A32;
+  --grass:#8FB4F0; --grass-ink:#0F1A13; --spark:#F5B94A; --spark-soft:#3A3018;
+  --sky-top:#1D2C27; --sky-bot:#18221C; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding-inline:16px;padding-block:20px 40px;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--f-display);font-weight:400;font-size:26px;margin:0;text-wrap:balance}
+.sub{margin:4px 0 0;color:var(--muted)}
+.stage{position:relative;width:100%;aspect-ratio:4/3.9;border-radius:24px;overflow:hidden;background:linear-gradient(var(--sky-top),var(--sky-bot));border:1px solid var(--line)}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.status{position:absolute;left:12px;top:12px;background:var(--surface);color:var(--fg);border-radius:99px;padding:4px 12px;font-size:13px;border:1px solid var(--line)}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;pointer-events:none}
+.moves{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.moves{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.moves button{min-height:56px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-size:15px;font-weight:700;cursor:pointer;padding:6px;line-height:1.25}
+.moves button small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.moves button[aria-pressed="true"]{background:var(--grass);color:var(--grass-ink);border-color:var(--grass)}
+.moves button[aria-pressed="true"] small{color:var(--grass-ink)}
+.moves button.sig{border-color:var(--spark)}
+.moves button:focus-visible{outline:3px solid var(--spark);outline-offset:2px}
+.toggle{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--muted)}
+.toggle input{width:20px;height:20px;accent-color:var(--grass)}
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <h1>台灣藍鵲長尾成年</h1>
+    <p class="sub">三個才藝試作：高空巡航、尾巴溜滑梯（乳牛寶寶來互動）、送小鳥回家。拖曳可以轉視角。</p>
+  </header>
+  <div class="stage" id="stage">
+    <div class="loading" id="loading">台灣藍鵲長尾成年載入中（約 10 MB）…</div>
+    <span class="status" id="status" hidden>待機</span>
+  </div>
+  <div class="moves" role="group" aria-label="動作">
+    <button data-move="idle" aria-pressed="true">待機</button>
+    <button data-move="tour" class="sig" aria-pressed="false">高空巡航<small>13 秒</small></button>
+    <button data-move="slide" class="sig" aria-pressed="false">尾巴溜滑梯<small>13 秒</small></button>
+    <button data-move="nest" class="sig" aria-pressed="false">送小鳥回家<small>13 秒</small></button>
+    <button data-move="sleep" aria-pressed="false">睡覺</button>
+    <button data-move="eat" class="feed" aria-pressed="false">開心吃<small>6 秒</small></button>
+    <button data-move="snack" class="feed" aria-pressed="false">最愛點心<small>7 秒</small></button>
+    <button data-move="refuse" class="feed" aria-pressed="false">搖頭不吃<small>5 秒</small></button>
+  </div>
+  <label class="toggle"><input type="checkbox" id="loopT"> 才藝播完自動重播</label>
+</div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+// 3D動畫生成規範 2.1: rotations are quaternions (axis-angle products), never Euler writes
+import {makeParks} from './parkscenes.js';
+import {makeEat, makeHold, phases, isEat} from './eatkit.js';
+const CAMEAT = {t:[0, 0.95, 0.3], d: 5.8, az: 0};
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+const TAU = Math.PI * 2;
+const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+const AX = {x:V3(1,0,0), y:V3(0,1,0), z:V3(0,0,1)};
+const __qa = new THREE.Quaternion(), __qb = new THREE.Quaternion(), __qc = new THREE.Quaternion();
+function QYXZ(out, yaw, pitch, roll){ __qa.setFromAxisAngle(AX.y, yaw); __qb.setFromAxisAngle(AX.x, pitch); __qc.setFromAxisAngle(AX.z, roll); return out.copy(__qa).multiply(__qb).multiply(__qc); }
+
+// ---------- calibration (model space of the rigged GLB: feet at 0, height 1.65, facing +z) ----------
+const CFG = { scale: 1, eye:[0.146,1.348], eyeR:[0.045,0.052], eyeZ:0.12, eyeOut:1.45, eyeFill:[0.0035,0.0038,0.0048], noPink:false, ink:true, mouth:[0,1.1], mouthR:[0.05,0.03], mouthZ:9 };
+
+{ const q = new URLSearchParams(location.search); if (q.get('eyeR')) CFG.eyeR = q.get('eyeR').split(',').map(Number); if (q.get('eye')) CFG.eye = q.get('eye').split(',').map(Number); }
+const stage = document.getElementById('stage');
+const statusEl = document.getElementById('status');
+const loadingEl = document.getElementById('loading');
+const loopEl = document.getElementById('loopT');
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb59a, 2.0));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2, 4, 3); scene.add(sun);
+const PARKS = makeParks(THREE, scene, 'adult-magpie'); PARKS.show('idle');
+const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 60);
+camera.position.set(0.6, 1.5, 6.6);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.95, 0.1); controls.enablePan = false; controls.enableDamping = true;
+controls.minDistance = 2.8; controls.maxDistance = 18; controls.maxPolarAngle = Math.PI * 0.52;
+let userCam = false; controls.addEventListener('start', () => { userCam = true; });
+
+const ground = new THREE.Mesh(new THREE.CircleGeometry(3.8, 64), new THREE.MeshLambertMaterial({color:0xcfe5c4}));
+AXQ(ground, 'x', -Math.PI/2); ground.material.depthWrite = false; ground.renderOrder = -2; scene.add(ground);
+function AXQ(o, a, ang){ o.quaternion.setFromAxisAngle(AX[a], ang); }
+const shCanvas = document.createElement('canvas'); shCanvas.width = shCanvas.height = 128;
+const sctx = shCanvas.getContext('2d'); const gr = sctx.createRadialGradient(64,64,4,64,64,62);
+gr.addColorStop(0,'rgba(30,50,35,0.45)'); gr.addColorStop(1,'rgba(30,50,35,0)'); sctx.fillStyle = gr; sctx.fillRect(0,0,128,128);
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.4,1.4), new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shCanvas), transparent:true, depthWrite:false}));
+AXQ(shadow, 'x', -Math.PI/2); shadow.position.y = 0.003; shadow.renderOrder = -1; scene.add(shadow);
+
+const rig = new THREE.Group(); scene.add(rig);
+const glowU = {value:0}, calmU = {value:0}, flatEU = {value:0}, flatMU = {value:0}, lidU = {value:0}, happyU = {value:0}, sadU = {value:0};
+
+// ---------- floating symbols ----------
+function makeTex(draw){ const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); draw(g); const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx; }
+const heartTex = makeTex(g => { g.translate(64, 66); g.beginPath(); g.moveTo(0, 40); g.bezierCurveTo(-64, -4, -36, -56, 0, -24); g.bezierCurveTo(36, -56, 64, -4, 0, 40); g.closePath(); g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ff6f8e'; g.fill(); });
+const zTex = makeTex(g => { g.font = '900 104px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 12; g.strokeStyle = '#ffffff'; g.lineJoin = 'round'; g.strokeText('Z', 64, 68); g.fillStyle = '#5a6fa8'; g.fillText('Z', 64, 68); });
+const starTex = makeTex(g => { g.translate(64, 64); g.beginPath(); for (let i = 0; i < 10; i++){ const r = i % 2 ? 22 : 54, a = -Math.PI/2 + i*Math.PI/5; g.lineTo(Math.cos(a)*r, Math.sin(a)*r); } g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#f5c24a'; g.fill(); });
+const dustTex = makeTex(g => { g.beginPath(); g.arc(64, 64, 50, 0, TAU); g.fillStyle = '#e6dcc8'; g.fill(); });
+const dropTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -52); g.bezierCurveTo(22, -18, 40, 6, 40, 22); g.arc(0, 22, 40, 0, Math.PI); g.bezierCurveTo(-40, 6, -22, -18, 0, -52); g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#6fbfee'; g.fill(); });
+const noteTex = color => makeTex(g => { const shape = () => { g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.moveTo(62, 92); g.lineTo(62, 20); g.quadraticCurveTo(92, 34, 96, 62); };
+  g.lineJoin = 'round'; g.lineCap = 'round'; shape(); g.lineWidth = 20; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#ffffff'; g.fill(); shape(); g.lineWidth = 9; g.strokeStyle = color; g.stroke(); g.beginPath(); g.ellipse(46, 94, 20, 14, -0.4, 0, TAU); g.fillStyle = color; g.fill(); });
+const noteTexes = [noteTex('#f5a524'), noteTex('#2b7a4b')];
+const words = {};
+function wordTex(txt, col = '#e8584a'){
+  if (words[txt]) return words[txt];
+  const c = document.createElement('canvas'); c.width = 384; c.height = 160; const g = c.getContext('2d');
+  g.font = '900 96px "Huninn","Noto Sans TC",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  let s = 96; while (g.measureText(txt).width > 340 && s > 40){ s -= 6; g.font = `900 ${s}px "Huninn","Noto Sans TC",sans-serif`; }
+  g.lineJoin = 'round'; g.lineWidth = 18; g.strokeStyle = '#ffffff'; g.strokeText(txt, 192, 84); g.fillStyle = col; g.fillText(txt, 192, 84);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return (words[txt] = tx);
+}
+const fx = [];
+function spawn(map, pos, vel, life, size, grow = 0, extra = null){
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map, transparent:true, depthWrite:false})); sp.position.copy(pos); sp.renderOrder = 5; scene.add(sp);
+  const f = Object.assign({sp, vel, life, size, grow, age:0}, extra || {}); fx.push(f); return f;
+}
+function updateFx(dt){
+  for (let i = fx.length - 1; i >= 0; i--){
+    const f = fx[i]; f.age += dt;
+    if (f.age > f.life){ scene.remove(f.sp); f.sp.material.dispose(); fx.splice(i, 1); continue; }
+    const u = f.age / f.life; if (f.gravity) f.vel.y += f.gravity * dt;
+    if (f.follow) f.sp.position.copy(f.follow(f.age)); else f.sp.position.addScaledVector(f.vel, dt);
+    const s = f.size * (Math.min(1, f.age/0.2)*0.4 + 0.6) * (1 + f.grow*u); f.sp.scale.set(s, s, s);
+    f.sp.material.opacity = Math.min(1, f.age/0.15) * (u > 0.6 ? 1 - (u-0.6)/0.4 : 1);
+  }
+}
+function clearFx(){ fx.forEach(f => { scene.remove(f.sp); f.sp.material.dispose(); }); fx.length = 0; }
+let wordSprite = null;
+function showWord(tex, pos, scale = 0.8){
+  if (wordSprite){ scene.remove(wordSprite); wordSprite.material.dispose(); }
+  wordSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: tex, transparent: true, depthWrite: false, depthTest: false}));
+  wordSprite.renderOrder = 9; wordSprite.position.copy(pos); wordSprite.userData.age = 0; wordSprite.userData.sc = scale; scene.add(wordSprite);
+}
+function updateWord(dt){
+  if (!wordSprite) return;
+  const a = (wordSprite.userData.age += dt), pop = a < 0.18 ? 0.6 + 2.6 * a : 1.07 - 0.07 * Math.min(1, (a - 0.18) / 0.15), k = wordSprite.userData.sc;
+  wordSprite.scale.set(k * pop, k * 0.5 * pop, 1); wordSprite.material.opacity = a > 1.2 ? Math.max(0, 1 - (a - 1.2) / 0.3) : 1;
+  if (a > 1.5){ scene.remove(wordSprite); wordSprite.material.dispose(); wordSprite = null; }
+}
+function resize(){ const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(stage); resize();
+// ---------- face prep: when an expression is drawn, the painted eye/mouth disappears into clean skin ----------
+// For each vertex on an eye or the mouth we store the skin colour of the surrounding ring, plus an offset and
+// a normal that sink the eye/mouth bump back onto the surrounding surface, so nothing looks like a closed lid.
+function prepFace(mesh, F){
+  const g = mesh.geometry, P = g.attributes.position, UV = g.attributes.uv, N = g.attributes.normal, n = P.count;
+  const img = mesh.material.map && mesh.material.map.image;
+  const W = img.width, H = img.height, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d', {willReadFrequently: true}); cx.drawImage(img, 0, 0); const px = cx.getImageData(0, 0, W, H).data;
+  const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const colOf = i => { const u = UV.getX(i), v = UV.getY(i);
+    const x = Math.min(W - 1, Math.max(0, Math.floor(((u % 1) + 1) % 1 * W))), y = Math.min(H - 1, Math.max(0, Math.floor(((v % 1) + 1) % 1 * H)));
+    const k = (y * W + x) * 4; return [lin(px[k]), lin(px[k + 1]), lin(px[k + 2])]; };
+  const OUT = F.eyeOut || 1.35, re = new Float32Array(n), rm = new Float32Array(n), cols = new Array(n);
+  for (let i = 0; i < n; i++){
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i), s = x < 0 ? -1 : 1;
+    re[i] = z > F.eyeZ ? Math.hypot((x - F.eye[0] * s) / F.eyeR[0], (y - F.eye[1]) / F.eyeR[1]) : 99;
+    rm[i] = z > F.mouthZ ? Math.hypot((x - F.mouth[0]) / F.mouthR[0], (y - F.mouth[1]) / F.mouthR[1]) : 99;
+    if (re[i] < OUT + 0.9 || rm[i] < 2.1) cols[i] = colOf(i);
+  }
+  const lum = c => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  const ringE = [], ringM = [];
+  for (let i = 0; i < n; i++){
+    if (re[i] > OUT - 0.1 && re[i] < OUT + 0.6 && lum(cols[i]) > 0.15) ringE.push(i);
+    else if (rm[i] > 1.25 && rm[i] < 2.0 && re[i] > 1.35 && lum(cols[i]) > 0.15) ringM.push(i);
+  }
+  // centre of the head from the skin ring around the eyes (least-squares sphere)
+  const M = Array.from({length: 4}, () => [0, 0, 0, 0, 0]);
+  for (const i of ringE){ const x = P.getX(i), y = P.getY(i), z = P.getZ(i), r = [2*x, 2*y, 2*z, 1], b = x*x + y*y + z*z;
+    for (let a = 0; a < 4; a++){ for (let c = 0; c < 4; c++) M[a][c] += r[a] * r[c]; M[a][4] += r[a] * b; } }
+  for (let a = 0; a < 4; a++){ let p = a; for (let r = a + 1; r < 4; r++) if (Math.abs(M[r][a]) > Math.abs(M[p][a])) p = r; [M[a], M[p]] = [M[p], M[a]];
+    for (let r = 0; r < 4; r++){ if (r === a) continue; const f = M[r][a] / M[a][a]; for (let c = a; c < 5; c++) M[r][c] -= f * M[a][c]; } }
+  const C = [M[0][4] / M[0][0], M[1][4] / M[1][1], M[2][4] / M[2][2]];
+  // eyes are filled with the dominant skin colour around each eye (keeps a clean, even patch)
+  const domE = F.eyeFill ? [F.eyeFill, F.eyeFill] : [-1, 1].map(sd => { const sel = ringE.filter(j => (P.getX(j) < 0 ? -1 : 1) === sd && P.getY(j) > F.eye[1] && re[j] < OUT + 0.3);   // upper half: forehead fur, away from snout and blush
+    return [0, 1, 2].map(k => { const v = sel.map(j => cols[j][k]).sort((a, b) => a - b); return v.length ? v[v.length >> 1] : 0.8; }); });
+  const aSkin = new Float32Array(n * 4), aFlat = new Float32Array(n * 4), aFlatN = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++){
+    aFlatN[i*3] = N.getX(i); aFlatN[i*3+1] = N.getY(i); aFlatN[i*3+2] = N.getZ(i);
+    const own = cols[i]; if (own){ aSkin[i*4] = own[0]; aSkin[i*4+1] = own[1]; aSkin[i*4+2] = own[2]; }
+    const pinkV = !F.noPink && cols[i] && cols[i][0] - cols[i][2] > 0.15 && cols[i][1] > 0.3;   // snout & blush stay as they are
+    const isE = re[i] < OUT && !pinkV, isM = !isE && rm[i] < 1.4;
+    if (!isE && !isM) continue;
+    const ring = isE ? ringE : ringM, r = isE ? re[i] : rm[i];
+    const x = P.getX(i), y = P.getY(i), z = P.getZ(i);
+    const near = [];
+    for (const j of ring){ const d = Math.hypot(P.getX(j) - x, P.getY(j) - y, P.getZ(j) - z); if (near.length < 18 || d < near[near.length - 1][0]){ near.push([d, j]); near.sort((a, b) => a[0] - b[0]); if (near.length > 18) near.pop(); } }
+    if (!near.length) continue;
+    // colour: take ring samples lying in the same direction from the eye/mouth centre, so the skin pattern continues across
+    const sx = x < 0 ? -1 : 1, cxE = isE ? F.eye[0] * sx : F.mouth[0], cyE = isE ? F.eye[1] : F.mouth[1], rx = isE ? F.eyeR[0] : F.mouthR[0], ry = isE ? F.eyeR[1] : F.mouthR[1];
+    const ang = Math.atan2((y - cyE) / ry, (x - cxE) / rx), dirSet = [];
+    for (const j of ring){ const jx = P.getX(j), jy = P.getY(j); if (isE && (jx < 0) !== (x < 0)) continue;
+      let da = Math.abs(Math.atan2((jy - cyE) / ry, (jx - cxE) / rx) - ang); if (da > Math.PI) da = 2 * Math.PI - da;
+      if (da < 0.4) dirSet.push([Math.hypot(jx - x, jy - y, P.getZ(j) - z), j]); }
+    dirSet.sort((a, b) => a[0] - b[0]);
+    const pick = r < 0.6 || dirSet.length < 4 ? near : dirSet.slice(0, 8);   // the very middle blends from all around
+    const med = isE ? domE[x < 0 ? 0 : 1] : [0, 1, 2].map(k => { const v = pick.map(q => cols[q[1]][k]).sort((a, b) => a - b); return v[v.length >> 1]; });
+    let wsum = 0, rad = 0, nx = 0, ny = 0, nz = 0;
+    for (const [d, j] of near.slice(0, 10)){ const w = 1 / (d + 0.01); wsum += w;
+      rad += w * Math.hypot(P.getX(j) - C[0], P.getY(j) - C[1], P.getZ(j) - C[2]); nx += w * N.getX(j); ny += w * N.getY(j); nz += w * N.getZ(j); }
+    rad /= wsum; const nl = Math.hypot(nx, ny, nz) || 1;
+    const dx = x - C[0], dy = y - C[1], dz = z - C[2], dl = Math.hypot(dx, dy, dz) || 1;
+    const fade = isE ? 1 - Math.min(1, Math.max(0, (r - (OUT - 0.3)) / 0.3)) : 1 - Math.min(1, Math.max(0, (r - 1.05) / 0.3));
+    aSkin[i*4] = med[0]; aSkin[i*4+1] = med[1]; aSkin[i*4+2] = med[2]; aSkin[i*4+3] = fade;
+    aFlat[i*4] = C[0] + dx / dl * rad - x; aFlat[i*4+1] = C[1] + dy / dl * rad - y; aFlat[i*4+2] = C[2] + dz / dl * rad - z; aFlat[i*4+3] = isE ? 1 : 2;
+    aFlatN[i*3] = nx / nl; aFlatN[i*3+1] = ny / nl; aFlatN[i*3+2] = nz / nl;
+  }
+  g.setAttribute('aSkin', new THREE.BufferAttribute(aSkin, 4));
+  g.setAttribute('aFlat', new THREE.BufferAttribute(aFlat, 4));
+  g.setAttribute('aFlatN', new THREE.BufferAttribute(aFlatN, 3));
+}
+const FLAT_VS_HEAD = 'attribute vec4 aSkin;\nattribute vec4 aFlat;\nattribute vec3 aFlatN;\nuniform float uFlatE;\nuniform float uFlatM;\nvarying vec4 vSkin;\nvarying float vFlatW;\n';
+const FLAT_VS_NORMAL = `#include <beginnormal_vertex>
+  float flatW = (aFlat.w > 0.5 && aFlat.w < 1.5 ? uFlatE : (aFlat.w > 1.5 ? uFlatM : 0.0)) * aSkin.a;
+  objectNormal = normalize(mix(objectNormal, aFlatN, flatW));
+  vSkin = aSkin; vFlatW = flatW;`;
+
+// ---------- shader: blink / closed eyes, calm closed mouth, happy eyes, ear wobble ----------
+const f = x => Number(x).toFixed(4);
+const v2 = a => `vec2(${f(a[0])}, ${f(a[1])})`;
+const v3 = a => `vec3(${f(a[0])}, ${f(a[1])}, ${f(a[2])})`;
+function patch(m){ for (const k of ['map', 'normalMap', 'roughnessMap', 'metalnessMap']){ const tx = m[k]; if (tx){ tx.generateMipmaps = false; tx.minFilter = THREE.LinearFilter; tx.needsUpdate = true; } }   // 模型建立規則 4.6
+  const c = CFG;
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, {uGlow:glowU, uFlatE:flatEU, uFlatM:flatMU, uLid:lidU, uCalm:calmU, uHappy:happyU, uSad:sadU});
+    sh.fragmentShader = 'uniform float uGlow;\nuniform float uLid;\nuniform float uCalm;\nuniform float uHappy;\nuniform float uSad;\nvarying vec3 vObj;\nvarying vec4 vSkin;\nvarying float vFlatW;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+      if (!gl_FrontFacing && vFlatW > 0.05) discard;
+      float coverM = 0.0;
+      float inkK = 0.0;
+      float eyeK = max(max(uLid, uHappy), uSad);
+      if (eyeK > 0.01 && vObj.z > ${f(c.eyeZ)}) {
+        float side = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 e = (vObj.xy - vec2(${f(c.eye[0])} * side, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        float r = length(e);
+        if (r < ${f((c.eyeOut || 1.35) + 0.15)} && (uHappy > 0.5 || uSad > 0.5 || e.y > ${f(c.eyeOut || 1.35)} * (1.0 - 2.0 * uLid))) {
+          coverM = smoothstep(${f((c.eyeOut || 1.35) + 0.15)}, ${f((c.eyeOut || 1.35) - 0.1)}, r)${c.noPink ? '' : ' * (1.0 - step(0.15, diffuseColor.r - diffuseColor.b) * step(0.3, diffuseColor.g))'};
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, coverM);
+          if (uHappy > 0.9) {
+            vec2 tip = vec2(0.0, 0.62), a1 = vec2(-0.92, -0.38), a2 = vec2(0.92, -0.38);
+            vec2 pa = e - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = e - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.2) { diffuseColor.rgb = vec3(0.80, 0.72, 0.55); inkK = 1.0; }
+          } else if (uSad > 0.9) {
+            // 難過：「> <」眼（2026-10-18 搖頭不吃）
+            vec2 q = vec2(-e.x * side, e.y), tip = vec2(0.42, 0.0), a1 = vec2(-0.5, 0.42), a2 = vec2(-0.5, -0.42);
+            vec2 pa = q - a1, ba = tip - a1; float d1 = length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0));
+            vec2 pb = q - a2, bb = tip - a2; float d2 = length(pb - bb * clamp(dot(pb, bb) / dot(bb, bb), 0.0, 1.0));
+            if (min(d1, d2) < 0.12) { diffuseColor.rgb = vec3(0.80, 0.72, 0.55); inkK = 1.0; }
+          } else if (uLid > 0.9 && abs(e.x) < 1.2) {
+            float yc = -0.12 - 0.56 * (1.0 - (e.x * e.x) / 1.44);
+            if (abs(e.y - yc) < 0.17) { diffuseColor.rgb = vec3(0.80, 0.72, 0.55); inkK = 1.0; }
+          }
+        }
+      }
+      float mouthK = max(uCalm, uSad);
+      if (mouthK > 0.01 && vObj.z > ${f(c.mouthZ)}) {
+        vec2 mo = (vObj.xy - ${v2(c.mouth)}) / ${v2(c.mouthR)};
+        float r = length(mo);
+        if (r < 1.2) {
+          float mm = smoothstep(1.2, 0.95, r) * mouthK;
+          diffuseColor.rgb = mix(diffuseColor.rgb, vSkin.rgb, mm);
+          coverM = max(coverM, mm);
+          vec2 q = (vObj.xy - vec2(0.0, ${f(c.mouth[1] + 0.01)})) / vec2(0.045, 0.02);
+          if (mouthK > 0.9 && abs(q.x) < 1.0) {
+            float yc = (uSad > 0.5 ? 0.6 : -0.6) * (1.0 - q.x * q.x);   // 難過時嘴角往下
+            if (abs(q.y - yc) < 0.38) diffuseColor.rgb = vec3(0.36, 0.2, 0.22);
+          }
+        }
+      }`).replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+      totalEmissiveRadiance += vec3(0.80, 0.72, 0.55) * inkK * 0.3;
+      if (uGlow > 0.001 && vObj.z > ${f(c.eyeZ)}) {
+        float sideG = vObj.x < 0.0 ? -1.0 : 1.0;
+        vec2 eg = (vObj.xy - vec2(${f(c.eye[0])} * sideG, ${f(c.eye[1])})) / ${v2(c.eyeR)};
+        float rg = length(eg), gmask = smoothstep(1.08, 0.86, rg) * uGlow;
+        float slit = smoothstep(0.2, 0.1, abs(eg.x) / (1.0 - 0.75 * eg.y * eg.y + 0.0001)) * step(abs(eg.y), 0.82);   /* cat slit pupil */
+        diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.55, 1.0, 0.62), vec3(0.05, 0.25, 0.1), slit), gmask);
+        totalEmissiveRadiance += vec3(0.35, 1.0, 0.55) * gmask * (1.0 - 0.85 * slit) * 1.6;
+        float halo = smoothstep(1.35, 1.0, rg) * (1.0 - smoothstep(1.0, 0.86, rg)) * uGlow;   /* soft glow on the rim */
+        totalEmissiveRadiance += vec3(0.25, 0.8, 0.4) * halo * 0.5;
+      }`).replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+          roughnessFactor = mix(roughnessFactor, 0.85, max(coverM, vFlatW));
+`).replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+          metalnessFactor = mix(metalnessFactor, 0.0, max(coverM, vFlatW));`).replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+      normal = normalize(mix(normal, nonPerturbedNormal, max(coverM, vFlatW)));`);
+    sh.vertexShader = FLAT_VS_HEAD + 'varying vec3 vObj;\n' + sh.vertexShader.replace('#include <beginnormal_vertex>', FLAT_VS_NORMAL).replace('#include <begin_vertex>', `#include <begin_vertex>
+      transformed += aFlat.xyz * flatW;
+      vObj = position;`);
+  };
+  m.customProgramCacheKey = () => 'magpieadult';
+  m.needsUpdate = true;
+}
+
+
+// ---------- skeleton helpers ----------
+let model = null; const bones = {}, rest = {}, restP = {};
+const _pq = new THREE.Quaternion(), _rq = new THREE.Quaternion(), _w = new THREE.Quaternion(), _l = new THREE.Quaternion();
+function resetPose(){ for (const n in bones){ bones[n].quaternion.copy(rest[n]); bones[n].position.copy(restP[n]); } }
+// rotate a bone about an axis in the character's own space (x = his left, y = up, z = forward)
+function rot(name, axis, ang){
+  const b = bones[name]; if (!b || !ang) return;
+  b.parent.updateWorldMatrix(true, false);
+  b.parent.getWorldQuaternion(_pq); model.getWorldQuaternion(_rq);
+  _pq.premultiply(_rq.invert());
+  _w.setFromAxisAngle(AX[axis], ang);
+  _l.copy(_pq).invert().multiply(_w).multiply(_pq);
+  b.quaternion.premultiply(_l).normalize();
+}
+function rotWorld(b, axis, ang){
+  b.parent.updateWorldMatrix(true, false); b.parent.getWorldQuaternion(_pq);
+  _w.setFromAxisAngle(axis, ang); _l.copy(_pq).invert().multiply(_w).multiply(_pq); b.quaternion.premultiply(_l);
+}
+const FEET = ['LeftFoot','RightFoot','LeftToeBase','RightToeBase'];
+const _v = V3();
+function wpos(n, out = V3()){ return bones[n].getWorldPosition(out); }
+const tailR = {};
+function feetLow(){ let mn = Infinity; model.updateMatrixWorld(true); for (const n of FEET) mn = Math.min(mn, wpos(n, _v).y); for (const n in tailR) mn = Math.min(mn, wpos(n, _v).y - tailR[n]); return mn; }
+let restFeet = 0, skinned = null;
+const charPt = (x, y, z) => rig.localToWorld(V3(x, y, z));
+
+// ---------- tail: 6 bones along the flat paddle tail ----------
+const TL = ['Tail01', 'Tail02', 'Tail03', 'Tail04', 'Tail05', 'Tail06'];
+/* gentle sway: every bone turns a little, the wave travels down the tail; curl > 0 lifts the tip */
+function tailSway(amp, t, spd = 1.7, curl = 0){ TL.forEach((n, i) => { rot(n, 'y', amp * 0.13 * Math.sin(t * spd - 0.6 * i)); if (curl) rot(n, 'x', curl * 0.09); }); }
+/* bend the whole tail: total yaw (+ = sweeps toward the character's -x side... see rot()), total curl (+ lifts the tip) shared over the 6 bones */
+function tailBend(yaw, curl = 0, w = null){ TL.forEach((n, i) => { const k = w ? w[i] : 1 / TL.length; rot(n, 'y', yaw * k); if (curl) rot(n, 'x', curl * k); }); }
+/* crest tuft */
+function crestWag(a, b = 0){ rot('Crest', 'x', a); if (b) rot('Crest', 'z', b); }
+/* wings: a > 0 raises the wing (total angle, shared over shoulder / arm / forearm); f > 0 swings it forward */
+function wingSet(sd, a, f = 0){ const s = sd === 'Left' ? 1 : -1;
+  rot(sd + 'Shoulder', 'z', s * a * 0.22); rot(sd + 'Arm', 'z', s * a * 0.5); rot(sd + 'ForeArm', 'z', s * a * 0.28);
+  if (f){ rot(sd + 'Shoulder', 'y', -s * f * 0.2); rot(sd + 'Arm', 'y', -s * f * 0.5); rot(sd + 'ForeArm', 'y', -s * f * 0.3); } }
+function wings(a, f = 0, aR = a, fR = f){ wingSet('Left', a, f); wingSet('Right', aR, fR); }
+/* tail polyline in world space: root, bone heads and a tip */
+const _tp = Array.from({length: 8}, () => V3());
+function tailPoly(){ model.updateMatrixWorld(true); TL.forEach((n, i) => bones[n].getWorldPosition(_tp[i])); _tp[6].copy(_tp[5]).sub(_tp[4]).setLength(0.12).add(_tp[5]); return _tp.slice(0, 7); }
+/* point at arc length r along the tail polyline, plus the unit tangent */
+function tailAt(r, outP, outT){ const P = tailPoly(); let acc = 0; for (let i = 0; i < P.length - 1; i++){ const L = P[i].distanceTo(P[i + 1]); if (acc + L >= r || i === P.length - 2){ const u = Math.min(1, Math.max(0, (r - acc) / L)); outP.lerpVectors(P[i], P[i + 1], u); outT.subVectors(P[i + 1], P[i]).normalize(); return; } acc += L; } }
+let beakLocal = null; const _bt = V3();
+/* beak tip in world space (the tip vertex measured on the bind pose: model (0, 1.265, 0.407)) */
+function beakTip(out = V3()){ bones.Head.updateWorldMatrix(true, false); return out.copy(beakLocal).applyMatrix4(bones.Head.matrixWorld); }
+function clampTo(n, lim){ const b = bones[n], a = b.quaternion.angleTo(rest[n]); if (a > lim){ _l.copy(rest[n]).slerp(b.quaternion, lim / a); b.quaternion.copy(_l); } }
+async function fetchModel(file){
+  const res = await fetch(file); if (!res.ok) throw new Error('fetch ' + res.status);
+  const j = await res.json(); const raw = atob(j._bin); delete j._bin;
+  const bin = new Uint8Array(raw.length); for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
+  delete j.buffers[0].uri; j.buffers[0].byteLength = bin.length;
+  const jb = new TextEncoder().encode(JSON.stringify(j)); const jLen = Math.ceil(jb.length/4)*4, bLen = Math.ceil(bin.length/4)*4;
+  const buf = new ArrayBuffer(28 + jLen + bLen), dv = new DataView(buf), u8 = new Uint8Array(buf);
+  dv.setUint32(0, 0x46546C67, true); dv.setUint32(4, 2, true); dv.setUint32(8, buf.byteLength, true);
+  dv.setUint32(12, jLen, true); dv.setUint32(16, 0x4E4F534A, true); u8.fill(0x20, 20, 20 + jLen); u8.set(jb, 20);
+  const o = 20 + jLen; dv.setUint32(o, bLen, true); dv.setUint32(o + 4, 0x004E4942, true); u8.set(bin, o + 8);
+  return new Promise((ok, fail) => new GLTFLoader().parse(buf, './', ok, fail));
+}
+
+// base pose: arms held a little away from the body so they never touch the torso (plush style)
+function armGap(){ rot('LeftArm', 'z', 0.07); rot('RightArm', 'z', -0.07); }
+// ---------- prop helpers ----------
+const mat = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({color: c, roughness: 0.75}, o));
+const SPH = new THREE.SphereGeometry(1, 20, 14), CYL = new THREE.CylinderGeometry(1, 1, 1, 14), CONE = new THREE.ConeGeometry(1, 1, 12), BOX = new THREE.BoxGeometry(1, 1, 1);
+function mesh(p, geo, m, pos, s){ const o = new THREE.Mesh(geo, m); o.position.set(...pos); if (Array.isArray(s)) o.scale.set(...s); else o.scale.setScalar(s); p.add(o); return o; }
+function placeStick(o, A, B, r){ const d = _d1.subVectors(B, A); const L = d.length() || 1e-4; o.position.copy(A).addScaledVector(d, 0.5); o.scale.set(r, L, r); o.quaternion.setFromUnitVectors(AX.y, d.multiplyScalar(1 / L)); }
+const _d1 = V3();
+function stick(p, a, b, r, m){ const o = new THREE.Mesh(CYL, m); placeStick(o, V3(...a), V3(...b), r); p.add(o); return o; }
+const ease = x => x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2)/2;
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const span = (t, a, b) => clamp01((t - a) / (b - a));
+const bell = x => Math.sin(Math.PI * clamp01(x));
+const backOut = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const lerp = (a, b, t) => a + (b - a) * t;
+const glowTexB = makeTex(g => { const r = g.createRadialGradient(64, 64, 2, 64, 64, 62); r.addColorStop(0, 'rgba(255,255,255,0.9)'); r.addColorStop(0.35, 'rgba(190,225,255,0.45)'); r.addColorStop(1, 'rgba(160,200,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 128, 128); });
+const popS = (T, a, b, c, d) => Math.max(0.001, backOut(span(T, a, b)) * (1 - ease(span(T, c, d))));
+const _bp = V3();
+const sparkTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -56); g.quadraticCurveTo(6, -6, 56, 0); g.quadraticCurveTo(6, 6, 0, 56); g.quadraticCurveTo(-6, 6, -56, 0); g.quadraticCurveTo(-6, -6, 0, -56); g.closePath(); g.fillStyle = '#fff6b8'; g.fill(); g.lineWidth = 6; g.strokeStyle = '#ffffff'; g.stroke(); });
+const tearTex = makeTex(g => { g.translate(64, 64); g.beginPath(); g.moveTo(0, -46); g.bezierCurveTo(26, -10, 38, 10, 38, 24); g.arc(0, 24, 38, 0, Math.PI); g.bezierCurveTo(-38, 10, -26, -10, 0, -46); g.closePath(); g.lineWidth = 10; g.strokeStyle = '#ffffff'; g.stroke(); g.fillStyle = '#7ec8f5'; g.fill(); });
+
+// =====================================================================================================
+// 1. 高空巡航: a floating rainbow ring that the flight passes through
+// =====================================================================================================
+const ringG = new THREE.Group(); ringG.visible = false; scene.add(ringG);
+const RING_R = [1.96, 1.895, 1.83, 1.765, 1.7, 1.635, 1.57];
+{ [0xe8584a, 0xf08a3a, 0xf6c445, 0x5cae4f, 0x4aa3df, 0x3b5fc8, 0x8a5ad0].forEach((c, i) => ringG.add(new THREE.Mesh(new THREE.TorusGeometry(RING_R[i], 0.036, 10, 80), new THREE.MeshBasicMaterial({color: c})))); }
+const ringGlow = new THREE.Sprite(new THREE.SpriteMaterial({map: glowTexB, transparent: true, depthWrite: false, opacity: 0.55})); ringGlow.scale.setScalar(5.6); ringG.add(ringGlow);
+const ringClouds = []; { for (const a of [Math.PI * 1.08, Math.PI * 1.92]){ for (let k = 0; k < 3; k++){ const c = mesh(ringG, SPH, mat(0xffffff, {roughness: 1}), [Math.cos(a) * 1.78 + (k - 1) * 0.12, Math.sin(a) * 1.78 + (k === 1 ? 0.1 : 0), 0], [0.22 + (k === 1 ? 0.06 : 0), 0.16, 0.16]); ringClouds.push(c); } } }
+
+// =====================================================================================================
+// 2. 尾巴溜滑梯: a tree stump for the bird to stand on, plus the cow baby
+// =====================================================================================================
+const stumpG = new THREE.Group(); stumpG.visible = false; scene.add(stumpG);
+const ringTexW = makeTex(g => { g.fillStyle = '#d9b27c'; g.fillRect(0, 0, 128, 128); for (let i = 1; i < 6; i++){ g.beginPath(); g.arc(64, 64, i * 10, 0, TAU); g.lineWidth = 3; g.strokeStyle = i % 2 ? '#a9743f' : '#c08a52'; g.stroke(); } g.beginPath(); g.arc(64, 64, 4, 0, TAU); g.fillStyle = '#8a5a30'; g.fill(); });
+const stumpBody = mesh(stumpG, CYL, mat(0x8f6038, {roughness: 0.95}), [0, 0.3, 0], [0.62, 0.6, 0.62]);
+const stumpTop = new THREE.Mesh(new THREE.CircleGeometry(1, 36), new THREE.MeshStandardMaterial({map: ringTexW, roughness: 0.9})); AXQ(stumpTop, 'x', -Math.PI / 2); stumpG.add(stumpTop);   /* static prop, not the character */
+const stumpFoot = mesh(stumpG, CYL, mat(0x7a5030, {roughness: 1}), [0, 0.05, 0], [0.74, 0.1, 0.74]);
+function setStump(h, x, z){ stumpBody.scale.set(0.62, h, 0.62); stumpBody.position.y = h / 2; stumpTop.position.y = h + 0.002; stumpTop.scale.setScalar(0.62); stumpG.position.set(x, 0, z); }
+// the cow baby (real 3D model, rigid), same loader as the other adult pages
+function makeBaby(file, H){
+  const B = {root: new THREE.Group(), body: new THREE.Group(), ready: false}; B.root.add(B.body); B.root.visible = false; scene.add(B.root);
+  fetchModel(file).then(gl => {
+    const m = gl.scene; m.scale.setScalar(H / 1.89); m.position.y = 0.945 * H / 1.89;
+    m.traverse(o => { if (o.isMesh){ o.frustumCulled = false; (Array.isArray(o.material) ? o.material : [o.material]).forEach(mm => { mm.roughness = Math.max(mm.roughness || 0, 0.7); mm.metalness = 0; for (const tk of ['map','normalMap','roughnessMap','metalnessMap']) if (mm[tk]){ mm[tk].generateMipmaps = false; mm[tk].minFilter = THREE.LinearFilter; mm[tk].needsUpdate = true; } }); } });
+    B.body.add(m); m.updateMatrixWorld(true); { const bb = new THREE.Box3().setFromObject(m); m.position.y -= bb.min.y; }
+    B.sh = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), new THREE.MeshBasicMaterial({map: shadow.material.map, transparent: true, depthWrite: false})); AXQ(B.sh, 'x', -Math.PI / 2); B.sh.position.y = 0.004; B.sh.renderOrder = -1; scene.add(B.sh); B.ready = true;
+  }).catch(err => console.error(file, err));
+  return B;
+}
+const COW = makeBaby('cow_model.json', 0.76);
+/* x, y, z = the baby's feet; yaw / pitch (+ = nose down) / roll in the baby's own frame; sq = squash */
+function placeCow(s){
+  const B = COW; if (!B.ready) return;
+  B.root.position.set(s.x, s.y, s.z); QYXZ(B.root.quaternion, s.yaw, s.pitch || 0, s.roll || 0);
+  B.body.scale.set(1 / Math.sqrt(s.sq || 1), s.sq || 1, 1 / Math.sqrt(s.sq || 1));
+  B.sh.visible = s.y < 0.06; B.sh.position.set(s.x, 0.004, s.z); B.sh.scale.setScalar(0.9 - 0.4 * Math.min(1, s.y / 0.06));
+}
+
+// =====================================================================================================
+// 3. 送小鳥回家: a tiny magpie chick, a nest on a pole, a little sign
+// =====================================================================================================
+function makeChick(s = 1, tears = false){
+  const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
+  const blue = mat(0x3d6fc4, {roughness: 0.95}), blk = mat(0x14161c, {roughness: 0.95}), red = mat(0xe86a3a, {roughness: 0.6}), wh = mat(0xffffff, {roughness: 0.5});
+  mesh(body, SPH, blue, [0, 0.14, 0], [0.135, 0.125, 0.145]);                 /* body */
+  mesh(body, SPH, mat(0x7fb0e0, {roughness: 0.95}), [0, 0.11, 0.07], [0.085, 0.085, 0.08]);   /* belly */
+  const head = new THREE.Group(); head.position.set(0, 0.27, 0.05); body.add(head);
+  mesh(head, SPH, blk, [0, 0, 0], [0.105, 0.098, 0.1]);
+  const beak = mesh(head, CONE, red, [0, -0.012, 0.125], [0.032, 0.07, 0.032]); AXQ(beak, 'x', Math.PI / 2);
+  for (const sx of [-1, 1]){ mesh(head, SPH, wh, [sx * 0.045, 0.014, 0.082], 0.024); mesh(head, SPH, mat(0x05060a), [sx * 0.045, 0.014, 0.097], 0.014); mesh(head, SPH, mat(0xf7a8c0), [sx * 0.062, -0.026, 0.06], [0.02, 0.014, 0.01]); }
+  const wL = mesh(body, SPH, mat(0x2f5fb8, {roughness: 0.95}), [0.125, 0.15, -0.01], [0.04, 0.085, 0.1]), wR = mesh(body, SPH, mat(0x2f5fb8, {roughness: 0.95}), [-0.125, 0.15, -0.01], [0.04, 0.085, 0.1]);
+  mesh(body, SPH, blk, [0, 0.31, -0.03], [0.02, 0.05, 0.02]);   /* a tiny crest */
+  const tail = mesh(body, SPH, mat(0x2f5fb8), [0, 0.1, -0.17], [0.07, 0.025, 0.1]);
+  mesh(body, CYL, red, [-0.04, 0.012, 0.02], [0.012, 0.025, 0.012]); mesh(body, CYL, red, [0.04, 0.012, 0.02], [0.012, 0.025, 0.012]);
+  g.scale.setScalar(s); g.userData = {body, head, wL, wR};
+  return g;
+}
+const chick = makeChick(1.45); chick.visible = false; scene.add(chick);
+const nestG = new THREE.Group(); nestG.visible = false; scene.add(nestG);
+const NEST = {x: -2.3, z: -0.95, h: 2.4};
+{ const wood = mat(0x9a6a3e, {roughness: 0.95}), dark = mat(0x6a4426, {roughness: 1}), straw = mat(0xd9b45a, {roughness: 1}), moss = mat(0x6aa04a, {roughness: 1});
+  mesh(nestG, CYL, wood, [NEST.x, NEST.h / 2, NEST.z], [0.075, NEST.h, 0.075]);                                         /* pole */
+  mesh(nestG, CYL, dark, [NEST.x, 0.04, NEST.z], [0.28, 0.08, 0.28]);                                                  /* foot */
+  mesh(nestG, BOX, wood, [NEST.x, NEST.h - 0.02, NEST.z], [1.0, 0.06, 1.0]);                                          /* platform */
+  for (const [dx, dz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) mesh(nestG, BOX, dark, [NEST.x + dx * 0.47, NEST.h + 0.05, NEST.z + dz * 0.47], [0.05, 0.12, 0.05]);
+  stick(nestG, [NEST.x - 0.3, NEST.h - 0.2, NEST.z], [NEST.x - 0.5, NEST.h - 0.01, NEST.z], 0.03, wood); stick(nestG, [NEST.x + 0.3, NEST.h - 0.2, NEST.z], [NEST.x + 0.5, NEST.h - 0.01, NEST.z], 0.03, wood);
+  const bowl = mesh(nestG, SPH, straw, [NEST.x, NEST.h + 0.04, NEST.z], [0.42, 0.17, 0.42]);                           /* nest bowl */
+  const hole = mesh(nestG, SPH, mat(0xb98f3c, {roughness: 1}), [NEST.x, NEST.h + 0.1, NEST.z], [0.33, 0.1, 0.33]);
+  for (let i = 0; i < 14; i++){ const a = i / 14 * TAU; const tw = mesh(nestG, CYL, i % 2 ? dark : straw, [NEST.x + Math.cos(a) * 0.4, NEST.h + 0.12 + 0.03 * (i % 3), NEST.z + Math.sin(a) * 0.4], [0.014, 0.28, 0.014]); QYXZ(tw.quaternion, 0, -Math.sin(a) * 0.9, Math.cos(a) * 0.9); }
+  mesh(nestG, SPH, moss, [NEST.x + 0.34, NEST.h + 0.0, NEST.z + 0.3], [0.1, 0.05, 0.1]);
+}
+const nestChicks = [0, 1].map(i => { const c = makeChick(1.05); c.position.set(NEST.x + (i ? 0.27 : -0.27), NEST.h + 0.1, NEST.z + (i ? -0.1 : 0.1)); QYXZ(c.quaternion, i ? 0.5 : -0.4, 0, 0); nestG.add(c); return c; });
+// the sign that pops up at the end (page-made prop)
+const signG = new THREE.Group(); signG.visible = false; scene.add(signG);
+const signTexC = (() => { const c = document.createElement('canvas'); c.width = 512; c.height = 256; const g = c.getContext('2d'); g.fillStyle = '#f4e3b8'; g.fillRect(0, 0, 512, 256); g.lineWidth = 14; g.strokeStyle = '#8a5a30'; g.strokeRect(7, 7, 498, 242);
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#2f5a45'; g.font = '900 78px "Huninn","Noto Sans TC",sans-serif'; g.fillText('請小聲', 256, 84); g.font = '900 58px "Huninn","Noto Sans TC",sans-serif'; g.fillStyle = '#b8541f'; g.fillText('小鳥在睡覺 z z', 256, 178);
+  const tx = new THREE.CanvasTexture(c); tx.colorSpace = THREE.SRGBColorSpace; return tx; })();
+const SIGN = {x: -1.05, z: -0.2};
+{ const wood = mat(0x9a6a3e, {roughness: 0.95});
+  mesh(signG, BOX, wood, [SIGN.x, 0.5, SIGN.z], [0.07, 1.0, 0.07]);
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.5), new THREE.MeshStandardMaterial({map: signTexC, roughness: 0.9})); face.position.set(SIGN.x, 1.12, SIGN.z + 0.045); signG.add(face);
+  mesh(signG, BOX, wood, [SIGN.x, 1.12, SIGN.z + 0.0], [1.08, 0.58, 0.03]);
+}
+
+// speed lines for the dash of 高空巡航: thin streaks that stream past the bird
+const streakG = new THREE.Group(); streakG.visible = false; scene.add(streakG);
+const STREAKS = []; { const m = new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.0, depthWrite: false}); for (let i = 0; i < 26; i++){ const o = new THREE.Mesh(CYL, m.clone()); o.renderOrder = 4; streakG.add(o); STREAKS.push({o, a: (i * 2.399) % TAU, r: 0.9 + ((i * 0.37) % 1) * 1.3, ph: (i * 0.618) % 1, len: 0.8 + ((i * 0.53) % 1) * 1.2}); } }
+// ---------- motions ----------
+const names = {idle:'待機', tour:'高空巡航', slide:'尾巴溜滑梯', nest:'送小鳥回家', sleep:'睡覺', eat:'開心吃', snack:'最愛點心', refuse:'搖頭不吃'};
+const LEN = {idle:8, tour:12.8, slide:12.8, nest:12.8, sleep:8, eat:6, snack:7, refuse:5};
+let move = 'idle', t0 = performance.now()/1000, frozen = null, gY = 0, __dE = 0.016;
+const hitT = (T, X) => T >= X && T - __dE < X;
+let __hold = 0; const EMBED = new URLSearchParams(location.search).get('embed') === '1';   // 才藝、餵食播一次：停在最後一格約 1 秒再回待機（App 裡只停住，由 App 切回待機）
+const blinkAt = (t, off = 0) => { const b = ((t + off) % 4.6) / 0.2; return b < 1 ? Math.sin(Math.PI * b) : 0; };
+const sides = ['Left', 'Right'];
+function place(p){
+  for (const n of [...TL, 'Head', 'neck', 'Spine', 'Spine01', 'Spine02']) clampTo(n, 0.5);
+  if (p.q) rig.quaternion.copy(p.q); else QYXZ(rig.quaternion, p.ry, p.pitch, p.roll);
+  rig.position.set(p.x, (p.yAbs != null ? p.yAbs : gY) + (p.surf == null ? p.hop : 0), p.z);
+  rig.scale.set(1 / Math.sqrt(p.sy), p.sy, 1 / Math.sqrt(p.sy)); rig.updateMatrixWorld(true);
+}
+/* walking on two legs: wings stay folded, head bobs, tail balances */
+function birdWalk(ph, amt, tail = true){
+  if (amt <= 0) return;
+  const s = Math.sin(ph);
+  rot('LeftUpLeg', 'x', -0.42 * amt * s); rot('RightUpLeg', 'x', 0.42 * amt * s);
+  rot('LeftLeg', 'x', 0.5 * amt * Math.max(0, -s)); rot('RightLeg', 'x', 0.5 * amt * Math.max(0, s));
+  const sn = Math.sin(ph); rot('LeftFoot', 'x', 0.42 * amt * sn - 0.5 * amt * Math.max(0, -sn)); rot('RightFoot', 'x', -0.42 * amt * sn - 0.5 * amt * Math.max(0, sn));
+  rot('Spine02', 'y', 0.05 * amt * s); rot('Head', 'x', 0.05 * amt * Math.cos(2 * ph)); if (tail) tailBend(0, 0.12 * amt * Math.cos(2 * ph));
+}
+function squat(a){ for (const sd of sides){ rot(sd + 'UpLeg', 'x', -0.55 * a); rot(sd + 'Leg', 'x', 1.0 * a); rot(sd + 'Foot', 'x', -0.45 * a); } }
+function spineLean(a){ rot('Spine02', 'x', a * 0.4); rot('Spine01', 'x', a * 0.35); rot('Spine', 'x', a * 0.25); }
+function headTurn(yaw, pitch = 0){ rot('neck', 'y', yaw * 0.4); rot('Head', 'y', yaw * 0.6); rot('neck', 'x', pitch * 0.4); rot('Head', 'x', pitch * 0.6); }
+function armsFwd(a, bend = 0, inward = 0){ for (const sd of sides){ const s = sd === 'Left' ? 1 : -1; rot(sd + 'Shoulder', 'x', -a * 0.25); rot(sd + 'Arm', 'x', -a * 0.75); rot(sd + 'Shoulder', 'y', -s * inward * 0.3); rot(sd + 'Arm', 'y', -s * inward * 0.7); rot(sd + 'ForeArm', 'x', -bend); } }
+function life(p, t, k = 1, tail = true){
+  const br = Math.sin(TAU * t / 3.6);
+  rot('Spine02', 'x', 0.012 * br * k); rot('Spine01', 'x', 0.012 * br * k);
+  rot('Head', 'y', 0.1 * Math.sin(t * 0.55) * k); rot('Head', 'x', 0.03 * Math.sin(t * 0.9) * k);
+  crestWag((0.1 * Math.sin(t * 1.9) + Math.pow(Math.max(0, Math.sin(TAU * t / 5.3)), 4) * 0.35) * k);
+  if (tail) tailSway(0.3 * k, t, 1.3);
+  p.lid = Math.max(p.lid, blinkAt(t));
+}
+const _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion();
+const _fwd = V3(), _lat = V3();
+const fwdOf = ry => _fwd.set(Math.sin(ry), 0, Math.cos(ry));
+const latOf = ry => _lat.set(Math.cos(ry), 0, -Math.sin(ry));   /* the bird's left (+x when it faces +z) */
+
+function poseIdle(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  life(p, t);
+  headTurn(0.35 * Math.sin(t * 0.45));
+  const wv = bell(span(T, 3.4, 5.2)); wingSet('Right', 0.55 * wv + 0.12 * wv * Math.sin(t * 9)); rot('RightShoulder', 'y', 0);
+  if (wv > 0) p.happy = ease(wv);
+  tailSway(0.6, t, 2);
+  if (hitT(T, 3.9)) p.events.push('hello');
+  place(p);
+}
+function poseSleep(p, t, T){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const br = Math.sin(TAU * t / 4.4);
+  squat(0.35); spineLean(0.1 + 0.03 * br); rot('neck', 'x', 0.3); rot('Head', 'x', 0.35 + 0.02 * br); rot('Head', 'z', 0.12);
+  wings(-0.55); tailBend(0, -0.15); crestWag(0.25); tailSway(0.1, t, 0.8); p.lid = 1;
+  place(p);
+}
+
+
+// =====================================================================================================
+// flights: centripetal Catmull-Rom path through control points, with an eased speed profile
+// =====================================================================================================
+const angLerp = (a, b, u) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * u;
+const wrapA = a => Math.atan2(Math.sin(a), Math.cos(a));
+const _k1 = V3(), _k2 = V3(), _k3 = V3(), UPV = V3(0, 1, 0);
+function makeFlight(CP, Ta, Tb, vFn){
+  const F = {CP, Ta, Tb, poly: [], tab: [], len: 0, seg: []};
+  const P = [CP[0].clone().multiplyScalar(2).sub(CP[1]), ...CP, CP[CP.length - 1].clone().multiplyScalar(2).sub(CP[CP.length - 2])];
+  for (let i = 1; i < P.length - 2; i++){
+    const p0 = P[i - 1], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2];
+    const t0 = 0, t1 = t0 + Math.sqrt(p0.distanceTo(p1)) + 1e-4, t2 = t1 + Math.sqrt(p1.distanceTo(p2)) + 1e-4, t3 = t2 + Math.sqrt(p2.distanceTo(p3)) + 1e-4;
+    F.seg.push(F.poly.length);
+    for (let k = 0; k < 40; k++){ const t = t1 + (t2 - t1) * k / 40;
+      const A1 = V3().addScaledVector(p0, (t1 - t) / (t1 - t0)).addScaledVector(p1, (t - t0) / (t1 - t0)), A2 = V3().addScaledVector(p1, (t2 - t) / (t2 - t1)).addScaledVector(p2, (t - t1) / (t2 - t1)), A3 = V3().addScaledVector(p2, (t3 - t) / (t3 - t2)).addScaledVector(p3, (t - t2) / (t3 - t2));
+      const B1 = V3().addScaledVector(A1, (t2 - t) / (t2 - t0)).addScaledVector(A2, (t - t0) / (t2 - t0)), B2 = V3().addScaledVector(A2, (t3 - t) / (t3 - t1)).addScaledVector(A3, (t - t1) / (t3 - t1));
+      F.poly.push(V3().addScaledVector(B1, (t2 - t) / (t2 - t1)).addScaledVector(B2, (t - t1) / (t2 - t1))); } }
+  F.poly.push(CP[CP.length - 1].clone());
+  const S = [0]; for (let i = 1; i < F.poly.length; i++) S.push(S[i - 1] + F.poly[i].distanceTo(F.poly[i - 1]));
+  F.poly.forEach((q, i) => { q.s = S[i]; }); F.len = S[S.length - 1];
+  const v = vFn ? (s => vFn(s, F)) : (s => Math.min(1, 0.22 + 0.78 * s / 1.4) * Math.min(1, 0.25 + 0.75 * (F.len - s) / 1.6));
+  F.tab = [[0, Ta]]; const N = 600; let T = 0;
+  for (let i = 1; i <= N; i++){ const s0 = F.len * (i - 1) / N, s1 = F.len * i / N; T += (s1 - s0) / v((s0 + s1) / 2); F.tab.push([s1, T]); }
+  const k = (Tb - Ta) / T; F.tab.forEach(e => { e[1] = Ta + e[1] * k; }); F.tab[0][1] = Ta;
+  F.s = Tq => { if (Tq <= Ta) return 0; if (Tq >= Tb) return F.len; let lo = 0, hi = F.tab.length - 1; while (hi - lo > 1){ const m = (lo + hi) >> 1; if (F.tab[m][1] < Tq) lo = m; else hi = m; } const [s0, t0] = F.tab[lo], [s1, t1] = F.tab[hi]; return s0 + (s1 - s0) * (Tq - t0) / (t1 - t0); };
+  F.tOf = s => { let lo = 0, hi = F.tab.length - 1; while (hi - lo > 1){ const m = (lo + hi) >> 1; if (F.tab[m][0] < s) lo = m; else hi = m; } const [s0, t0] = F.tab[lo], [s1, t1] = F.tab[hi]; return t0 + (t1 - t0) * (s - s0) / Math.max(1e-6, s1 - s0); };
+  F.at = (s, out) => { s = Math.max(0, Math.min(F.len, s)); let lo = 0, hi = F.poly.length - 1; while (hi - lo > 1){ const m = (lo + hi) >> 1; if (F.poly[m].s < s) lo = m; else hi = m; } const a = F.poly[lo], b = F.poly[hi]; return out.lerpVectors(a, b, (s - a.s) / Math.max(1e-6, b.s - a.s)); };
+  F.heading = s => { F.at(s - 0.06, _k1); F.at(s + 0.06, _k2); return Math.atan2(_k2.x - _k1.x, _k2.z - _k1.z); };
+  F.slope = s => { F.at(s - 0.1, _k1); F.at(s + 0.1, _k2); return (_k2.y - _k1.y) / Math.max(1e-3, Math.hypot(_k2.x - _k1.x, _k2.z - _k1.z)); };
+  F.sOfCP = i => F.poly[F.seg[i]].s;
+  return F;
+}
+/* wings and legs while flying; f = how much of the time the wings are beating (otherwise a glide with the wings out) */
+function flyPose(t, amt, f = 1, ph = t * 12){
+  if (amt <= 0) return;
+  wings(amt * ((1 - f) * (0.82 + 0.04 * Math.sin(t * 2.6)) + f * (0.3 + 0.6 * Math.sin(ph))));
+  for (const sd of sides){ rot(sd + 'UpLeg', 'x', -0.45 * amt); rot(sd + 'Leg', 'x', 0.75 * amt); rot(sd + 'Foot', 'x', 0.35 * amt); }
+  crestWag(-0.25 * amt);
+}
+
+// =====================================================================================================
+// 1. 高空巡航: climb out, fly right over the swings, the sandbox and the slide, then dash through the rainbow ring (which only appears at the end) and land
+// =====================================================================================================
+const S_STAND = V3(0, 0, 1.2);
+const S_CP = [V3(0, 0, 1.2), V3(-0.9, 0.9, 0.2), V3(-2.2, 2.4, -1.4), V3(-3.0, 3.1, -2.7), V3(-1.6, 3.4, -4.2), V3(0, 3.5, -5.0), V3(1.7, 3.4, -4.5), V3(3.0, 3.1, -3.1), V3(3.7, 2.9, -1.3), V3(3.3, 2.6, 0.6), V3(2.4, 2.4, 2.0), V3(1.5, 2.0, 4.3), V3(0.6, 1.55, 6.6), V3(0.1, 0.7, 7.9), V3(-0.1, 0, 8.8)];
+const S_RING_I = 12, S_DASH_I = 9, S_OVER = [3, 5, 7];   /* the ring is far ahead of where the dash begins; S_OVER = control points right above the swings, the sandbox and the slide */
+const S_T = {look: 0.3, crouch: 0.75, off: 1.3, land: 10.6, face: 11.0, end: 12.5};
+/* cruise at a steady speed over the park, then accelerate hard towards the ring, brake to land */
+const TOUR = makeFlight(S_CP, S_T.off, S_T.land, (s, F) => { const sd = F.poly[F.seg[S_DASH_I]].s, sr = F.poly[F.seg[S_RING_I]].s;
+  const acc = ease(clamp01((s - sd) / (sr - sd)));
+  return Math.min(1, 0.25 + 0.75 * s / 1.2) * (1 + 1.8 * acc) * Math.min(1, 0.3 + 0.7 * (F.len - s) / 1.4); });
+const S_RY0 = TOUR.heading(0.1), S_RY1 = TOUR.heading(TOUR.len - 0.1);
+const S_RING_S = TOUR.sOfCP(S_RING_I), S_RING_T = TOUR.tOf(S_RING_S), S_DASH_T = TOUR.tOf(TOUR.sOfCP(S_DASH_I));
+const S_OVER_T = S_OVER.map(i => TOUR.tOf(TOUR.sOfCP(i)));
+let tourHead = 0; const tourDir = V3(0, 0, 1);   /* heading (and 3D flight direction) for the chase camera and the speed lines */
+const flapMix = T => 1 - 0.88 * ease(span(T, 3.2, 4.0)) * (1 - ease(span(T, S_DASH_T - 1.2, S_DASH_T - 0.4)));   /* beat while climbing, glide over the park, beat hard again for the dash */
+/* dash intensity 0..1: builds up as she speeds towards the ring, gone shortly after she has gone through it */
+const dashK = T => ease(span(T, S_DASH_T, S_RING_T - 0.5)) * (1 - ease(span(T, S_RING_T + 0.2, S_RING_T + 0.9)));
+const CUMD = (() => { const a = [0], N = Math.round(LEN.tour / 0.02); for (let i = 1; i <= N; i++) a.push(a[i - 1] + dashK(i * 0.02) * 0.02); return a; })();
+const cumDash = T => { const x = Math.max(0, Math.min(CUMD.length - 1.001, T / 0.02)), i = Math.floor(x); return CUMD[i] + (CUMD[i + 1] - CUMD[i]) * (x - i); };
+function tourRing(){   /* the ring floats where the flight passes, facing along the flight */
+  const q = S_CP[S_RING_I]; ringG.position.set(q.x, q.y + 0.8, q.z); QYXZ(ringG.quaternion, TOUR.heading(S_RING_S), 0, 0);
+}
+tourRing();
+function poseTour(p, t, T){
+  life(p, t, 0.4, false); p.free = true; p.yAbs = 0; p.surf = 0;
+  p.x = S_STAND.x; p.z = S_STAND.z;
+  p.ry = angLerp(0.25, S_RY0, ease(span(T, 0.55, 1.25)));
+  tourHead = S_RY0;
+  const look = ease(span(T, S_T.look, S_T.look + 0.3)) * (1 - ease(span(T, S_T.crouch, S_T.off)));
+  headTurn(0, -0.5 * look);
+  const cr = bell(span(T, S_T.crouch, S_T.off + 0.3)); squat(0.55 * cr); spineLean(0.25 * cr);
+  const fly = ease(span(T, S_T.crouch + 0.1, S_T.off + 0.4)) * (1 - ease(span(T, S_T.land - 0.45, S_T.land + 0.1)));
+  const dk = dashK(T);
+  flyPose(t, fly * (T < S_T.off ? 0.6 : 1), flapMix(T), 12 * t + 9 * cumDash(T));   /* the wings beat faster and faster during the dash */
+  if (T >= S_T.off){
+    p.surf = null; const s = TOUR.s(T); TOUR.at(s, _k3); p.x = _k3.x; p.z = _k3.z; p.yAbs = _k3.y; { TOUR.at(s + 0.15, _k1); TOUR.at(s - 0.15, _k2); tourDir.subVectors(_k1, _k2).normalize(); }
+    const h = TOUR.heading(s), dh = wrapA(TOUR.heading(s + 0.25) - h), sl = TOUR.slope(s); tourHead = h;
+    p.ry = T < S_T.off + 0.5 ? angLerp(S_RY0, h, ease(span(T, S_T.off, S_T.off + 0.5))) : h;
+    const sp = ease(span(T, S_T.off, S_T.off + 0.7)) * (1 - ease(span(T, S_T.land - 0.5, S_T.land)));
+    p.pitch = (0.28 - 0.3 * Math.max(-0.6, Math.min(0.8, sl)) + 0.3 * dk) * sp; p.roll = Math.max(-0.42, Math.min(0.42, -dh * 1.2)) * sp;   /* leans into the dash */
+    if (T >= S_T.land){ tourDir.set(0, 0, 1); tourHead = S_RY1; p.surf = 0; p.yAbs = 0; p.x = S_CP[S_CP.length - 1].x; p.z = S_CP[S_CP.length - 1].z; p.ry = S_RY1 + Math.PI * ease(span(T, S_T.land, S_T.land + 0.7)); }   /* after landing she turns round to face the camera behind her */
+  }
+  const near = bell(span(T, S_RING_T - 0.8, S_RING_T + 0.4)); rot('neck', 'x', -0.1 * near); rot('Head', 'x', 0.12 * dk);
+  squat(0.35 * bell(span(T, S_T.land, S_T.land + 0.4))); wings(0.45 * bell(span(T, S_T.land - 0.35, S_T.land + 0.3)));
+  const pr = ease(span(T, S_T.face, S_T.face + 0.4)) * (1 - ease(span(T, S_T.end, S_T.end + 0.5)));
+  rot('neck', 'x', -0.28 * pr); rot('Head', 'x', -0.12 * pr); spineLean(-0.2 * pr);
+  const prW = ease(span(T, S_T.face + 0.45, S_T.face + 0.9)) * (1 - ease(span(T, S_T.end, S_T.end + 0.5)));
+  wings(0.95 * prW + 0.25 * prW * Math.sin(t * 9) * bell(span(T, S_T.face + 0.9, S_T.end - 0.1)));
+  crestWag(0.45 * pr + 0.15 * pr * Math.sin(t * 8));
+  const hp = span(T, S_T.face + 0.9, S_T.end - 0.2); if (hp > 0 && hp < 1) p.hop = 0.16 * Math.abs(Math.sin(hp * 3 * Math.PI)) * (1 - 0.3 * hp);
+  p.happy = Math.max(p.happy, pr, bell(span(T, S_RING_T - 0.2, S_RING_T + 0.9)));
+  if (hitT(T, S_T.look + 0.1)) p.events.push('oh'); if (hitT(T, S_T.off)) p.events.push('takeoff');
+  if (hitT(T, S_OVER_T[0] - 0.2)) p.events.push('over1'); if (hitT(T, S_OVER_T[1] - 0.2)) p.events.push('over2'); if (hitT(T, S_OVER_T[2] - 0.2)) p.events.push('over3');
+  if (hitT(T, S_DASH_T - 0.1)) p.events.push('dash'); if (hitT(T, S_RING_T)) p.events.push('ring');
+  if (hitT(T, S_T.land)) p.events.push('land'); if (hitT(T, S_T.face + 0.2)) p.events.push('tada'); if (hitT(T, S_T.face + 0.6)) p.events.push('good'); if (hitT(T, S_T.face + 1.4)) p.events.push('yay');
+  for (let k = 0; k < 80; k++){ const ft = S_T.off + 0.4 + k * 0.25; if (ft < S_DASH_T && hitT(T, ft)) p.events.push('feather'); }
+  for (let k = 0; k < 60; k++){ const ft = S_DASH_T + k * 0.07; if (ft < S_RING_T + 0.3 && hitT(T, ft)) p.events.push('feather'); }   /* a trail of feathers in the dash */
+  place(p);
+  if (p.surf == null && skinned) liftFeet();
+}
+
+// =====================================================================================================
+// 2. 尾巴溜滑梯: the bird stands on a stump like a real bird (body tilted forward), its back and wide flat tail form one long slide;
+//    the cow baby climbs up the tail onto the bird's back, then slides down the back and the tail, 3 times
+// =====================================================================================================
+const SLD = {x: 1.1, z: 0.0, ry: 1.27, bend: 0.075, lean: 1.1, H: 0.6, rTop: 0.34, wy: -0.8, lift: 0.5};   /* lift = how much the chest rises when she pushes */
+let SLD_PA = null, SLD_PB = null, SLD_PW = null;   /* top line of the back and tail: at rest, with the chest raised, and the blend in use this frame */
+let SLD_P = null, SLD_L = 1.3; const SLD_D = V3(-1, 0, 0), SLD_E = V3();
+const _s4 = V3();
+function polyAt(P, r, outP, outT){ let acc = 0; for (let i = 0; i < P.length - 1; i++){ const L = P[i].distanceTo(P[i + 1]); if (acc + L >= r || i === P.length - 2){ const u = clamp01((r - acc) / Math.max(L, 1e-6)); outP.lerpVectors(P[i], P[i + 1], u); outT.subVectors(P[i + 1], P[i]).normalize(); return; } acc += L; } }
+const SL_BH = 0.04;   /* the baby's feet rest on the top of the back / tail */
+/* a point on the top of the slide at arc length r (r = 0 at the shoulders, growing towards the tail tip), lifted by off along the up-normal; returns the slope angle (+ = descending) */
+function slideSurf(r, off, out){ polyAt(SLD_P, r, _k1, _k2); _k3.copy(UPV).addScaledVector(_k2, -_k2.y).normalize(); out.copy(_k1).addScaledVector(_k3, off); return Math.asin(Math.max(-1, Math.min(1, -_k2.y))); }
+const SB = {walk: [0, 1.0], look: [1.0, 1.4], c1: [1.4, 2.7], r1: [2.7, 3.1], s1: [3.1, 4.0], g1: [4.0, 4.55], b1: [4.55, 5.15], c2: [5.15, 6.3], r2: [6.3, 6.6], s2: [6.6, 7.5], g2: [7.5, 8.05], b2: [8.05, 8.65], c3: [8.65, 9.75], r3: [9.75, 10.05], s3: [10.05, 10.85], fl: [10.85, 11.5], cheer: [11.5, 12.8]};
+const G_OUT = 1.15, G_JUMP = 1.7;   /* how far the baby slides along the ground / how far the flip carries it */
+/* the push: before every slide she lifts her head and chest (steepening the back), then keeps it up until the baby is on the tail */
+const SL_START = () => [SB.s1[0], SB.s2[0], SB.s3[0]];
+function slideW(T){ let w = 0; for (const s0 of SL_START()) w = Math.max(w, ease(span(T, s0 - 0.5, s0 + 0.05)) * (1 - ease(span(T, s0 + 0.6, s0 + 1.05)))); return w; }
+function setSlideProfile(w){ for (let i = 0; i < SLD_PA.length; i++) SLD_PW[i].lerpVectors(SLD_PA[i], SLD_PB[i], w); SLD_P = SLD_PW; }
+function slideBaby(T){
+  if (SLD_PA) setSlideProfile(slideW(T));
+  const o = {x: 0, y: 0, z: 0, yaw: 0, pitch: 0, roll: 0, sq: 1, on: 0};
+  const L = SLD_L - 0.1, rt = SLD.rTop, D = SLD_D, E = SLD_E, yawD = Math.atan2(D.x, D.z), yawU = yawD + Math.PI;
+  const gnd = (g, hop = 0) => { o.x = E.x + D.x * g; o.z = E.z + D.z * g; o.y = hop; };
+  const tail = (r, hop = 0) => { const a = slideSurf(r, SL_BH + hop, _s4); o.x = _s4.x; o.y = _s4.y; o.z = _s4.z; o.on = 1; return a; };
+  const hopW = (u, n, h) => h * Math.abs(Math.sin(u * n * Math.PI));
+  const yEnd = (() => { slideSurf(L, SL_BH, _s4); return _s4.y; })();
+  const climb = (u, n) => { const a = tail(L + (rt - L) * ease(u), hopW(u, n, 0.06) * (u > 0 && u < 1 ? 1 : 0)); o.yaw = yawU; o.pitch = -a * 0.9; };
+  const down = u => { const a = tail(rt + (L - rt) * u * u); o.pitch = a * 0.85; return a; };
+  const groundSlide = (a, b, T0) => { const v = span(T0, a, b), g = G_OUT * (1 - Math.pow(1 - v, 2)); gnd(g); o.y = yEnd * (1 - ease(span(T0, a, a + 0.2))); };
+  const turnTop = (t0, t1, hold) => { const a = tail(rt), k = ease(span(T, t0, t0 + hold)); o.yaw = yawU + Math.PI * k; o.pitch = lerp(-a * 0.9, a * 0.85, k); o.sq = 1 - 0.12 * bell(span(T, t0 + hold * 0.6, t1 + 0.05)); };
+  const spin = (t0, t1) => yawD + 2 * Math.PI * ease(span(T, t0 + 0.55, t1 + 0.35));   /* the spin starts out on the tail, not over the bird's rump */
+  if (T < SB.walk[1]){ const u = span(T, ...SB.walk); gnd(2.8 * (1 - ease(u)), hopW(u, 7, 0.045) * (u < 1 ? 1 : 0)); o.yaw = yawU; }
+  else if (T < SB.look[1]){ gnd(0); o.yaw = yawU + 0.25 * Math.sin((T - SB.look[0]) * 6); o.pitch = -0.2 * bell(span(T, ...SB.look)); }
+  else if (T < SB.c1[1]) climb(span(T, ...SB.c1), 4);
+  else if (T < SB.r1[1]) turnTop(SB.r1[0], SB.r1[1], 0.3);
+  else if (T < SB.s1[1]){ down(span(T, ...SB.s1)); o.yaw = yawD; o.roll = 0.06 * Math.sin(T * 14); }
+  else if (T < SB.g1[1]){ o.yaw = yawD; groundSlide(SB.g1[0], SB.g1[1], T); const w = span(T, SB.g1[0] + 0.25, SB.g1[1]); o.yaw += 0.3 * Math.sin(w * 18) * (1 - w); o.roll = 0.1 * Math.sin(w * 16) * (1 - w); o.pitch = 0.5 * (1 - ease(span(T, SB.g1[0], SB.g1[0] + 0.25))); o.sq = 1 - 0.12 * bell(span(T, SB.g1[0], SB.g1[0] + 0.25)); }
+  else if (T < SB.b1[1]){ const u = span(T, ...SB.b1); gnd(G_OUT * (1 - ease(u)), hopW(u, 4, 0.06) * (u < 1 ? 1 : 0)); o.yaw = angLerp(yawD, yawU, ease(span(T, SB.b1[0], SB.b1[0] + 0.15))); }
+  else if (T < SB.c2[1]) climb(span(T, ...SB.c2), 3);
+  else if (T < SB.r2[1]) turnTop(SB.r2[0], SB.r2[1], 0.22);
+  else if (T < SB.s2[1]){ down(span(T, ...SB.s2)); o.yaw = spin(SB.s2[0], SB.s2[1]); }
+  else if (T < SB.g2[1]){ groundSlide(SB.g2[0], SB.g2[1], T); o.yaw = spin(SB.s2[0], SB.s2[1]); o.pitch = 0.5 * (1 - ease(span(T, SB.g2[0], SB.g2[0] + 0.25))); o.sq = 1 - 0.12 * bell(span(T, SB.g2[0], SB.g2[0] + 0.25)); }
+  else if (T < SB.b2[1]){ const u = span(T, ...SB.b2); gnd(G_OUT * (1 - ease(u)), hopW(u, 4, 0.06) * (u < 1 ? 1 : 0)); o.yaw = angLerp(yawD, yawU, ease(span(T, SB.b2[0], SB.b2[0] + 0.15))); }
+  else if (T < SB.c3[1]) climb(span(T, ...SB.c3), 3);
+  else if (T < SB.r3[1]) turnTop(SB.r3[0], SB.r3[1], 0.2);
+  else if (T < SB.s3[1]){ down(span(T, ...SB.s3)); o.yaw = yawD; }
+  else if (T < SB.fl[1]){ const u = span(T, ...SB.fl), v = ease(u); gnd(G_JUMP * v); o.y = yEnd * (1 - v) + 0.5 * 4 * u * (1 - u); o.yaw = yawD; o.pitch = 2 * Math.PI * v; o.sq = 1 - 0.14 * bell(span(T, SB.fl[1] - 0.1, SB.fl[1] + 0.2)); }
+  else { const u = span(T, ...SB.cheer); gnd(G_JUMP); o.yaw = yawD + 2 * Math.PI * ease(span(T, SB.cheer[0] + 0.2, SB.cheer[0] + 0.8)); o.y = hopW(span(T, SB.cheer[0] + 0.2, SB.cheer[0] + 1.1), 2, 0.2) * (T < SB.cheer[0] + 1.1 ? 1 : 0); o.sq = 1 - 0.1 * bell(span(T, SB.cheer[0], SB.cheer[0] + 0.25)); }
+  return o;
+}
+function slideStance(p, t, w = 0){
+  p.free = true; p.yAbs = 0; p.surf = 0; p.floor = SLD.H; p.x = SLD.x; p.z = SLD.z; p.ry = SLD.ry;
+  /* a real bird's posture: the body tilts forward on straight legs, so the back is a ramp that runs on into the tail; w = 1: the chest is raised, the head thrown up (the push) */
+  spineLean(SLD.lean - SLD.lift * w); squat(0.1); rot('neck', 'x', -0.3 - 0.15 * w); rot('Head', 'x', -0.3 - 0.12 * w);
+  wings(0.2);
+  { const wy = +(new URLSearchParams(location.search).get('wy') || SLD.wy); for (const sd of sides){ const s = sd === 'Left' ? 1 : -1; rot(sd + 'Shoulder', 'y', s * wy * 0.3); rot(sd + 'Arm', 'y', s * wy * 0.7); } }   /* wings swing out to the sides, leaving the back free */
+  TL.forEach(n => rot(n, 'x', -TAIL_UP * SLD.bend));
+}
+function poseSlide(p, t, T){
+  const w = slideW(T);
+  slideStance(p, t, w);
+  life(p, t, 0.35, false);
+  const b = slideBaby(T);
+  /* look back over the shoulder at the baby (a head turn: the torso has to stay still, it is the slide) */
+  const interest = ease(span(T, 0.4, 1.0)) * (1 - ease(span(T, SB.cheer[1] - 0.5, SB.cheer[1] - 0.1)));
+  /* the push: the head comes down on the baby with a nod right as it lets go */
+  let nod = 0; for (const s0 of SL_START()) nod = Math.max(nod, bell(span(T, s0 - 0.12, s0 + 0.3)));
+  headTurn(-0.7 * interest * (1 - 0.7 * w), 0.05 * interest); rot('neck', 'x', 0.25 * nod); rot('Head', 'x', 0.2 * nod);
+  wingSet('Left', 0.35 * w + 0.3 * nod); wingSet('Right', 0.35 * w + 0.3 * nod);
+  const joy = Math.max(bell(span(T, SB.g1[0], SB.b1[1])), bell(span(T, SB.g2[0], SB.b2[1])), ease(span(T, SB.fl[1], SB.fl[1] + 0.3)) * (1 - ease(span(T, SB.cheer[1] - 0.4, SB.cheer[1]))));
+  wingSet('Right', 0.3 * joy + 0.15 * joy * Math.sin(t * 11)); wingSet('Left', 0.2 * joy + 0.12 * joy * Math.sin(t * 11 + 1.3));
+  crestWag(0.3 * joy + 0.1 * Math.sin(t * 2.3));
+  p.happy = Math.max(joy, bell(span(T, SB.r1[0], SB.s1[0] + 0.3)), bell(span(T, SB.s3[0], SB.fl[1] + 0.2)));
+  /* the slide is dead still while the baby is on it; a happy wag only after the last landing */
+  const wag = ease(span(T, SB.cheer[0] + 0.2, SB.cheer[0] + 0.5)); if (wag > 0) TL.forEach((n, i) => rot(n, 'y', 0.09 * wag * Math.sin(t * 7 - 0.5 * i)));
+  if (hitT(T, SB.look[0] + 0.05)) p.events.push('moo1'); if (hitT(T, SB.c1[0] + 0.1)) p.events.push('up');
+  if (hitT(T, SB.r1[0] + 0.25)) p.events.push('ready'); if (hitT(T, SB.s1[0] - 0.3)) p.events.push('push'); if (hitT(T, SB.s2[0] - 0.3)) p.events.push('push'); if (hitT(T, SB.s3[0] - 0.3)) p.events.push('push'); if (hitT(T, SB.s1[0] + 0.15)) p.events.push('wee'); if (hitT(T, SB.g1[0] + 0.3)) p.events.push('dizzy');
+  if (hitT(T, SB.c2[0] + 0.1)) p.events.push('again'); if (hitT(T, SB.s2[0] + 0.15)) p.events.push('spin'); if (hitT(T, SB.s3[0] + 0.15)) p.events.push('wee3'); if (hitT(T, SB.fl[0] + 0.15)) p.events.push('flip');
+  if (hitT(T, SB.fl[1])) p.events.push('land3'); if (hitT(T, SB.cheer[0] + 0.3)) p.events.push('yay');
+  for (const k of [SB.g1[0], SB.g2[0]]) if (hitT(T, k)) p.events.push('dust');
+  place(p);
+}
+/* after loading: stand the bird on the stump, read the top line of its back and tail, fit the stump height and the slide path */
+function slideCalibrate(){
+  const Dv = V3(-Math.sin(SLD.ry), 0, -Math.cos(SLD.ry)), Lv = V3(Math.cos(SLD.ry), 0, -Math.sin(SLD.ry)), v = V3();
+  const BS = 0.04, S0 = -0.8, NB = 70, n = skinned.geometry.attributes.position.count;
+  const measure = (w, floor) => {   /* the highest point of the bird (not the wings) along the line of the tail, in 4 cm steps */
+    const p = newP(); resetPose(); slideStance(p, 0, w); p.floor = floor; place(p); groundFix(p); rig.updateMatrixWorld(true); skinned.skeleton.update();
+    const O = rig.position.clone(), top = new Float32Array(NB).fill(-9);
+    for (let i = 0; i < n; i++){ if (SUB_WING[i]) continue; skinned.getVertexPosition(i, v); v.applyMatrix4(skinned.matrixWorld);
+      const lat = (v.x - O.x) * Lv.x + (v.z - O.z) * Lv.z; if (Math.abs(lat) > 0.3) continue;
+      const s = (v.x - O.x) * Dv.x + (v.z - O.z) * Dv.z, bi = Math.floor((s - S0) / BS); if (bi < 0 || bi >= NB) continue; if (v.y > top[bi]) top[bi] = v.y; }
+    bones.neck.getWorldPosition(_tw); const sNeck = (_tw.x - O.x) * Dv.x + (_tw.z - O.z) * Dv.z;
+    return {top, O, sNeck};
+  };
+  const A0 = measure(0, 0), B0 = measure(1, 0);
+  const iTop = Math.max(0, Math.floor((A0.sNeck + 0.22 - S0) / BS)); let iEnd = NB - 1; while (iEnd > 0 && A0.top[iEnd] < -5) iEnd--;
+  const cleanup = (M) => { const ys = []; for (let i = iTop; i <= iEnd; i++) ys.push(M.top[i] < -5 ? (ys.length ? ys[ys.length - 1] : 0) : M.top[i]);
+    const sm = ys.map((y, i) => { let a = 0, c = 0; for (let k = -2; k <= 2; k++){ const j = i + k; if (j >= 0 && j < ys.length){ a += ys[j]; c++; } } return a / c; });
+    for (let i = 1; i < sm.length; i++) sm[i] = Math.min(sm[i], sm[i - 1]); return sm; };   /* never climbs: the baby always slides on */
+  const smA = cleanup(A0), smB = cleanup(B0);
+  SLD.H = Math.max(0.2, 0.27 - smA[smA.length - 1]);
+  const p = newP(); resetPose(); slideStance(p, 0, 0); p.floor = SLD.H; place(p); groundFix(p); rig.updateMatrixWorld(true);
+  const O = A0.O, mk = sm => sm.map((y, i) => { const s = S0 + (iTop + i + 0.5) * BS; return V3(O.x + Dv.x * s, y + SLD.H, O.z + Dv.z * s); });
+  SLD_PA = mk(smA); SLD_PB = mk(smB); SLD_PW = SLD_PA.map(q => q.clone()); SLD_P = SLD_PA;
+  let L = 0; for (let i = 0; i < SLD_PA.length - 1; i++) L += SLD_PA[i].distanceTo(SLD_PA[i + 1]); SLD_L = L;
+  const tip = SLD_PA[SLD_PA.length - 1];
+  SLD_D.copy(Dv); SLD_E.set(tip.x - Dv.x * 0.1, 0, tip.z - Dv.z * 0.1);
+  setStump(SLD.H, SLD.x, SLD.z);
+  window.__slide = {H: SLD.H, L: SLD_L, sNeck: A0.sNeck, rise: SLD_PB[0].y - SLD_PA[0].y, mono: SLD_PA.every((q, i) => i === 0 || q.y <= SLD_PA[i - 1].y + 1e-4)};
+  resetPose();
+}
+
+// =====================================================================================================
+// 3. 送小鳥回家: find the fallen chick, let it hop on the head, fly it up to the nest on the pole, say "shh"
+// =====================================================================================================
+const N_A = V3(-1.0, 0, 1.0), N_P = V3(0.85, 0, 0.5), N_C = V3(1.47, 0, 0.5), N_LAND = V3(1.0, 0, 1.0);
+const N_T = {turn: [0.5, 1.3], walk: [1.0, 2.4], bow: [2.4, 3.3], hop1: [3.3, 3.9], rise: [3.9, 4.4], crouch: [4.4, 4.9], off: 4.9, hover: 7.2, hop2: [7.5, 8.1], leave: 8.8, land: 10.7, shh: 11.0, end: 12.4};
+const NEST_TOP = V3(NEST.x, NEST.h + 0.2, NEST.z);
+const N_HY = 1.35;   /* hover height (feet): the head sits just above the nest rim */
+const NF1 = makeFlight([V3(0.85, 0, 0.5), V3(0.3, 0.5, 0.5), V3(-0.25, 0.95, 0.2), V3(-0.7, 1.25, -0.5), V3(-0.95, N_HY, -0.95)], N_T.off, N_T.hover);
+const NF2 = makeFlight([V3(-0.95, N_HY, -0.95), V3(-0.4, 1.2, -0.2), V3(0.3, 0.95, 0.5), V3(0.85, 0.5, 0.9), V3(1.0, 0, 1.0)], N_T.leave, N_T.land);
+const N_RY1 = NF1.heading(0.1), N_RY2 = NF2.heading(NF2.len - 0.1);
+const nestBow = a => { squat(0.5 * a); spineLean(0.8 * a); rot('neck', 'x', 0.45 * a); rot('Head', 'x', 0.35 * a); };
+function poseNest(p, t, T){
+  life(p, t, 0.5, false); p.free = true; p.yAbs = 0; p.surf = 0;
+  const walkU = span(T, ...N_T.walk), toP = ease(walkU);
+  p.x = lerp(N_A.x, N_P.x, toP); p.z = lerp(N_A.z, N_P.z, toP);
+  const hd = Math.atan2(N_P.x - N_A.x, N_P.z - N_A.z), facing = Math.PI / 2;
+  p.ry = T < N_T.walk[0] ? lerp(0.35, hd, ease(span(T, ...N_T.turn))) : (T < N_T.walk[1] ? hd : angLerp(hd, facing, ease(span(T, N_T.walk[1], N_T.walk[1] + 0.5))));
+  /* notice the chick: look at it, a start */
+  headTurn(-0.5 * bell(span(T, 0.5, 1.5)), 0);
+  birdWalk((T - N_T.walk[0]) * 9.0, ease(span(T, N_T.walk[0], N_T.walk[0] + 0.2)) * (1 - ease(span(T, N_T.walk[1] - 0.25, N_T.walk[1]))), false);
+  /* bow down and nuzzle, wait for the hop, rise with the chick on the head */
+  const bow = ease(span(T, ...N_T.bow)) * (1 - ease(span(T, N_T.rise[0], N_T.rise[1])));
+  nestBow(bow); rot('Head', 'x', 0.1 * Math.sin((T - N_T.bow[0]) * 5.5) * bow * bell(span(T, N_T.bow[0] + 0.3, N_T.hop1[0])));
+  wings(-0.1 * bow);
+  const cr = bell(span(T, N_T.crouch[0], N_T.off + 0.35)); squat(0.55 * cr); spineLean(0.2 * cr);
+  const fly = ease(span(T, N_T.crouch[0] + 0.1, N_T.off + 0.45)) * (1 - ease(span(T, N_T.land - 0.5, N_T.land + 0.1)));
+  const f1 = 1 - 0.0;
+  flyPose(t, fly * (T < N_T.off ? 0.6 : 1), 1 - 0.6 * ease(span(T, N_T.hover - 0.8, N_T.hover - 0.2)) * (1 - ease(span(T, N_T.leave, N_T.leave + 0.5))) * 0);
+  if (T >= N_T.rise[0] && T < N_T.off) p.ry = angLerp(facing, N_RY1, ease(span(T, N_T.rise[0] + 0.2, N_T.off)));
+  if (T >= N_T.off){
+    p.surf = null;
+    if (T < N_T.leave){
+      const s = NF1.s(T); NF1.at(s, _k3); p.x = _k3.x; p.z = _k3.z; p.yAbs = _k3.y;
+      const h = NF1.heading(s), dh = wrapA(NF1.heading(s + 0.25) - h), sl = NF1.slope(s);
+      p.ry = T < N_T.off + 0.5 ? angLerp(N_RY1, h, ease(span(T, N_T.off, N_T.off + 0.5))) : -Math.PI / 2 + 0.0;
+      const toward = ease(span(T, N_T.hover - 1.0, N_T.hover - 0.1));   /* square up to the nest */
+      if (T >= N_T.off + 0.5) p.ry = angLerp(h, -Math.PI / 2, toward);
+      const sp = ease(span(T, N_T.off, N_T.off + 0.8));
+      const hov = ease(span(T, N_T.hover - 0.7, N_T.hover));
+      p.pitch = (0.28 - 0.3 * Math.max(-0.6, Math.min(0.8, sl))) * sp * (1 - 0.65 * hov); p.roll = Math.max(-0.42, Math.min(0.42, -dh * 1.2)) * sp * (1 - hov);
+      if (T >= N_T.hover){ p.yAbs = NF1.CP[NF1.CP.length - 1].y + 0.06 * Math.sin((T - N_T.hover) * 5.5); p.x = NF1.CP[NF1.CP.length - 1].x; p.z = NF1.CP[NF1.CP.length - 1].z; p.ry = -Math.PI / 2; p.pitch = 0.1; p.roll = 0; }
+    } else {
+      const s = NF2.s(T); NF2.at(s, _k3); p.x = _k3.x; p.z = _k3.z; p.yAbs = _k3.y;
+      const h = NF2.heading(s), dh = wrapA(NF2.heading(s + 0.25) - h), sl = NF2.slope(s);
+      p.ry = angLerp(-Math.PI / 2, h, ease(span(T, N_T.leave, N_T.leave + 0.7)));
+      if (T >= N_T.land) p.ry = angLerp(h, 0.12, ease(span(T, N_T.land, N_T.land + 0.6)));
+      const sp = ease(span(T, N_T.leave, N_T.leave + 0.7)) * (1 - ease(span(T, N_T.land - 0.6, N_T.land)));
+      p.pitch = lerp(0.1, 0.28 - 0.3 * Math.max(-0.6, Math.min(0.8, sl)), ease(span(T, N_T.leave, N_T.leave + 0.7))) * Math.max(sp, 0.001) * (T < N_T.leave + 0.7 ? 1 : 1) ;
+      p.roll = Math.max(-0.42, Math.min(0.42, -dh * 1.2)) * sp;
+      if (T >= N_T.land){ p.surf = 0; p.yAbs = 0; p.x = NF2.CP[NF2.CP.length - 1].x; p.z = NF2.CP[NF2.CP.length - 1].z; p.pitch = 0; p.roll = 0; }
+    }
+  }
+  /* landing: brake, squash, then the "shh" */
+  squat(0.35 * bell(span(T, N_T.land, N_T.land + 0.45))); wings(0.45 * bell(span(T, N_T.land - 0.4, N_T.land + 0.35)));
+  const sh = ease(span(T, N_T.land + 0.5, N_T.land + 0.9)) * (1 - ease(span(T, N_T.end, N_T.end + 0.5)));
+  headTurn(0.55 * sh, -0.1 * sh); rot('neck', 'x', -0.15 * sh); spineLean(-0.1 * sh);
+  const hov = bell(span(T, N_T.hover - 0.2, N_T.hover + 0.2)) * 0;
+  p.happy = Math.max(bell(span(T, N_T.hop2[1], N_T.hop2[1] + 1.2)), sh, bell(span(T, N_T.rise[0], N_T.rise[1] + 0.8)) * 0.8);
+  if (hitT(T, 0.4)) p.events.push('cry'); if (hitT(T, N_T.turn[0] + 0.2)) p.events.push('oh2'); if (hitT(T, N_T.hop1[0] + 0.1)) p.events.push('piyo');
+  if (hitT(T, N_T.rise[0] + 0.4)) p.events.push('hold'); if (hitT(T, N_T.off)) p.events.push('takeoff'); if (hitT(T, N_T.hop2[1])) p.events.push('home');
+  if (hitT(T, N_T.hop2[1] + 0.45)) p.events.push('thx'); if (hitT(T, N_T.land)) p.events.push('land'); if (hitT(T, N_T.shh)) p.events.push('shh');
+  for (let k = 0; k < 80; k++){ const ft = N_T.off + 0.4 + k * 0.4; if (ft < N_T.hover - 0.2 && hitT(T, ft)) p.events.push('feather'); }
+  for (let k = 0; k < 20; k++){ const ft = 0.6 + k * 0.7; if (ft < N_T.hop1[0] && hitT(T, ft)) p.events.push('tear'); }
+  place(p);
+  if (p.surf == null && skinned) liftFeet();
+}
+const SUB_FEET = []; const SUB_WING = [];
+const _gv = V3();
+/* put the lowest foot/leg vertex on the floor (the ground, or the stump top when p.floor is set), then add the hop */
+function groundFix(p){
+  rig.updateMatrixWorld(true); skinned.skeleton.update();
+  let mn = Infinity; for (const i of SUB_FEET){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn) mn = _gv.y; }
+  rig.position.y += -mn + 0.004 + (p.floor || 0) + (p.hop || 0); rig.updateMatrixWorld(true);
+}
+/* while flying: never let a foot go under the ground (lift only) */
+function liftFeet(){ rig.updateMatrixWorld(true); skinned.skeleton.update(); let mn = Infinity; for (const i of SUB_FEET){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn) mn = _gv.y; } if (mn < 0.004){ rig.position.y += 0.004 - mn; rig.updateMatrixWorld(true); } }
+const SUB_TAIL = []; const _tw = V3();
+/* tail guard: if any tail skin goes under the ground, lift the tail from its root */
+function tailMinY(){ skinned.skeleton.update(); let mn = Infinity, mi = -1; for (const i of SUB_TAIL){ skinned.getVertexPosition(i, _gv); _gv.applyMatrix4(skinned.matrixWorld); if (_gv.y < mn){ mn = _gv.y; mi = i; } } return [mn, mi]; }
+function tailGuard(floor = 0){
+  for (let it = 0; it < 4; it++){
+    rig.updateMatrixWorld(true); const [mn, mi] = tailMinY(); if (mn >= floor + 0.012) return;
+    skinned.getVertexPosition(mi, _gv); _gv.applyMatrix4(skinned.matrixWorld); bones.Tail01.getWorldPosition(_tw);
+    const d = Math.max(0.2, Math.hypot(_gv.x - _tw.x, _gv.z - _tw.z)), ang = (floor + 0.012 - mn) / d * 1.15;
+    rot(TL[0], 'x', TAIL_UP * ang);   /* lift from the root only: the tail stays straight */
+  }
+}
+let TAIL_UP = 1, perchLocal = null;
+const newP = () => ({T: 0, x: 0, z: 0, ry: 0, pitch: 0, roll: 0, hop: 0, yAbs: 0, sy: 1, lid: 0, happy: 0, sad: 0, glow: 0, ball: 0, events: [], free: true, surf: 0, floor: 0, q: null, coin: 0});
+const headPerch = (out = V3()) => { bones.Head.updateWorldMatrix(true, false); return out.copy(perchLocal).applyMatrix4(bones.Head.matrixWorld); };
+// ---------- load the model ----------
+
+// =====================================================================================================
+// 餵食（2026-11-02）：開心吃 / 最愛點心 / 搖頭不吃（食物飛到嘴前、頭湊上去咬；搖頭不吃＝湊近聞、搖頭難過、食物飛走）
+// =====================================================================================================
+const FK = makeEat(THREE, GLTFLoader, scene, makeTex, spawn, fx);
+window.__eatWrong = window.__eatWrong || 'bittermelon';   // 搖頭不吃：少年固定紅辣椒、成年固定苦瓜（App 會自己放玩家給的食物）
+FK.preload(["papaya", "pineapplecake", "bittermelon"]); window.__eatPreload = n => FK.preload(n);
+
+const FH = makeHold(THREE, { EATK: FK, rig, get model(){ return model; }, skin: () => skinned,
+  reach(){}, grip: (sd, out) => out.copy(wpos(sd + 'Hand')),
+  armRe: /(Left|Right)(Shoulder|Arm|ForeArm|Hand)/, S: 1, size: 0.3, chestY: 0.98, mouthY: 1.23, follow: 1, float: true, floatY: -0.12 });
+function feedLean(a){ rot('Spine02', 'x', a * 0.4); rot('Spine01', 'x', a * 0.35); rot('Spine', 'x', a * 0.25); }
+function feedYaw(yaw){ rot('neck', 'y', yaw * 0.4); rot('Head', 'y', yaw * 0.6); }
+function poseEat(p, t, name){
+  p.free = true; p.yAbs = 0; p.surf = 0;
+  const P = phases(name, t); p.eat = P; if (!FH.m) FH.measure();
+  const br = Math.sin(TAU * t / 3.6); rot('Spine02', 'x', 0.012 * br * 0.4); rot('Spine01', 'x', 0.012 * br * 0.4);
+  if (typeof tailSway === 'function') tailSway(0.15, t, 1.3);
+  
+  p.lid = Math.max(p.lid || 0, blinkAt(t));
+  if (name === 'refuse'){
+    const sn = ease(P.sniff) * (1 - ease(P.shake));
+    feedLean(0.14 * sn); rot('neck', 'x', 0.1 * sn); rot('Head', 'x', 0.12 * sn);
+    if (P.shake > 0 && P.shake < 1){ const k = Math.sin(Math.PI * P.shake); feedYaw(0.55 * Math.sin(TAU * P.shake * 3) * k); rot('Head', 'z', -0.06 * k); }
+    p.sad = P.sad; if (P.sad) p.lid = 0;
+  } else {
+    const nod = P.biting ? P.lunge : 0;
+    feedLean(0.1 * nod + 0.04 * P.hold); rot('neck', 'x', 0.14 * nod); rot('Head', 'x', 0.18 * nod + 0.06 * P.hold);
+    p.happy = P.happy && !P.chew ? 1 : 0; p.lid = P.chew ? 1 : (p.happy ? 0 : p.lid);
+    p.hop = 0.08 * P.hop;
+  }
+  p.ry = 0.1 + (name === 'snack' ? TAU * P.spin : 0); place(p);
+}
+fetchModel('magpieadult_model.json').then(gltf => {
+  model = gltf.scene; model.scale.setScalar(CFG.scale);
+  model.traverse(o => {
+    if (o.isBone){ bones[o.name] = o; rest[o.name] = o.quaternion.clone(); restP[o.name] = o.position.clone(); }
+    if (o.isMesh){ skinned = o; o.frustumCulled = false; prepFace(o, {eye:CFG.eye, eyeR:CFG.eyeR, eyeZ:CFG.eyeZ, eyeOut:CFG.eyeOut, eyeFill:CFG.eyeFill, mouth:CFG.mouth, mouthR:CFG.mouthR, mouthZ:CFG.mouthZ, noPink:CFG.noPink}); (Array.isArray(o.material) ? o.material : [o.material]).forEach(patch); }
+  });
+  rig.add(model); rig.updateMatrixWorld(true); restFeet = feetLow();
+  beakLocal = bones.Head.worldToLocal(model.localToWorld(V3(0, 1.265, 0.407)));
+  perchLocal = bones.Head.worldToLocal(model.localToWorld(V3(0, 1.585, 0.03)));
+  { const g = skinned.geometry, n = g.attributes.position.count, SI = g.attributes.skinIndex, SW = g.attributes.skinWeight, BN = skinned.skeleton.bones.map(b => b.name);
+    for (let i = 0; i < n; i += 1){ let best = 0, bw = -1; for (let c = 0; c < 4; c++){ const w = SW.getComponent(i, c); if (w > bw){ bw = w; best = SI.getComponent(i, c); } } SUB_WING[i] = /Arm|Hand|Shoulder/.test(BN[best]) ? 1 : 0; if (/Leg|Foot|Toe/.test(BN[best])) SUB_FEET.push(i); if (/^Tail/.test(BN[best]) && i % 3 === 0) SUB_TAIL.push(i); } }
+  { resetPose(); rig.updateMatrixWorld(true); const a = tailMinY()[0]; rot('Tail01', 'x', 0.2); rig.updateMatrixWorld(true); const b = tailMinY()[0]; TAIL_UP = b > a ? 1 : -1; resetPose(); }
+  slideCalibrate();
+  loadingEl.hidden = true; statusEl.hidden = false;
+  setMove('idle'); requestAnimationFrame(loop);
+}).catch(e => { console.error(e); loadingEl.textContent = '模型載入失敗，請重新整理頁面。'; });
+
+// ---------- effects ----------
+const confTex = [0xe8584a, 0xf6c445, 0x4aa3df, 0x5cae4f].map(c => makeTex(g => { g.fillStyle = '#' + c.toString(16).padStart(6, '0'); g.fillRect(34, 20, 60, 88); }));
+const featherTex = makeTex(g => { g.translate(64, 64); g.rotate(-0.6); g.beginPath(); g.ellipse(0, 0, 54, 20, 0, 0, TAU); g.fillStyle = '#2f63b8'; g.fill(); g.beginPath(); g.ellipse(30, 0, 22, 14, 0, 0, TAU); g.fillStyle = '#ffffff'; g.fill(); g.beginPath(); g.moveTo(-56, 0); g.lineTo(52, 0); g.lineWidth = 5; g.strokeStyle = '#1b3f7a'; g.stroke(); });
+const leafTex = [0xe8893a, 0xd9622b, 0xf2b33d].map(c => makeTex(g => { g.translate(64, 64); g.rotate(-0.5); g.beginPath(); g.ellipse(0, 0, 50, 28, 0, 0, TAU); g.fillStyle = '#' + c.toString(16).padStart(6, '0'); g.fill(); g.beginPath(); g.moveTo(-50, 0); g.lineTo(50, 0); g.lineWidth = 6; g.strokeStyle = 'rgba(120,60,20,0.6)'; g.stroke(); }));
+function confetti(x, y, z, n){ for (let i = 0; i < n; i++){ const a = Math.random() * TAU, r = Math.random(); spawn(confTex[i % 4], V3(x, y, z), V3(Math.cos(a) * (0.3 + r * 0.6), 0.8 + Math.random() * 0.6, Math.sin(a) * 0.3), 1.2 + r * 0.4, 0.07, 0, {gravity: -1.6}); } }
+function hearts(pos, n = 3, sz = 0.15){ for (let i = 0; i < n; i++) spawn(heartTex, pos.clone().add(V3((i - (n - 1) / 2) * 0.3, 0.1, 0.1)), V3((i - (n - 1) / 2) * 0.12, 0.45, 0), 1.1, sz); }
+function stars(pos, n = 5, sz = 0.13, sp = 0.6){ for (let i = 0; i < n; i++){ const a = i / n * TAU; spawn(starTex, pos.clone(), V3(Math.cos(a) * sp, 0.5 + Math.random() * 0.3, Math.sin(a) * sp * 0.5), 0.8, sz); } }
+function dustRing(x, y, z, n = 6, r = 0.3){ for (let i = 0; i < n; i++){ const a = i / n * TAU; spawn(dustTex, V3(x + Math.cos(a) * r * 0.5, y, z + Math.sin(a) * r * 0.5), V3(Math.cos(a) * 0.5, 0.3, Math.sin(a) * 0.5), 0.7, 0.16, 0.8); } }
+function leafRain(pos, n){ for (let i = 0; i < n; i++){ const a = Math.random() * TAU, r = Math.random(); spawn(leafTex[i % 3], pos.clone(), V3(Math.cos(a) * (0.3 + r * 0.7), 1.2 + Math.random() * 0.9, Math.sin(a) * (0.3 + r * 0.7)), 1.5 + r * 0.5, 0.09, 0, {gravity: -1.5}); } }
+const W = {over1: wordTex('鞦韆在下面！', '#e8853a'), over2: wordTex('沙坑也看到了', '#b8741f'), over3: wordTex('溜滑梯！', '#e8584a'), dash: wordTex('衝啊！', '#e8584a'), push: wordTex('嘿咻！推～', '#8a6240'), oh: wordTex('要起飛囉！', '#5a6fa8'), takeoff: wordTex('起飛！', '#2f63b8'), ring: wordTex('彩虹光圈！', '#e8584a'), tada: wordTex('平安降落！', '#2b7a4b'), good: wordTex('好好玩！', '#f5a524'), yay: wordTex('耶～', '#e8584a'),
+  moo1: wordTex('哞？', '#5a6fa8'), up: wordTex('嘿咻嘿咻', '#8a6240'), ready: wordTex('準備好了！', '#e8584a'), wee: wordTex('咻～～', '#2f63b8'), dizzy: wordTex('暈暈的～', '#8a6bc4'), again: wordTex('再一次！', '#e8853a'),
+  spin: wordTex('轉轉轉！', '#2b7a4b'), wee3: wordTex('最後一次！', '#e8584a'), flip: wordTex('空翻！', '#f5a524'), land3: wordTex('哞～！', '#2f63b8'),
+  cry: wordTex('啾啾…', '#5a6fa8'), oh2: wordTex('咦？', '#e8853a'), piyo: wordTex('啾！', '#2f63b8'), hold: wordTex('抓穩囉！', '#2f7a6a'), home: wordTex('到家囉！', '#2b7a4b'), thx: wordTex('啾～謝謝！', '#e8584a'), shh: wordTex('噓～小聲點', '#2f7a6a')};
+const BABY_EV = new Set(['moo1', 'up', 'ready', 'wee', 'dizzy', 'again', 'spin', 'wee3', 'flip', 'land3', 'cry', 'piyo', 'thx']);
+const babyPos = V3(), ringC = V3();
+function events(p){
+  if (reduceMotion) return;
+  for (const e of p.events){
+    const head = wpos('Head', V3()).add(V3(0, 0.35, 0));
+    if (W[e]){ const at = BABY_EV.has(e) ? babyPos.clone().add(V3(0, 0.55, 0.15)) : head.clone().add(V3(0, 0.5, 0.2)); showWord(W[e], at, e === 'tada' || e === 'shh' ? 1.0 : 0.85); }
+    if (e === 'yay' || e === 'good'){ confetti(head.x, head.y + 0.2, head.z, 18); }
+    if (e === 'feather'){ const b = wpos('Hips', V3()); spawn(featherTex, b, V3((Math.random() - 0.5) * 0.4, -0.25, (Math.random() - 0.5) * 0.4), 1.4, 0.09, 0, {gravity: -0.3}); }
+    if (e === 'takeoff' || e === 'land') dustRing(rig.position.x, 0.05, rig.position.z, 8, 0.6);
+    if (e === 'tada' || e === 'home') hearts(head.clone().add(V3(0, 0.25, 0.2)), 3);
+    if (e === 'ring'){ for (let i = 0; i < 12; i++){ const a = i / 12 * TAU; _bp.set(Math.cos(a) * 1.7, Math.sin(a) * 1.7, 0).applyQuaternion(ringG.quaternion).add(ringC); spawn(sparkTex, _bp.clone(), V3(Math.cos(a) * 0.4, Math.sin(a) * 0.4, 0), 1.0, 0.16); } }
+    if (e === 'dust' || e === 'land3') dustRing(babyPos.x, 0.05, babyPos.z, 6, 0.4);
+    if (e === 'dizzy'){ for (let i = 0; i < 4; i++){ const a = i / 4 * TAU; spawn(starTex, babyPos.clone().add(V3(Math.cos(a) * 0.25, 0.75, Math.sin(a) * 0.25)), V3(Math.cos(a) * 0.1, 0.15, Math.sin(a) * 0.1), 1.0, 0.11); } }
+    if (e === 'flip') stars(babyPos.clone().add(V3(0, 0.3, 0)), 5, 0.1, 0.5);
+    if (e === 'land3' || e === 'yay' && move === 'slide'){ confetti(babyPos.x, 0.6, babyPos.z, 14); }
+    if (e === 'tear'){ spawn(tearTex, chick.position.clone().add(V3(0.06, 0.38, 0.2)), V3(0.02, -0.18, 0), 0.9, 0.07, 0, {gravity: -0.1}); }
+    if (e === 'thx') hearts(babyPos.clone().add(V3(0, 0.3, 0)), 3, 0.12);
+    if (e === 'shh') hearts(head.clone().add(V3(0, 0.3, 0.2)), 2, 0.12);
+  }
+}
+
+// ---------- placing the props (after the final rig pose of the frame) ----------
+const S_RING_H = TOUR.heading(S_RING_S);
+function placeRing(p){
+  /* the ring pops in as the dash begins and fades away right after she has gone through it (before the tail leaves the plane) */
+  const T = p.T, s = Math.max(0.001, backOut(span(T, S_DASH_T - 0.9, S_DASH_T - 0.2))), fade = 1 - ease(span(T, S_RING_T + 0.4, S_RING_T + 0.75));
+  ringG.scale.setScalar(s * 1.12); ringC.copy(ringG.position); ringG.visible = fade > 0.01 && s > 0.002;
+  ringG.children.forEach(c => { if (c.isMesh){ c.material.transparent = true; c.material.opacity = fade; } });
+  ringGlow.material.opacity = (0.35 + 0.2 * Math.sin(T * 4) + 0.45 * bell(span(T, S_RING_T - 0.4, S_RING_T + 0.5))) * fade;
+  if (!reduceMotion && Math.floor(T * 10) !== Math.floor((T - __dE) * 10) && s > 0.5 && fade > 0.3 && T < S_RING_T){ const a = Math.random() * TAU; _bp.set(Math.cos(a) * 1.7, Math.sin(a) * 1.7, 0).applyQuaternion(ringG.quaternion).add(ringG.position); spawn(sparkTex, _bp.clone(), V3(0, -0.15, 0), 0.9, 0.09); }
+}
+const _sd = V3(), _sc = V3(), _sl = V3(), _sq = new THREE.Quaternion();
+function placeStreaks(p, t){
+  const dk = dashK(p.T) * (1 - ease(span(p.T, S_RING_T - 0.1, S_RING_T + 0.3))); streakG.visible = dk > 0.05; if (!streakG.visible) return;
+  _sd.copy(tourDir); _sl.set(_sd.z, 0, -_sd.x).normalize(); _sq.setFromUnitVectors(UPV, _sd);
+  _sc.set(rig.position.x, rig.position.y + 0.8, rig.position.z);
+  for (const s of STREAKS){
+    const ahead = 2.4 - ((p.T * (10 + 14 * dk) + s.ph * 8) % 8);   /* streams from 2.4 m ahead to 5.6 m behind */
+    const up = V3(0, 1, 0), a = s.a + p.T * 0.4;
+    s.o.position.copy(_sc).addScaledVector(_sd, ahead).addScaledVector(_sl, Math.cos(a) * s.r).addScaledVector(up, Math.sin(a) * s.r * 0.8);
+    s.o.quaternion.copy(_sq); const L = s.len * (0.45 + 1.1 * dk); s.o.scale.set(0.012 + 0.01 * dk, L, 0.012 + 0.01 * dk);
+    s.o.material.opacity = 0.7 * dk * Math.min(1, (3.2 - Math.abs(ahead - 1.0) * 0.5) / 1.5, 1);
+  }
+}
+function placeSlide(p){
+  const T = p.T, s = popS(T, 0.0, 0.5, LEN.slide + 1, LEN.slide + 2);
+  const b = slideBaby(T); placeCow(b); babyPos.set(b.x, b.y, b.z);
+  if (COW.root) COW.root.visible = COW.ready;
+}
+const _hp = V3();
+function placeNest(p){
+  const T = p.T, s = popS(T, 0.05, 0.6, N_T.end + 0.2, N_T.end + 0.5);
+  nestG.scale.setScalar(s); nestG.position.set(NEST.x * (1 - s), 0, NEST.z * (1 - s));
+  nestChicks.forEach((c, i) => { const k = 0.5 + 0.5 * Math.sin(T * 7 + i * 2); QYXZ(c.userData.head.quaternion, 0, -0.25 * k * (T > N_T.hop2[1] ? 0.4 : 1), 0); c.userData.body.position.y = 0.012 * k; });
+  const ud = chick.userData; let x, y, z, yaw = 0, pitch = 0, roll = 0, wing = 0;
+  const hopU = span(T, ...N_T.hop1), hop2U = span(T, ...N_T.hop2);
+  if (T < N_T.hop1[0]){ x = N_C.x; z = N_C.z; y = 0.02 * Math.abs(Math.sin(T * 2.2)); yaw = -1.25; roll = 0.1 * Math.sin(T * 18) * (T > 0.5 ? 1 : 0.3); }
+  else if (T < N_T.hop1[1]){ headPerch(_hp); const u = ease(hopU); x = lerp(N_C.x, _hp.x, u); z = lerp(N_C.z, _hp.z, u); y = lerp(0, _hp.y, u) + 0.5 * 4 * hopU * (1 - hopU); yaw = Math.atan2(_hp.x - N_C.x, _hp.z - N_C.z); pitch = -0.4 * bell(hopU); wing = 1; }
+  else if (T < N_T.hop2[0]){ headPerch(_hp); x = _hp.x; y = _hp.y; z = _hp.z; yaw = p.ry + 0.0; pitch = p.pitch * 0.7; roll = p.roll * 0.7; wing = T > N_T.off ? 0.6 : 0; }
+  else if (T < N_T.hop2[1]){ headPerch(_hp); const u = ease(hop2U); x = lerp(_hp.x, NEST_TOP.x, u); z = lerp(_hp.z, NEST_TOP.z, u); y = lerp(_hp.y, NEST_TOP.y - 0.04, u) + 0.55 * 4 * hop2U * (1 - hop2U); yaw = Math.atan2(NEST_TOP.x - _hp.x, NEST_TOP.z - _hp.z); pitch = -0.3 * bell(hop2U); wing = 1; }
+  else { x = NEST_TOP.x; z = NEST_TOP.z; const j = span(T, N_T.hop2[1] + 0.45, N_T.hop2[1] + 1.5); y = NEST_TOP.y - 0.04 + 0.1 * Math.abs(Math.sin(j * Math.PI * 3)) * (j > 0 && j < 1 ? 1 : 0); yaw = angLerp(Math.atan2(NEST_TOP.x - _hp.x, NEST_TOP.z - _hp.z), 0.1, ease(span(T, N_T.hop2[1], N_T.hop2[1] + 0.4))); wing = j > 0 && j < 1 ? 1 : 0; }
+  chick.position.set(x, y, z); QYXZ(chick.quaternion, yaw, pitch, roll);
+  QYXZ(ud.wL.quaternion, 0, 0, -0.2 - 0.9 * wing * Math.abs(Math.sin(T * 24))); QYXZ(ud.wR.quaternion, 0, 0, 0.2 + 0.9 * wing * Math.abs(Math.sin(T * 24)));
+  QYXZ(ud.head.quaternion, 0, T < N_T.hop1[0] ? 0.25 * Math.sin(T * 4) : 0, 0);
+  babyPos.set(x, y, z);
+  const ss = popS(T, N_T.shh - 0.1, N_T.shh + 0.35, N_T.end + 5, N_T.end + 6); signG.scale.setScalar(ss); signG.position.set(SIGN.x * (1 - ss), 0, SIGN.z * (1 - ss));
+}
+function placeProps(p, t){
+  const isT = move === 'tour', isS = move === 'slide', isN = move === 'nest';
+  ringG.visible = ringG.visible && isT; if (!isT) streakG.visible = false; stumpG.visible = isS; COW.root.visible = isS && COW.ready; if (COW.sh && !isS) COW.sh.visible = false; nestG.visible = isN; chick.visible = isN; signG.visible = isN;
+  if (isT){ placeRing(p); placeStreaks(p, t); } if (isS) placeSlide(p); if (isN) placeNest(p);
+}
+
+// ---------- buttons, camera, loop ----------
+const snap = {}; let blendStart = -10;
+function setMove(name){
+  if (FK.wait(name, 'magpie', setMove)) return;   // 食物載好才開始
+  if (model){ for (const n in bones) snap[n] = bones[n].quaternion.clone(); snap.rp = rig.position.clone(); snap.rq = rig.quaternion.clone(); blendStart = performance.now() / 1000; }
+  clearFx(); userCam = false;
+  PARKS.show(isEat(name) ? 'idle' : name); FK.show(name, 'magpie', 0.3);
+  move = name; t0 = performance.now() / 1000; frozen = null; __hold = 0;
+  document.querySelectorAll('.moves button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.move === name)));
+  statusEl.textContent = names[name];
+}
+document.querySelectorAll('.moves button').forEach(b => b.addEventListener('click', () => setMove(b.dataset.move)));
+const CAM = { eat:CAMEAT, snack:CAMEAT, refuse:CAMEAT,idle:{t:[0, 0.9, 0.1], d:6.6, az:0.09}, tour:{t:[0, 1.2, 1.0], d:6.4, az:0.1}, slide:{t:[-0.3, 0.9, 0.1], d:7.4, az:0.12, el:2.2}, nest:{t:[-0.4, 1.6, -0.2], d:11.5, az:0.1}, sleep:{t:[0, 0.8, 0.1], d:5.6, az:0.1}};
+const COM_L = V3(0, 0.8, 0.1);
+const _ct = V3(), _cp = V3();
+let zTimer = 0, last = performance.now() / 1000, shY = 0, camYaw = 0;
+function loop(){
+  const now = performance.now() / 1000, rawDt = Math.max(0, now - last), dt = Math.min(rawDt, 0.05); last = now; if (__hold && loopEl.checked) __hold = 0;
+  let t = frozen !== null ? frozen : (reduceMotion ? 0 : now - t0);
+  if (frozen === null && !loopEl.checked && (/^(eat|snack|refuse)$/.test(move) || (move === 'tour' || move === 'slide' || move === 'nest') ) && t >= LEN[move]){ if (!__hold) __hold = now; t = LEN[move] - 0.001; if (now - __hold >= 1 && !EMBED){ setMove('idle'); t = 0; } }
+  __dE = (frozen !== null || __hold) ? 1e-4 : Math.min(0.5, Math.max(0.001, rawDt));   // 字卡用真實經過時間判斷（上限 0.5 秒），慢手機不會漏
+  let p = pose(move, t);
+  const bw = frozen !== null ? 1 : Math.min(1, (now - blendStart) / 0.35);
+  if (bw < 1){ const e = ease(bw); for (const n in bones){ if (!snap[n]) continue; bones[n].quaternion.slerpQuaternions(snap[n], bones[n].quaternion.clone(), e); }
+    rig.position.lerpVectors(snap.rp, rig.position.clone(), e); rig.quaternion.slerpQuaternions(snap.rq, rig.quaternion.clone(), e); }
+  if (p.surf != null && skinned) groundFix(p);
+  if (skinned) tailGuard(0);
+  rig.updateMatrixWorld(true);
+  placeProps(p, t);
+  if (p.eat){ FH.arms(p.eat, move); FH.place(p.eat, move, dt, wpos('Head', V3()), reduceMotion); } else FK.food.visible = false;
+  lidU.value = move === 'sleep' ? lidU.value + (1 - lidU.value) * (1 - Math.pow(0.02, dt)) : p.lid;
+  happyU.value = p.happy; sadU.value = p.sad;
+  flatEU.value = Math.max(lidU.value, p.happy, p.sad); flatMU.value = 0;
+  if (move === 'sleep' && !reduceMotion){ zTimer -= dt; if (zTimer <= 0){ zTimer = 1.1; spawn(zTex, wpos('Head', V3()).add(V3(0.3, 0.5, 0.3)), V3(0.14, 0.24, 0), 2.6, 0.15, 1.3); } }
+  if (frozen === null && !__hold) events(p);
+  updateFx(dt); updateWord(dt);
+  shY = move === 'slide' ? (p.floor || 0) : 0;
+  const com = rig.localToWorld(COM_L.clone()), hgt = Math.max(0, com.y - 0.78 - shY);
+  const s = 1 / (1 + hgt * 0.9); shadow.scale.set(s, s, s); shadow.position.set(com.x, 0.003 + shY, com.z);
+  if (!userCam){
+    if (move === 'tour'){
+      /* third-person chase camera: behind and a little above the bird, looking where she is flying (it blends in from the front view while she takes off) */
+      camYaw += wrapA(tourHead - camYaw) * (1 - Math.pow(0.02, dt)); const sy = Math.sin(camYaw), cy = Math.cos(camYaw);
+      const bl = ease(span(p.T, S_T.crouch, S_T.off + 0.9)), px = rig.position.x, py = rig.position.y, pz = rig.position.z;
+      const lw = 1 - ease(span(p.T, S_T.land - 0.3, S_T.land + 0.6)) * 0.45;   /* a little closer to the ground once she has landed */
+      const dk = dashK(p.T);
+      const back = (lerp(5.4, 7.2, bl) + 2.6 * dk) * lerp(1, 0.78, 1 - lw), up = lerp(1.1, 4.0, bl) * lerp(1, 0.55, 1 - lw) * (1 - 0.25 * dk);
+      _cp.set(px - sy * back, py + up + 0.5, pz - cy * back); _ct.set(px + sy * (2.6 + 1.2 * dk), py - 0.2 + 0.8 * (1 - lw), pz + cy * (2.6 + 1.2 * dk));
+      _cp.x += (Math.random() - 0.5) * 0.05 * dk; _cp.y += (Math.random() - 0.5) * 0.05 * dk;   /* a little shake at speed */
+      const fov = 32 + 18 * dk; if (Math.abs(camera.fov - fov) > 0.05){ camera.fov = fov; camera.updateProjectionMatrix(); }
+      const front = V3(0.4, 1.9, 6.2), fT = V3(0, 1.0, 1.0);
+      _cp.lerpVectors(front, _cp, bl); _ct.lerpVectors(fT, _ct, bl);
+      const kk = 1 - Math.pow(lerp(0.0008, 0.08, dashK(p.T)), dt); controls.target.lerp(_ct, kk); camera.position.lerp(_cp, kk);
+    } else {
+      if (camera.fov !== 32){ camera.fov = 32; camera.updateProjectionMatrix(); }
+      const c = CAM[move]; _ct.set(c.t[0], c.t[1], c.t[2]);
+      const k = 1 - Math.pow(0.04, dt); controls.target.lerp(_ct, k);
+      _cp.set(controls.target.x + Math.sin(c.az) * c.d, controls.target.y + 0.45 + c.d * 0.04 + (c.el || 0), controls.target.z + Math.cos(c.az) * c.d); camera.position.lerp(_cp, k);
+    }
+  }
+  controls.update(); renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+// pose dispatcher
+function pose(name, t){
+  const T = t % LEN[name];
+  const p = newP(); p.T = T;
+  resetPose();
+  if (isEat(name)){ poseEat(p, t, name); return p; }
+  if (name === 'idle') poseIdle(p, t, T); else if (name === 'sleep') poseSleep(p, t, T);
+  else if (name === 'tour') poseTour(p, t, T); else if (name === 'slide') poseSlide(p, t, T); else if (name === 'nest') poseNest(p, t, T);
+  return p;
+}
+window.__m = {rot, resetPose, wingSet, wings, spineLean, newP, place, groundFix, THREE, rest, setMove, camera, controls, bones, rig, freeze(x){ frozen = x; }, setT(x){ frozen = null; t0 = performance.now()/1000 - x; },
+  setUser(v){ userCam = v; }, HOLD: FH, EATK: FK, get model(){ return model; }, get skinned(){ return skinned; }, wpos, beakTip, tailPoly, COW, chick, ringG, stumpG, nestG, signG, TOUR, NF1, NF2, SLD, S_T, N_T, SB, headPerch, slideBaby, scene, PARKS, S_OVER_T, S_RING_T, S_DASH_T, dashK,
+  minY(){ let mn = Infinity; const v = V3(); skinned.updateMatrixWorld(true); skinned.skeleton.update(); for (let i = 0; i < skinned.geometry.attributes.position.count; i += 3){ skinned.getVertexPosition(i, v); v.applyMatrix4(skinned.matrixWorld); mn = Math.min(mn, v.y); } return mn; }};
+
+// 3D動畫生成規範 safety layer (meshysafe.js)
+window.__armClear = 0; /* arms hang close to the body; no forced abduction (user choice 2026-10-22) */
+const __sh = /nosafe/.test(location.search) ? 0 : setInterval(() => { if (model && bones.Head){ clearInterval(__sh); import('./meshysafe-73de40e3.js').then(m => { window.__SAFE = m.installSafety(THREE, () => model, bones, rig, scene, { clock: () => (frozen !== null ? frozen : performance.now() / 1000 - t0) }); }); } }, 300);
+</script>
+</body></html>
