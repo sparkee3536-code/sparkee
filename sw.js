@@ -2,7 +2,7 @@
 // 2026-10-11: big files (3D models, textures, face-detector files, three.js from the CDN) are cache-first with NO
 // background re-download — before, every visit to the pet page re-downloaded the models in the background.
 // When a model file changes, bump CACHE so everyone fetches the new one once.
-const CACHE = 'sparkee-v13';   // 2026-11-05 第 3e 批：徽章 62 枚、只計 C 級以上（v12：傳說少年成年、寶寶 2048 貼圖、合併 parkscenes、背景音樂（theme.js 等小檔照舊：先用快取、背景更新））
+const CACHE = 'sparkee-v14';   // 2026-11-05 第 3f-1 批：手機審核頁改版、照片 1024（v13：第 3e 批徽章 62 枚、只計 C 級以上（v12：傳說少年成年、寶寶 2048 貼圖、合併 parkscenes、背景音樂（theme.js 等小檔照舊：先用快取、背景更新）））
 self.addEventListener('install', e => { self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 const BIG = /(_model\.json|\/food\/[a-z_]+\.json|\.jpe?g|\.png|\.wasm|\.onnx|\.mjs)$/i;   // 食物模型也是大檔
