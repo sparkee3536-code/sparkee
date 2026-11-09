@@ -294,7 +294,7 @@ const movesEl = document.getElementById('moves');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const DEBUG = new URLSearchParams(location.search).has('debug');
 
-const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:DEBUG});
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.prepend(renderer.domElement);

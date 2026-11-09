@@ -160,7 +160,7 @@ const loadingEl = document.getElementById('loading');
 const earsToggle = document.getElementById('ears');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.prepend(renderer.domElement);
